@@ -115,7 +115,7 @@ void autosteerWorker100Hz( void* z ) {
       }
 
       if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-        digitalWrite( ( uint8_t )steerConfig.gpioEn, HIGH );
+        digitalWrite( ( uint8_t )steerConfig.gpioEn, LOW );
       }
     } else {
       if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
@@ -763,4 +763,3 @@ void initAutosteer() {
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
 }
-
