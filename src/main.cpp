@@ -84,12 +84,17 @@ void saveConfigToSPIFFS() {
 }
 
 void addGpioOutput( uint16_t parent ) {
+   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 2", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio2 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 4", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio4 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 5", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio5 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 12", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio12 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 13 / A12", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio13 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 14", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio14 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 15", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio15 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 16", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio16 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 17", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio17 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 18", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio18 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 19", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio19 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 21", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio21 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 22", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio22 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 23", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio23 ), ControlColor::Alizarin, parent );
