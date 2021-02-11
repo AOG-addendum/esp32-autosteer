@@ -159,6 +159,7 @@ void setup( void ) {
     digitalWrite( ( int )steerConfig.apModePin, LOW );
   }
 
+WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
 #if defined(ESP32)
   WiFi.setHostname( steerConfig.hostname );
 #else
