@@ -117,6 +117,9 @@ void autosteerWorker100Hz( void* z ) {
       if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
         digitalWrite( ( uint8_t )steerConfig.gpioEn, LOW );
       }
+      if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
+        digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, LOW );
+      }
     } else {
       if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
         steerSetpoints.enabled = true;
@@ -207,6 +210,9 @@ void autosteerWorker100Hz( void* z ) {
 
         if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
           digitalWrite( ( uint8_t )steerConfig.gpioEn, HIGH );
+        }
+        if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
+          digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, HIGH );
         }
       } else {
         ledcWrite( 0, 0 );
@@ -364,7 +370,6 @@ void autosteerWorker100Hz( void* z ) {
             if( steerConfig.steerswitchActiveLow ) {
               steerswitchState = ! steerswitchState;
             }
-
             if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
               sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerswitchState );
             }
@@ -663,6 +668,11 @@ void initAutosteer() {
     if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
       pinMode( ( uint8_t )steerConfig.gpioEn, OUTPUT );
       digitalWrite( ( uint8_t )steerConfig.gpioEn, LOW );
+    }
+
+    if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
+      pinMode( ( uint8_t )steerConfig.gpioSteerLED, OUTPUT );
+      digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, LOW );
     }
 
     switch( steerConfig.outputType ) {
