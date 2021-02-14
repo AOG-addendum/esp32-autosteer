@@ -131,7 +131,9 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
 
   j["workswitch"]["workswitchType"] = int( config.workswitchType );
   j["workswitch"]["gpioWorkswitch"] = int( config.gpioWorkswitch );
+  j["workswitch"]["gpioWorkLED"] = int( config.gpioWorkLED );
   j["workswitch"]["gpioSteerswitch"] = int( config.gpioSteerswitch );
+  j["workswitch"]["gpioSteerLED"] = int( config.gpioSteerLED );
   j["workswitch"]["msAutoRecogniseSteerGpioAsSwitch"] = config.autoRecogniseSteerGpioAsSwitchOrButton;
   j["workswitch"]["workswitchActiveLow"] = config.workswitchActiveLow;
   j["workswitch"]["steerswitchActiveLow"] = config.steerswitchActiveLow;
@@ -245,7 +247,9 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
 
       config.workswitchType = j.value( "/workswitch/workswitchType"_json_pointer, steerConfigDefaults.workswitchType );
       config.gpioWorkswitch = j.value( "/workswitch/gpioWorkswitch"_json_pointer, steerConfigDefaults.gpioWorkswitch );
+      config.gpioWorkLED = j.value( "/workswitch/gpioWorkLED"_json_pointer, steerConfigDefaults.gpioWorkLED );
       config.gpioSteerswitch = j.value( "/workswitch/gpioSteerswitch"_json_pointer, steerConfigDefaults.gpioSteerswitch );
+      config.gpioSteerLED = j.value( "/workswitch/gpioSteerLED"_json_pointer, steerConfigDefaults.gpioSteerLED );
       config.autoRecogniseSteerGpioAsSwitchOrButton = j.value( "/workswitch/msAutoRecogniseSteerGpioAsSwitch"_json_pointer, steerConfigDefaults.autoRecogniseSteerGpioAsSwitchOrButton );
       config.workswitchActiveLow = j.value( "/workswitch/workswitchActiveLow"_json_pointer, steerConfigDefaults.workswitchActiveLow );
       config.steerswitchActiveLow = j.value( "/workswitch/steerswitchActiveLow"_json_pointer, steerConfigDefaults.steerswitchActiveLow );

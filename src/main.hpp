@@ -159,7 +159,9 @@ struct SteerConfig {
     MotorRpm
   } workswitchType = WorkswitchType::None;
   SteerConfig::Gpio gpioWorkswitch = SteerConfig::Gpio::None;
+  SteerConfig::Gpio gpioWorkLED = SteerConfig::Gpio::None;
   SteerConfig::Gpio gpioSteerswitch = SteerConfig::Gpio::None;
+  SteerConfig::Gpio gpioSteerLED = SteerConfig::Gpio::None;
   uint16_t autoRecogniseSteerGpioAsSwitchOrButton = 500;
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;

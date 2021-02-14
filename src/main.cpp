@@ -473,15 +473,15 @@ void setup( void ) {
       }
     }
 
-    // {
-    // uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch LED*", String( ( int )steerConfig.gpioWorkswitch ), ControlColor::Wetasphalt, tab,
-    // []( Control * control, int id ) {
-    // steerConfig.gpioWorkswitch = ( SteerConfig::Gpio )control->value.toInt();
-    // setResetButtonToRed();
-    // } );
-    // ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
-    // addGpioOutput( sel );
-    // }
+    {
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch LED*", String( ( int )steerConfig.gpioWorkLED ), ControlColor::Wetasphalt, tab,
+      []( Control * control, int id ) {
+        steerConfig.gpioWorkLED = ( SteerConfig::Gpio )control->value.toInt();
+        setResetButtonToRed();
+      } );
+      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+      addGpioOutput( sel );
+     }
 
     {
       uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Gpio*", String( ( int )steerConfig.gpioWorkswitch ), ControlColor::Wetasphalt, tab,
@@ -528,15 +528,15 @@ void setup( void ) {
       } );
     }
 
-    // {
-    // uint16_t sel = ESPUI.addControl( ControlType::Select, "Autosteer LED*", String( ( int )steerConfig.gpioSteerswitch ), ControlColor::Wetasphalt, tab,
-    // []( Control * control, int id ) {
-    // steerConfig.gpioSteerswitch = ( SteerConfig::Gpio )control->value.toInt();
-    // setResetButtonToRed();
-    // } );
-    // ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
-    // addGpioOutput( sel );
-    // }
+    {
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Autosteer LED*", String( ( int )steerConfig.gpioSteerLED ), ControlColor::Wetasphalt, tab,
+      []( Control * control, int id ) {
+        steerConfig.gpioSteerLED = ( SteerConfig::Gpio )control->value.toInt();
+        setResetButtonToRed();
+      } );
+      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+      addGpioOutput( sel );
+    }
   }
 
   // Wheel Angle Sensor Tab
