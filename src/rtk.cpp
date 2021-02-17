@@ -420,8 +420,11 @@ void initRtkCorrection() {
   if( steerConfig.sendNmeaDataUdpPortFrom != 0 ) {
     udpGpsData.listen( steerConfig.sendNmeaDataUdpPortFrom );
   }
-
-  Serial2.begin( steerConfig.rtkCorrectionBaudrate );
+  
+  if( steerConfig.sendNmeaDataTo == SteerConfig::SendNmeaDataTo::Serial2 ||
+     steerConfig.rtkCorrectionType == SteerConfig::RtkCorrectionType::Ntrip ) {
+    Serial2.begin( steerConfig.rtkCorrectionBaudrate );
+  }
 
   if( steerConfig.rtkCorrectionType == SteerConfig::RtkCorrectionType::Ntrip ) {
     xTaskCreate( ntripWorker, "ntripWorker", 3064, NULL, 8, NULL );
