@@ -50,6 +50,9 @@ AutoPID pid(
 JsonQueueSelector jsonQueueSelector;
 
 constexpr time_t Timeout = 1000;
+volatile bool steerState = false;
+volatile bool steerChangeProcessed = true;
+volatile time_t steerChangeMillis = millis();
 
 void autosteerWorker100Hz( void* z ) {
   constexpr TickType_t xFrequency = 10;
@@ -344,20 +347,12 @@ void autosteerWorker100Hz( void* z ) {
             }
           }
 
-          if( steerConfig.gpioSteerswitch != SteerConfig::Gpio::None ) {
-            static time_t lastRisingEdge = 0;
-            static bool lastInputState = false;
-
-            static bool steerswitchState = false;
-
-            bool currentState = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch );
-
-            if( currentState != lastInputState ) {
-              // rising edge
-              if( currentState == true ) {
-                steerswitchState = !steerswitchState;
-                lastRisingEdge = millis();
+            if( steerChangeProcessed == false && ( millis() - steerChangeMillis ) > 200 ) {
+              if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow) {
+                steerChangeProcessed = true;
+                steerState = ! steerState;
               }
+            }
 
               // falling edge
               if( currentState == false ) {
@@ -371,13 +366,12 @@ void autosteerWorker100Hz( void* z ) {
               steerswitchState = ! steerswitchState;
             }
             if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-              sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerswitchState );
+              sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerState );
             }
 
             if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-              data[8] |= steerswitchState ? 2 : 0;
+              data[8] |= steerState ? 0 : 2;
             }
-          }
         }
 
         if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
@@ -496,6 +490,23 @@ void autosteerWorker100Hz( void* z ) {
 
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
+}
+
+void IRAM_ATTR steerswitchMomentaryIsr() {
+    // interrupt service routine for a momentary steer switch
+    // the rest of the debounce gets calculated in void autosteerWorker100Hz()
+    steerChangeMillis = millis();
+    steerChangeProcessed = false;
+}
+
+void IRAM_ATTR steerswitchMaintainedIsr() {
+    // interrupt service routine for a maintained steer switch
+    // no debounce needed for maintained switches
+    if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow){
+        steerState = false;
+    } else {
+        steerState = true;
+    }
 }
 
 void initAutosteer() {
@@ -767,8 +778,16 @@ void initAutosteer() {
     pinMode( ( uint8_t )steerConfig.gpioWorkswitch, INPUT_PULLUP );
   }
 
+  // use interrupt callbacks to simpify steer state tracking,
+  // whichever callback happens last (steering wheel or steer switch) gets priority
   if( steerConfig.gpioSteerswitch != SteerConfig::Gpio::None ) {
     pinMode( ( uint8_t )steerConfig.gpioSteerswitch, INPUT_PULLUP );
+    if( steerConfig.steerSwitchIsMomentary ){
+        attachInterrupt( ( uint8_t )steerConfig.gpioSteerswitch, steerswitchMomentaryIsr, CHANGE);
+    } else {
+        attachInterrupt( ( uint8_t )steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
+    }
+  }
   }
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );

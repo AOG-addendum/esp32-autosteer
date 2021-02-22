@@ -137,6 +137,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["workswitch"]["msAutoRecogniseSteerGpioAsSwitch"] = config.autoRecogniseSteerGpioAsSwitchOrButton;
   j["workswitch"]["workswitchActiveLow"] = config.workswitchActiveLow;
   j["workswitch"]["steerswitchActiveLow"] = config.steerswitchActiveLow;
+  j["workswitch"]["steerSwitchIsMomentary"] = config.steerSwitchIsMomentary;
 
   j["wheelangle"]["input"] = config.wheelAngleInput;
   j["wheelangle"]["sensorType"] = int( config.wheelAngleSensorType );
@@ -256,6 +257,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.autoRecogniseSteerGpioAsSwitchOrButton = j.value( "/workswitch/msAutoRecogniseSteerGpioAsSwitch"_json_pointer, steerConfigDefaults.autoRecogniseSteerGpioAsSwitchOrButton );
       config.workswitchActiveLow = j.value( "/workswitch/workswitchActiveLow"_json_pointer, steerConfigDefaults.workswitchActiveLow );
       config.steerswitchActiveLow = j.value( "/workswitch/steerswitchActiveLow"_json_pointer, steerConfigDefaults.steerswitchActiveLow );
+      config.steerSwitchIsMomentary = j.value( "/workswitch/steerSwitchIsMomentary"_json_pointer, steerConfigDefaults.steerSwitchIsMomentary );
 
       config.wheelAngleInput = j.value( "/wheelangle/input"_json_pointer, steerConfigDefaults.wheelAngleInput );
       config.wheelAngleSensorType = j.value( "/wheelangle/sensorType"_json_pointer, steerConfigDefaults.wheelAngleSensorType );

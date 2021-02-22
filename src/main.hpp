@@ -165,6 +165,7 @@ struct SteerConfig {
   uint16_t autoRecogniseSteerGpioAsSwitchOrButton = 500;
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;
+  bool steerSwitchIsMomentary = false;
 
   enum class WheelAngleSensorType : uint8_t {
     WheelAngle = 0,

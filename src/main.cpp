@@ -502,7 +502,7 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     }
 
     {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Autosteer switch/button Gpio*", String( ( int )steerConfig.gpioSteerswitch ), ControlColor::Wetasphalt, tab,
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Autosteer switch Gpio*", String( ( int )steerConfig.gpioSteerswitch ), ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
         steerConfig.gpioSteerswitch = ( SteerConfig::Gpio )control->value.toInt();
         setResetButtonToRed();
@@ -513,19 +513,17 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     }
 
     {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Auto recognise Autosteer GPIO as Switch [ms]", String( steerConfig.autoRecogniseSteerGpioAsSwitchOrButton ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.autoRecogniseSteerGpioAsSwitchOrButton = control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "16000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "100", ControlColor::Peterriver, num );
-    }
-
-    {
       ESPUI.addControl( ControlType::Switcher, "Steerswitch Active Low", steerConfig.steerswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.steerswitchActiveLow = control->value.toInt() == 1;
+      } );
+    }
+
+    {
+      ESPUI.addControl( ControlType::Switcher, "Steerswitch is Momentary*", steerConfig.steerSwitchIsMomentary ? "1" : "0", ControlColor::Wetasphalt, tab,
+      []( Control * control, int id ) {
+        steerConfig.steerSwitchIsMomentary = control->value.toInt() == 1;
+        setResetButtonToRed();
       } );
     }
 
