@@ -536,6 +536,27 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
       addGpioOutput( sel );
     }
+
+    {
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Steering Wheel Encoder GPIO*", String( ( int )steerConfig.steeringWheelEncoder ), ControlColor::Wetasphalt, tab,
+      []( Control * control, int id ) {
+        steerConfig.steeringWheelEncoder = ( SteerConfig::Gpio )control->value.toInt();
+        setResetButtonToRed();
+      } );
+      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+      addGpioInput( sel );
+      addGpioOutput( sel );
+    }
+
+    {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Second", String( steerConfig.steeringWheelPulses ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.steeringWheelPulses = control->value.toInt();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
+    }
   }
 
   // Wheel Angle Sensor Tab

@@ -162,6 +162,8 @@ struct SteerConfig {
   SteerConfig::Gpio gpioWorkLED = SteerConfig::Gpio::None;
   SteerConfig::Gpio gpioSteerswitch = SteerConfig::Gpio::None;
   SteerConfig::Gpio gpioSteerLED = SteerConfig::Gpio::None;
+  SteerConfig::Gpio steeringWheelEncoder = SteerConfig::Gpio::None;
+  uint16_t steeringWheelPulses = 3;
   uint16_t autoRecogniseSteerGpioAsSwitchOrButton = 500;
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;

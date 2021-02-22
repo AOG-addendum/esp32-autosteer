@@ -53,6 +53,8 @@ constexpr time_t Timeout = 1000;
 volatile bool steerState = false;
 volatile bool steerChangeProcessed = true;
 volatile time_t steerChangeMillis = millis();
+volatile time_t steeringWheelActivityMillis = millis();
+volatile uint16_t steeringPulseCount = 0;
 
 void autosteerWorker100Hz( void* z ) {
   constexpr TickType_t xFrequency = 10;
@@ -354,17 +356,13 @@ void autosteerWorker100Hz( void* z ) {
               }
             }
 
-              // falling edge
-              if( currentState == false ) {
-                if( lastRisingEdge + steerConfig.autoRecogniseSteerGpioAsSwitchOrButton < millis() ) {
-                  steerswitchState = false;
-                }
+            if( millis() - steeringWheelActivityMillis < 1000 ) {
+              if( ( steeringPulseCount / 2 ) > steerConfig.steeringWheelPulses ) { // divide by two to compensate for LOW and HIGH
+                steerState = false;
+                steeringPulseCount = 0;
               }
-            }
+            } else { steeringPulseCount = 0; }
 
-            if( steerConfig.steerswitchActiveLow ) {
-              steerswitchState = ! steerswitchState;
-            }
             if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
               sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerState );
             }
@@ -507,6 +505,14 @@ void IRAM_ATTR steerswitchMaintainedIsr() {
     } else {
         steerState = true;
     }
+}
+
+void IRAM_ATTR steeringWheelIsr() {
+    // interrupt service routine for the steering wheel
+    if( steeringPulseCount == 0 ){
+        steeringWheelActivityMillis = millis();
+    }
+    steeringPulseCount += 1;
 }
 
 void initAutosteer() {
@@ -788,6 +794,10 @@ void initAutosteer() {
         attachInterrupt( ( uint8_t )steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
     }
   }
+
+  if( steerConfig.steeringWheelEncoder != SteerConfig::Gpio::None ) {
+    pinMode( ( uint8_t )steerConfig.steeringWheelEncoder, INPUT_PULLUP );
+    attachInterrupt( ( uint8_t )steerConfig.steeringWheelEncoder, steeringWheelIsr, CHANGE);
   }
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
