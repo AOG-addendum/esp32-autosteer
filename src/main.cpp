@@ -472,7 +472,7 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     }
 
     {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch LED*", String( ( int )steerConfig.gpioWorkLED ), ControlColor::Wetasphalt, tab,
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch LED Gpio*", String( ( int )steerConfig.gpioWorkLED ), ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
         steerConfig.gpioWorkLED = ( SteerConfig::Gpio )control->value.toInt();
         setResetButtonToRed();
@@ -525,7 +525,7 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     }
 
     {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Autosteer LED*", String( ( int )steerConfig.gpioSteerLED ), ControlColor::Wetasphalt, tab,
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Autosteer LED Gpio*", String( ( int )steerConfig.gpioSteerLED ), ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
         steerConfig.gpioSteerLED = ( SteerConfig::Gpio )control->value.toInt();
         setResetButtonToRed();
