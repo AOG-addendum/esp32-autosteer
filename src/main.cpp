@@ -417,24 +417,21 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Work- and Steerswitch", "Work- and Steerswitch" );
 
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Type", String( ( int )steerConfig.workswitchType ), ControlColor::Peterriver, tab,
+    uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Type", String( ( int )steerConfig.workswitchType ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.workswitchType = ( SteerConfig::WorkswitchType )control->value.toInt();
       } );
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Gpio", "1", ControlColor::Alizarin, sel );
 
-      if( steerConfig.canBusEnabled ) {
+    if( steerConfig.canBusEnabled ) {
+      {
         ESPUI.addControl( ControlType::Option, "Rear Hitch Position (from Can Bus)", "2", ControlColor::Alizarin, sel );
         ESPUI.addControl( ControlType::Option, "Front Hitch Position (from Can Bus)", "3", ControlColor::Alizarin, sel );
         ESPUI.addControl( ControlType::Option, "Rear Pto Rpm (from Can Bus)", "4", ControlColor::Alizarin, sel );
         ESPUI.addControl( ControlType::Option, "Front Pto Rpm (from Can Bus)", "5", ControlColor::Alizarin, sel );
         ESPUI.addControl( ControlType::Option, "Motor Rpm (from Can Bus)", "6", ControlColor::Alizarin, sel );
       }
-    }
-
-    if( steerConfig.canBusEnabled ) {
       {
         uint16_t num = ESPUI.addControl( ControlType::Number, "Hitch Threshold", String( steerConfig.canBusHitchThreshold ), ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
