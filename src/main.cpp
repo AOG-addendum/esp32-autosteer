@@ -84,7 +84,7 @@ void saveConfigToSPIFFS() {
 }
 
 void addGpioOutput( uint16_t parent ) {
-   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 2", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio2 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 2", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio2 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 4", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio4 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 5", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio5 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 12", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio12 ), ControlColor::Alizarin, parent );
@@ -101,14 +101,14 @@ void addGpioOutput( uint16_t parent ) {
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 25", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio25 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 26", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio26 ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ESP32 GPIO 27", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio27 ), ControlColor::Alizarin, parent );
-  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 32 / A7", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio32 ), ControlColor::Alizarin, parent );
-  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 33 / A9", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio33 ), ControlColor::Alizarin, parent );
-  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 35", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio35 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 32", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio32 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 33", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio33 ), ControlColor::Alizarin, parent );
 }
 void addGpioInput( uint16_t parent ) {
-  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 34 / A2 (only input)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio34 ), ControlColor::Alizarin, parent );
-  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 36 / A4 (only input)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio36 ), ControlColor::Alizarin, parent );
-  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 39 / A3 (only input)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio39 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 34 (input only)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio34 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 35 (input only)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio35 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 36 (input only)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio36 ), ControlColor::Alizarin, parent );
+  ESPUI.addControl( ControlType::Option, "ESP32 GPIO 39 (input only)", String( ( uint8_t )SteerConfig::Gpio::Esp32Gpio39 ), ControlColor::Alizarin, parent );
 }
 void addAnalogInput( uint16_t parent ) {
   ESPUI.addControl( ControlType::Option, "ESP32 A2", String( ( uint8_t )SteerConfig::AnalogIn::Esp32GpioA2 ), ControlColor::Alizarin, parent );
