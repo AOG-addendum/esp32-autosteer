@@ -364,6 +364,7 @@ struct SteerSetpoints {
   bool enabled = false;
   float receivedRoll = 0;
   double actualSteerAngle = 0;
+  double wheelAngleCounts = 0;
   double wheelAngleCurrentDisplacement = 0;
   double wheelAngleRaw = 0;
   float correction = 0;

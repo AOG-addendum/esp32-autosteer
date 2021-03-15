@@ -448,6 +448,7 @@ void sensorWorker100HzPoller( void* z ) {
       }
 
       {
+        steerSetpoints.wheelAngleCounts = wheelAngleTmp;
         wheelAngleTmp -= steerConfig.wheelAnglePositionZero;
         wheelAngleTmp /= steerConfig.wheelAngleCountsPerDegree;
 
@@ -529,9 +530,12 @@ void sensorWorker100HzPoller( void* z ) {
             str += ( float )steerSetpoints.wheelAngleCurrentDisplacement;
             str += "mm";
           } else {
-            str += ( float )steerSetpoints.actualSteerAngle;
-            str += "°, Raw: ";
+            str += "A/D count: ";
+            str += ( int )steerSetpoints.wheelAngleCounts;
+            str += ", Raw: ";
             str += ( float )steerSetpoints.wheelAngleRaw;
+            str += "°\nActual: ";
+            str += ( float )steerSetpoints.actualSteerAngle;
             str += "°, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°";
@@ -711,5 +715,3 @@ void initSensors() {
 
   xTaskCreate( sensorWorker100HzPoller, "sensorWorker100HzPoller", 4096, NULL, 6, NULL );
 }
-
-
