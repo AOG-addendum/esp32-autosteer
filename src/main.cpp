@@ -510,14 +510,14 @@ WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     }
 
     {
-      ESPUI.addControl( ControlType::Switcher, "Steerswitch Active Low", steerConfig.steerswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
+      ESPUI.addControl( ControlType::Switcher, "Autosteer Switch Active Low", steerConfig.steerswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.steerswitchActiveLow = control->value.toInt() == 1;
       } );
     }
 
     {
-      ESPUI.addControl( ControlType::Switcher, "Steerswitch is Momentary*", steerConfig.steerSwitchIsMomentary ? "1" : "0", ControlColor::Wetasphalt, tab,
+      ESPUI.addControl( ControlType::Switcher, "Autosteer Switch is Momentary*", steerConfig.steerSwitchIsMomentary ? "1" : "0", ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
         steerConfig.steerSwitchIsMomentary = control->value.toInt() == 1;
         setResetButtonToRed();
