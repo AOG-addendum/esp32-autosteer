@@ -135,7 +135,8 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["workswitch"]["gpioSteerswitch"] = int( config.gpioSteerswitch );
   j["workswitch"]["gpioSteerLED"] = int( config.gpioSteerLED );
   j["workswitch"]["steeringWheelEncoder"] = int( config.steeringWheelEncoder );
-  j["workswitch"]["steeringWheelPulses"] = int( config.steeringWheelPulses );
+  j["workswitch"]["steeringWheelFramePulses"] = int( config.steeringWheelFramePulses );
+  j["workswitch"]["steeringWheelFrameMillis"] = int( config.steeringWheelFrameMillis );
   j["workswitch"]["msAutoRecogniseSteerGpioAsSwitch"] = config.autoRecogniseSteerGpioAsSwitchOrButton;
   j["workswitch"]["workswitchActiveLow"] = config.workswitchActiveLow;
   j["workswitch"]["steerswitchActiveLow"] = config.steerswitchActiveLow;
@@ -257,7 +258,8 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.gpioSteerswitch = j.value( "/workswitch/gpioSteerswitch"_json_pointer, steerConfigDefaults.gpioSteerswitch );
       config.gpioSteerLED = j.value( "/workswitch/gpioSteerLED"_json_pointer, steerConfigDefaults.gpioSteerLED );
       config.steeringWheelEncoder = j.value( "/workswitch/steeringWheelEncoder"_json_pointer, steerConfigDefaults.steeringWheelEncoder );
-      config.steeringWheelPulses = j.value( "/workswitch/steeringWheelPulses"_json_pointer, steerConfigDefaults.steeringWheelPulses );
+      config.steeringWheelFramePulses = j.value( "/workswitch/steeringWheelFramePulses"_json_pointer, steerConfigDefaults.steeringWheelFramePulses );
+      config.steeringWheelFrameMillis = j.value( "/workswitch/steeringWheelFrameMillis"_json_pointer, steerConfigDefaults.steeringWheelFrameMillis );
       config.autoRecogniseSteerGpioAsSwitchOrButton = j.value( "/workswitch/msAutoRecogniseSteerGpioAsSwitch"_json_pointer, steerConfigDefaults.autoRecogniseSteerGpioAsSwitchOrButton );
       config.workswitchActiveLow = j.value( "/workswitch/workswitchActiveLow"_json_pointer, steerConfigDefaults.workswitchActiveLow );
       config.steerswitchActiveLow = j.value( "/workswitch/steerswitchActiveLow"_json_pointer, steerConfigDefaults.steerswitchActiveLow );

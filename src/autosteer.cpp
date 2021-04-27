@@ -356,8 +356,8 @@ void autosteerWorker100Hz( void* z ) {
               }
             }
 
-            if( millis() - steeringWheelActivityMillis < 1000 ) {
-              if( ( steeringPulseCount / 2 ) > steerConfig.steeringWheelPulses ) { // divide by two to compensate for LOW and HIGH
+            if( millis() - steeringWheelActivityMillis < steerConfig.steeringWheelFrameMillis ) {
+              if( ( steeringPulseCount / 2 ) > steerConfig.steeringWheelFramePulses ) { // divide by two to compensate for LOW and HIGH
                 steerState = false;
                 steeringPulseCount = 0;
               }
