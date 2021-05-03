@@ -347,6 +347,9 @@ void autosteerWorker100Hz( void* z ) {
             if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
               data[8] |= workswitchState ? 1 : 0;
             }
+            if( steerConfig.gpioWorkLED != SteerConfig::Gpio::None ) {
+              digitalWrite( ( uint8_t )steerConfig.gpioWorkLED, workswitchState);
+            }
           }
 
             if( steerChangeProcessed == false && ( millis() - steerChangeMillis ) > 200 ) {
@@ -782,6 +785,9 @@ void initAutosteer() {
 
   if( steerConfig.gpioWorkswitch != SteerConfig::Gpio::None ) {
     pinMode( ( uint8_t )steerConfig.gpioWorkswitch, INPUT_PULLUP );
+  }
+  if( steerConfig.gpioWorkLED != SteerConfig::Gpio::None ) {
+    pinMode( ( uint8_t )steerConfig.gpioWorkLED, OUTPUT );
   }
 
   // use interrupt callbacks to simpify steer state tracking,
