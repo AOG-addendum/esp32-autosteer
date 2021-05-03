@@ -731,7 +731,7 @@ void initAutosteer() {
         Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
 
         if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
-            steerConfig.gpioDir != SteerConfig::Gpio::None ) {
+            steerConfig.gpioEn != SteerConfig::Gpio::None ) {
           labelStatusOutputHandle->value = "Output configured";
           labelStatusOutputHandle->color = ControlColor::Emerald;
           ESPUI.updateControlAsync( labelStatusOutputHandle );
