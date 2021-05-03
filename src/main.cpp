@@ -213,8 +213,8 @@ void setup( void ) {
     labelStatusNtrip = ESPUI.addControl( ControlType::Label, "NTRIP:", "Not configured", ControlColor::Turquoise, tab );
   }
 
-  // Info Tab
-  {
+  // Info Tab, disabled to allow more widgets
+ if (false) {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Info/Help", "Info/Help" );
     ESPUI.addControl( ControlType::Label, "Basics:", "This works with setting up the different options in the panels. If an option requires a reboot (indicated by the darker blue and an asterisk after the title), press on the button \"Apply & Reboot\" and refresh the page after some time, usually 5-10 seconds. Settings with the lighter shade of blue are applied immediately, but are not saved to the permanent memory. You can do this with the \"Apply\" button. If the values are complete garbage or you want a fresh start, set the config to defaults in the \"Configurations\" tab.", ControlColor::Carrot, tab );
 
