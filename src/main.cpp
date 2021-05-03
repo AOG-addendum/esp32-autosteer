@@ -643,6 +643,7 @@ void setup( void ) {
       ESPUI.addControl( ControlType::Option, "Motor: IBT 2", "2", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + PWM 2-Coil Valve", "3", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + Danfoss Valve PVE A/H/M", "4", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + Bang Bang Valve", "5", ControlColor::Alizarin, sel );
     }
 
     {

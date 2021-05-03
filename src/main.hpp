@@ -129,7 +129,8 @@ struct SteerConfig {
     SteeringMotorCytron = 1,
     SteeringMotorIBT2,
     HydraulicPwm2Coil,
-    HydraulicDanfoss
+    HydraulicDanfoss,
+    HydraulicBangBang
   } outputType = OutputType::None;
 
   uint16_t pwmFrequency = 1000;

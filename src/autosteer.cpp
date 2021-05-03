@@ -209,6 +209,27 @@ void autosteerWorker100Hz( void* z ) {
           }
           break;
 
+          case SteerConfig::OutputType::HydraulicBangBang: {
+            if( pidOutputTmp > 0 ) {
+              ledcWrite( 0, 255 );
+              ledcWrite( 1, 0 );
+              vTaskDelayUntil( &xLastWakeTime, pidOutputTmp );
+              ledcWrite( 0, 0 );
+            }
+
+            if( pidOutputTmp < 0 ) {
+              ledcWrite( 0, 0 );
+              ledcWrite( 1, 255 );
+              vTaskDelayUntil( &xLastWakeTime, -pidOutputTmp );
+              ledcWrite( 1, 0 );
+            }
+            else {
+              ledcWrite( 0, 0 );
+              ledcWrite( 1, 0 );
+            }
+          }
+          break;
+
           default:
             break;
         }
@@ -471,6 +492,22 @@ void autosteerWorker100Hz( void* z ) {
             String str;
             str.reserve( 30 );
             str = "IBT2 Hydraulic Danfoss, SetPoint: ";
+            str += ( float )steerSetpoints.requestedSteerAngle;
+            str += "°, timeout: ";
+            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
+            str += ", enabled: ";
+            str += ( bool )steerSetpoints.enabled;
+            labelStatusOutputHandle->value = str;
+            labelStatusOutputHandle->color = ControlColor::Emerald;
+            ESPUI.updateControlAsync( labelStatusOutputHandle );
+          }
+          break;
+
+          case SteerConfig::OutputType::HydraulicBangBang: {
+            Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+            String str;
+            str.reserve( 30 );
+            str = "IBT2 Hydraulic Bang Bang, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°, timeout: ";
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
@@ -767,6 +804,26 @@ void initAutosteer() {
           ESPUI.updateControlAsync( labelStatusOutputHandle );
 
           initialisation.outputType = SteerConfig::OutputType::HydraulicDanfoss;
+        } else {
+          {
+            labelStatusOutputHandle->value = "GPIOs not correctly defined";
+            labelStatusOutputHandle->color = ControlColor::Carrot;
+            ESPUI.updateControlAsync( labelStatusOutputHandle );
+          }
+        }
+      }
+      break;
+
+      case SteerConfig::OutputType::HydraulicBangBang: {
+        Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+
+        if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
+            steerConfig.gpioEn != SteerConfig::Gpio::None ) {
+          labelStatusOutputHandle->value = "Output configured";
+          labelStatusOutputHandle->color = ControlColor::Emerald;
+          ESPUI.updateControlAsync( labelStatusOutputHandle );
+
+          initialisation.outputType = SteerConfig::OutputType::HydraulicBangBang;
         } else {
           {
             labelStatusOutputHandle->value = "GPIOs not correctly defined";
