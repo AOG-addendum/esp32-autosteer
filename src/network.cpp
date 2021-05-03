@@ -62,13 +62,14 @@ void WiFiAPStaConnected(WiFiEvent_t event, WiFiEventInfo_t info){
 }
 
 void initWiFi( void ){
-  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-  delay(250);
+  delay( 50 );
+  WiFi.config( INADDR_NONE, INADDR_NONE, INADDR_NONE );
+  delay( 50 );
   #if defined(ESP32)
-    WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
-    WiFi.onEvent(WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);
-    WiFi.onEvent(WiFiStationGotIP, SYSTEM_EVENT_STA_GOT_IP);
-    WiFi.onEvent(WiFiAPStaConnected, SYSTEM_EVENT_AP_STACONNECTED);
+    WiFi.onEvent( WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED );
+    WiFi.onEvent( WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED );
+    WiFi.onEvent( WiFiStationGotIP, SYSTEM_EVENT_STA_GOT_IP );
+    WiFi.onEvent( WiFiAPStaConnected, SYSTEM_EVENT_AP_STACONNECTED );
   #endif
     // try to connect to existing network
     WiFi.begin( steerConfig.ssid, steerConfig.password );
@@ -87,24 +88,27 @@ void initWiFi( void ){
     } while( timeout && WiFi.status() != WL_CONNECTED );
     // not connected -> create hotspot
     if( WiFi.status() != WL_CONNECTED ) {
-        WiFi.disconnect(true);
-        Serial.print( "\n\nCreating hotspot" );
-
+        WiFi.disconnect( true );
+        
         if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
           digitalWrite( ( int )steerConfig.apModePin, LOW );
         }
 
-        apName = String( "Machine steer " );
+        apName = String( "Steer module " );
         apName += WiFi.macAddress();
         apName.replace( ":", "" );
 
-        WiFi.mode( WIFI_MODE_AP );
+        Serial.print( "\n\nCreating hotspot \"" );
+        Serial.print( apName.c_str() );
+        Serial.println( "\"" );
+        WiFi.mode( WIFI_MODE_APSTA );
         WiFi.softAP( apName.c_str() );
         while (!SYSTEM_EVENT_AP_START) { // wait until AP has started
             delay(100);
             Serial.print(".");
         }
+        delay( 50 );
         WiFi.softAPConfig( softApIP, softApIP, IPAddress( 255, 255, 255, 0 ) );
-        //WiFi.begin( steerConfig.ssid, steerConfig.password );
+        WiFi.begin( steerConfig.ssid, steerConfig.password );
     }
 }
