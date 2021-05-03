@@ -159,56 +159,8 @@ void setup( void ) {
     digitalWrite( ( int )steerConfig.apModePin, LOW );
   }
 
-WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-#if defined(ESP32)
-  WiFi.setHostname( steerConfig.hostname );
-#else
-  WiFi.hostname( steerConfig.hostname );
-#endif
-
-  // try to connect to existing network
-  WiFi.begin( steerConfig.ssid, steerConfig.password );
-  Serial.print( "\n\nTry to connect to existing network \"" );
-  Serial.print( steerConfig.ssid );
-  Serial.print( "\" with password \"" );
-  Serial.print( steerConfig.password );
-  Serial.print( "\"" );
-
-  {
-    uint8_t timeout = 5;
-
-    // Wait for connection, 2.5s timeout
-    do {
-      delay( 500 );
-      Serial.print( "." );
-      timeout--;
-    } while( timeout && WiFi.status() != WL_CONNECTED );
-
-    // not connected -> create hotspot
-    if( WiFi.status() != WL_CONNECTED ) {
-      Serial.print( "\n\nCreating hotspot" );
-
-      if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
-        digitalWrite( ( int )steerConfig.apModePin, LOW );
-      }
-
-      WiFi.mode( WIFI_AP );
-      WiFi.softAPConfig( apIP, apIP, IPAddress( 255, 255, 255, 0 ) );
-      WiFi.softAP( steerConfig.ssid );
-
-      timeout = 5;
-
-      do {
-        delay( 500 );
-        Serial.print( "." );
-        timeout--;
-      } while( timeout );
-    } else {
-      if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
-        digitalWrite( ( int )steerConfig.apModePin, HIGH );
-      }
-    }
-  }
+  initWiFi();
+  apIP = WiFi.localIP();
 
   dnsServer.start( DNS_PORT, "*", apIP );
 
@@ -1320,4 +1272,3 @@ void loop( void ) {
   AsyncElegantOTA.loop();
   vTaskDelay( 100 );
 }
-

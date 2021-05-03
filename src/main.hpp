@@ -446,3 +446,4 @@ extern void calculateMountingCorrection();
 extern void initRtkCorrection();
 extern void initCan();
 extern void initAutosteer();
+extern void initWiFi();
