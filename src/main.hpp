@@ -133,7 +133,7 @@ struct SteerConfig {
     HydraulicBangBang
   } outputType = OutputType::None;
 
-  uint16_t pwmFrequency = 1000;
+  double pwmFrequency = 1000;
   bool invertOutput = false;
   SteerConfig::Gpio gpioPwm = SteerConfig::Gpio::Esp32Gpio15;
   SteerConfig::Gpio gpioDir = SteerConfig::Gpio::Esp32Gpio32;
