@@ -31,6 +31,10 @@
 #include <string>       // std::string
 #include <sstream>      // std::stringstream
 
+#include "soc/mcpwm_reg.h"
+#include "soc/mcpwm_struct.h"
+#include "driver/mcpwm.h"
+
 SteerSettings steerSettings;
 SteerSetpoints steerSetpoints;
 SteerMachineControl steerMachineControl;
@@ -55,6 +59,8 @@ volatile bool steerChangeProcessed = true;
 volatile time_t steerChangeMillis = millis();
 volatile time_t steeringWheelActivityMillis = millis();
 volatile uint16_t steeringPulseCount = 0;
+volatile uint16_t HZperiod = 0;
+
 
 void autosteerWorker100Hz( void* z ) {
   constexpr TickType_t xFrequency = 10;
@@ -109,6 +115,12 @@ void autosteerWorker100Hz( void* z ) {
         case SteerConfig::OutputType::HydraulicDanfoss: {
           ledcWrite( 0, 128 );
           ledcWrite( 1, 0 );
+        }
+        break;
+
+        case SteerConfig::OutputType::HydraulicBangBang: {
+          MCPWM0.channel[0].cmpr_value[0].val = 0;
+          MCPWM0.channel[1].cmpr_value[0].val = 0;
         }
         break;
 
@@ -218,21 +230,15 @@ void autosteerWorker100Hz( void* z ) {
 
           case SteerConfig::OutputType::HydraulicBangBang: {
             if( pidOutputTmp > 0 ) {
-              ledcWrite( 0, 255 );
-              ledcWrite( 1, 0 );
-              vTaskDelayUntil( &xLastWakeTime, pidOutputTmp );
-              ledcWrite( 0, 0 );
+              int duty = float( pidOutputTmp / 255 ) * HZperiod ; // HZperiod = 100% duty cycle
+              MCPWM0.channel[0].cmpr_value[0].val = duty;
+              MCPWM0.channel[1].cmpr_value[0].val = 0;
             }
 
             if( pidOutputTmp < 0 ) {
-              ledcWrite( 0, 0 );
-              ledcWrite( 1, 255 );
-              vTaskDelayUntil( &xLastWakeTime, -pidOutputTmp );
-              ledcWrite( 1, 0 );
-            }
-            else {
-              ledcWrite( 0, 0 );
-              ledcWrite( 1, 0 );
+              int duty = float( -pidOutputTmp / 255 ) * HZperiod ; // HZperiod = 100% duty cycle
+              MCPWM0.channel[0].cmpr_value[0].val = 0;
+              MCPWM0.channel[1].cmpr_value[0].val = duty;
             }
           }
           break;
@@ -248,8 +254,18 @@ void autosteerWorker100Hz( void* z ) {
           digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, HIGH );
         }
       } else {
-        ledcWrite( 0, 0 );
-        ledcWrite( 1, 0 );
+        switch( initialisation.outputType ) {
+          case SteerConfig::OutputType::HydraulicBangBang: {
+            MCPWM0.channel[0].cmpr_value[0].val = 0;
+            MCPWM0.channel[1].cmpr_value[0].val = 0;
+          }
+          break;
+
+          default: {
+            ledcWrite( 0, 0 );
+            ledcWrite( 1, 0 );
+          }
+        }
       }
     }
 
@@ -715,18 +731,59 @@ void initAutosteer() {
 
   // init output
   {
+    HZperiod = 3999 / steerConfig.pwmFrequency; // scale for MCPWM, 3999 = 1hz and 0 = 4khz
     if( steerConfig.gpioPwm != SteerConfig::Gpio::None ) {
       pinMode( ( uint8_t )steerConfig.gpioPwm, OUTPUT );
-      ledcSetup( 0, 1000/*steerConfig.pwmFrequency*/, 8 );
-      ledcAttachPin( ( uint8_t )steerConfig.gpioPwm, 0 );
-      ledcWrite( 0, 0 );
+      switch( steerConfig.outputType ) {
+        case SteerConfig::OutputType::HydraulicBangBang: {
+          //https://forum.arduino.cc/t/esp32-what-is-the-minimum-pwm-frequency/671077/3
+          mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, ( uint8_t )steerConfig.gpioPwm);     // Initialise channel MCPWM0A on GPIO pin
+          MCPWM0.clk_cfg.prescale = 199;                // Set the 160MHz clock prescaler to 199 (160MHz/(199+1)=800kHz)
+          MCPWM0.timer[0].period.prescale = 199;        // Set timer 0 prescaler to 199 (800kHz/(199+1))=4kHz)
+          MCPWM0.timer[0].period.period = HZperiod;     // Set the PWM period to Hz (4kHz/(3999+1)=1Hz), see above
+          MCPWM0.channel[0].cmpr_value[0].val = 0;      // Set the counter compare for 0% duty-cycle
+          MCPWM0.channel[0].generator[0].utez = 2;      // Set the PWM0A ouput to go high at the start of the timer period
+          MCPWM0.channel[0].generator[0].utea = 1;      // Clear on compare match
+          MCPWM0.timer[0].mode.mode = 1;                // Set timer 0 to increment
+          MCPWM0.timer[0].mode.start = 2;               // Set timer 0 to free-run
+        }
+        break;
+
+        default: {
+          ledcSetup( 0, ( uint8_t )steerConfig.pwmFrequency, 8 );
+          ledcAttachPin( ( uint8_t )steerConfig.gpioPwm, 0 );
+          ledcWrite( 0, 0 );
+        }
+        break;
+
+      }
     }
 
     if( steerConfig.gpioDir != SteerConfig::Gpio::None ) {
       pinMode( ( uint8_t )steerConfig.gpioDir, OUTPUT );
-      ledcSetup( 1, 1000/*steerConfig.pwmFrequency*/, 8 );
-      ledcAttachPin( ( uint8_t )steerConfig.gpioDir, 1 );
-      ledcWrite( 1, 0 );
+      switch( steerConfig.outputType ) {
+        case SteerConfig::OutputType::HydraulicBangBang: {
+          //https://forum.arduino.cc/t/esp32-what-is-the-minimum-pwm-frequency/671077/3
+          mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, ( uint8_t )steerConfig.gpioDir);     // Initialise channel MCPWM0A on GPIO pin
+          MCPWM0.clk_cfg.prescale = 199;                // Set the 160MHz clock prescaler to 199 (160MHz/(199+1)=800kHz)
+          MCPWM0.timer[1].period.prescale = 199;        // Set timer 0 prescaler to 199 (800kHz/(199+1))=4kHz)
+          MCPWM0.timer[1].period.period = HZperiod;     // Set the PWM period to Hz (4kHz/(3999+1)=1Hz), see above
+          MCPWM0.channel[1].cmpr_value[0].val = 0;      // Set the counter compare for 0% duty-cycle
+          MCPWM0.channel[1].generator[0].utez = 2;      // Set the PWM0A ouput to go high at the start of the timer period
+          MCPWM0.channel[1].generator[0].utea = 1;      // Clear on compare match
+          MCPWM0.timer[1].mode.mode = 1;                // Set timer 0 to increment
+          MCPWM0.timer[1].mode.start = 2;               // Set timer 0 to free-run
+        }
+        break;
+
+        default: {
+          ledcSetup( 1, ( uint8_t )steerConfig.pwmFrequency, 8 );
+          ledcAttachPin( ( uint8_t )steerConfig.gpioDir, 1 );
+          ledcWrite( 1, 0 );
+        }
+        break;
+
+      }
     }
 
     if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
