@@ -716,6 +716,15 @@ void setup( void ) {
       ESPUI.addControl( ControlType::Step, "Step", "0.01", ControlColor::Peterriver, num );
     }
     {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "PID Ki Max", String( steerConfig.steeringPidKiMax, 2 ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.steeringPidKiMax = control->value.toDouble();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "255", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "1.00", ControlColor::Peterriver, num );
+    }
+    {
       uint16_t num = ESPUI.addControl( ControlType::Number, "PID Kd", String( steerConfig.steeringPidKd, 4 ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.steeringPidKd = control->value.toDouble();

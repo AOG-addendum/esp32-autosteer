@@ -124,6 +124,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
 
   j["PID"]["P"] = config.steeringPidKp;
   j["PID"]["I"] = config.steeringPidKi;
+  j["PID"]["IMax"] = config.steeringPidKiMax;
   j["PID"]["D"] = config.steeringPidKd;
   j["PID"]["autoBangOnFactor"] = config.steeringPidAutoBangOnFactor;
   j["PID"]["bangOn"] = config.steeringPidBangOn;
@@ -247,6 +248,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
 
       config.steeringPidKp = j.value( "/PID/P"_json_pointer, steerConfigDefaults.steeringPidKp );
       config.steeringPidKi = j.value( "/PID/I"_json_pointer, steerConfigDefaults.steeringPidKi );
+      config.steeringPidKiMax = j.value( "/PID/IMax"_json_pointer, steerConfigDefaults.steeringPidKiMax );
       config.steeringPidKd = j.value( "/PID/D"_json_pointer, steerConfigDefaults.steeringPidKd );
       config.steeringPidAutoBangOnFactor = j.value( "/PID/autoBangOnFactor"_json_pointer, steerConfigDefaults.steeringPidAutoBangOnFactor );
       config.steeringPidBangOn = j.value( "/PID/bangOn"_json_pointer, steerConfigDefaults.steeringPidBangOn );

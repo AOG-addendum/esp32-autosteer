@@ -132,6 +132,13 @@ void autosteerWorker100Hz( void* z ) {
 
       pid.setGains( steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
 
+      if( pid.getIntegral() > 0 && pid.getIntegral() > steerConfig.steeringPidKiMax ){
+        pid.setIntegral(steerConfig.steeringPidKiMax);
+      }
+      if( -pid.getIntegral() > 0 && -pid.getIntegral() > steerConfig.steeringPidKiMax ){
+        pid.setIntegral(-steerConfig.steeringPidKiMax);
+      }
+
       if( steerConfig.steeringPidAutoBangOnFactor ) {
         pid.setBangBang( ( ( double )0xFF / steerSettings.Kp ) * steerConfig.steeringPidAutoBangOnFactor, steerConfig.steeringPidBangOff );
       } else {

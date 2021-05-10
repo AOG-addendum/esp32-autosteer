@@ -142,6 +142,7 @@ struct SteerConfig {
   bool allowPidOverwrite = false;
   double steeringPidKp = 20;
   double steeringPidKi = 0.5;
+  double steeringPidKiMax = 128;
   double steeringPidKd = 1;
   double steeringPidAutoBangOnFactor = 2;
   double steeringPidBangOn = 40;
