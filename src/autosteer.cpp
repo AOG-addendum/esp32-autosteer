@@ -279,16 +279,19 @@ void autosteerWorker100Hz( void* z ) {
       loopCounter = 0;
 
       if( initialisation.outputType != SteerConfig::OutputType::None ) {
-        uint8_t data[10] = {0};
+        uint8_t data[14] = {0};
 
         if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-          data[0] = 0x7F;
-          data[1] = 0xFD;
+          data[0] = 0x80; // AOG specific
+          data[1] = 0x81; // AOG specific
+          data[2] = 0x7F; // autosteer module to AOG
+          data[3] = 0xFD; // autosteer module to AOG
+          data[4] = 8;    // length of data
 
           {
-            int16_t steerAngle = steerSetpoints.actualSteerAngle * 100;
-            data[2] = ( uint16_t )steerAngle >> 8;
-            data[3] = ( uint16_t )steerAngle;
+            int16_t steerAngle = steerSetpoints.actualSteerAngle * 100 ;
+            data[5] = ( uint16_t )steerAngle;
+            data[6] = ( uint16_t )steerAngle >> 8;
           }
 
           {
@@ -300,8 +303,8 @@ void autosteerWorker100Hz( void* z ) {
               heading = 9999;
             }
 
-            data[4] = heading >> 8;
-            data[5] = heading;
+            data[7] = heading >> 8;
+            data[8] = heading;
           }
 
           {
@@ -317,8 +320,8 @@ void autosteerWorker100Hz( void* z ) {
               roll = 9999;
             }
 
-            data[6] = ( uint16_t )roll >> 8;
-            data[7] = ( uint16_t )roll;
+            data[9] = ( uint16_t )roll >> 8;
+            data[10] = ( uint16_t )roll;
           }
         }
 
@@ -389,7 +392,7 @@ void autosteerWorker100Hz( void* z ) {
             }
 
             if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-              data[8] |= workswitchState ? 1 : 0;
+              //data[10] |= workswitchState ? 1 : 0;
             }
             if( steerConfig.gpioWorkLED != SteerConfig::Gpio::None ) {
               digitalWrite( ( uint8_t )steerConfig.gpioWorkLED, workswitchState);
@@ -415,9 +418,17 @@ void autosteerWorker100Hz( void* z ) {
             }
 
             if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-              data[8] |= steerState ? 0 : 2;
+              data[11] |= steerState ? 0 : 2;
             }
         }
+        //data[12] = 0; // PWM ?
+		//add the checksum
+		int CRCtoAOG = 0;
+		for (byte i = 2; i < sizeof(data) - 1; i++)
+		{
+			CRCtoAOG = (CRCtoAOG + data[i]);
+		}
+		data[sizeof(data) - 1] = CRCtoAOG;
 
         if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
           udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
@@ -426,9 +437,12 @@ void autosteerWorker100Hz( void* z ) {
       } else {
         if( ( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) &&
             ( initialisation.inclinoType !=  SteerConfig::InclinoType::None || initialisation.imuType != SteerConfig::ImuType::None ) ) {
-          uint8_t data[10] = {0};
-          data[0] = 0x7F;
-          data[1] = 0xEE;
+            uint8_t data[14] = {0};
+            data[0] = 0x80; // AOG specific
+            data[1] = 0x81; // AOG specific
+            data[2] = 0x7F; // autosteer module to AOG
+            data[3] = 0xFD; // autosteer module to AOG
+            data[4] = 8;    // length of data
 
           {
             uint16_t heading;
@@ -439,8 +453,8 @@ void autosteerWorker100Hz( void* z ) {
               heading = 9999;
             }
 
-            data[4] = heading >> 8;
-            data[5] = heading;
+            data[7] = heading >> 8;
+            data[8] = heading;
           }
 
           {
@@ -452,9 +466,16 @@ void autosteerWorker100Hz( void* z ) {
               roll = 9999;
             }
 
-            data[6] = roll >> 8;
-            data[7] = roll;
+            data[9] = roll >> 8;
+            data[10] = roll;
           }
+          //add the checksum
+          int CRCtoAOG = 0;
+          for (byte i = 2; i < sizeof(data) - 1; i++)
+          {
+            CRCtoAOG = (CRCtoAOG + data[i]);
+          }
+          data[sizeof(data) - 1] = CRCtoAOG;
 
           udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
         }
@@ -650,15 +671,16 @@ void initAutosteer() {
     if( udpLocalPort.listen( initialisation.portListenTo ) ) {
       udpLocalPort.onPacket( []( AsyncUDPPacket packet ) {
         uint8_t* data = packet.data();
-        uint16_t pgn = data[1] + ( data[0] << 8 );
-
+        if( data[1] + ( data[0] << 8 ) != 0x8081 ){
+            return;
+        }
+        uint16_t pgn = data[3] + ( data[2] << 8 );
         // see pgn.xlsx in https://github.com/farmerbriantee/AgOpenGPS/tree/master/AgOpenGPS_Dev
         switch( pgn ) {
           case 0x7FFE: {
-            steerSetpoints.relais = data[2];
-            steerSetpoints.speed = ( float )data[3] / 4;
-            steerSetpoints.distanceFromLine = data[5] + ( data[4] << 8 );
-            steerSetpoints.requestedSteerAngle = ( int16_t )( data[7] + ( data[6] << 8 ) ) / 100;
+            steerSetpoints.speed = ( int16_t )( ( data[6] << 8 ) | data[5] );
+            steerSetpoints.enabled = data[7];
+            steerSetpoints.requestedSteerAngle = ( int16_t )( ( data[9] << 8 ) | data[8] ) / 100;
 
             steerSetpoints.lastPacketReceived = millis();
           }
