@@ -236,7 +236,6 @@ void sensorWorker100HzPoller( void* z ) {
       if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
         fxas2100.getEvent( &gyro_event );
         fxos8700.getEvent( &accel_event, &mag_event );
-        xSemaphoreGive( i2cMutex );
       }
 
       if( steerImuInclinometerData.sendCalibrationDataFromImu ) {
@@ -422,7 +421,6 @@ void sensorWorker100HzPoller( void* z ) {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_SingleEnded(
                                     ( uint8_t )steerConfig.wheelAngleInput - ( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single );
-            xSemaphoreGive( i2cMutex );
           }
         }
         break;
@@ -430,7 +428,6 @@ void sensorWorker100HzPoller( void* z ) {
         case( uint8_t )SteerConfig::AnalogIn::ADS1115A0A1Differential: {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_Differential_0_1();
-            xSemaphoreGive( i2cMutex );
           }
         }
         break;
@@ -438,7 +435,6 @@ void sensorWorker100HzPoller( void* z ) {
         case( uint8_t )SteerConfig::AnalogIn::ADS1115A2A3Differential: {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_Differential_2_3();
-            xSemaphoreGive( i2cMutex );
           }
         }
         break;
@@ -564,7 +560,6 @@ void sensorWorker10HzPoller( void* z ) {
 
       if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
         numSamples = mma.getEventsFromFifo( events );
-        xSemaphoreGive( i2cMutex );
       }
 
       for( uint8_t i = 0; i < numSamples; i++ ) {
