@@ -1175,7 +1175,7 @@ void setup( void ) {
 
   }
 
-  i2cMutex = xSemaphoreCreateBinary();
+  i2cMutex = xSemaphoreCreateMutex();
 
   /*
   * .begin loads and serves all files from PROGMEM directly.
