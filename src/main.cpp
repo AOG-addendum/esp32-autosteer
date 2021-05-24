@@ -569,12 +569,12 @@ void setup( void ) {
     } );
 
     {
-      uint16_t num = ESPUI.addControl( ControlType::Slider, "Wheel Angle Offset", String( steerConfig.wheelAngleOffset ), ControlColor::Peterriver, tab,
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Offset", String( steerConfig.wheelAngleOffset ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.wheelAngleOffset = control->value.toFloat();
       } );
-      ESPUI.addControl( ControlType::Min, "Roll Min", "-40", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Roll Max", "40", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Min, "Roll Min", "-80", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Roll Max", "80", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Step, "Roll Step", "0.1", ControlColor::Peterriver, num );
     }
 

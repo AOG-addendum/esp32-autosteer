@@ -148,6 +148,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["wheelangle"]["invert"] = config.invertWheelAngleSensor;
   j["wheelangle"]["countsPerDegree"] = config.wheelAngleCountsPerDegree;
   j["wheelangle"]["positionZero"] = config.wheelAnglePositionZero;
+  j["wheelangle"]["offset"] = config.wheelAngleOffset;
 
   j["wheelangle"]["tierod"]["offset"] = int( config.wheelAngleInput );
   j["wheelangle"]["tierod"]["FirstArmLenght"] = config.wheelAngleFirstArmLenght;
@@ -272,6 +273,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.invertWheelAngleSensor = j.value( "/wheelangle/invert"_json_pointer, steerConfigDefaults.invertWheelAngleSensor );
       config.wheelAngleCountsPerDegree = j.value( "/wheelangle/countsPerDegree"_json_pointer, steerConfigDefaults.wheelAngleCountsPerDegree );
       config.wheelAnglePositionZero = j.value( "/wheelangle/positionZero"_json_pointer, steerConfigDefaults.wheelAnglePositionZero );
+      config.wheelAngleOffset = j.value( "/wheelangle/offset"_json_pointer, steerConfigDefaults.wheelAngleOffset );
 
       config.wheelAngleFirstArmLenght = j.value( "/wheelangle/tierod/FirstArmLenght"_json_pointer, steerConfigDefaults.wheelAngleFirstArmLenght );
       config.wheelAngleSecondArmLenght = j.value( "/wheelangle/tierod/SecondArmLenght"_json_pointer, steerConfigDefaults.wheelAngleSecondArmLenght );
