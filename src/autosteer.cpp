@@ -103,13 +103,8 @@ void autosteerWorker100Hz( void* z ) {
 
     // check for timeout and data from AgOpenGPS
     if( steerSetpoints.lastPacketReceived < timeoutPoint ||
-        ( steerConfig.mode == SteerConfig::Mode::AgOpenGps && steerSetpoints.distanceFromLine == 32020 ) ||
-        ( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance && steerSetpoints.enabled == false )/* ||
-         steerSetpoints.speed < 1*/
+        steerSetpoints.enabled == false
       ) {
-      if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-        steerSetpoints.enabled = false;
-      }
 
       switch( initialisation.outputType ) {
         case SteerConfig::OutputType::HydraulicDanfoss: {
@@ -138,9 +133,6 @@ void autosteerWorker100Hz( void* z ) {
         digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, LOW );
       }
     } else {
-      if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-        steerSetpoints.enabled = true;
-      }
 
       pid.setGains( steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
 
