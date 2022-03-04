@@ -4,6 +4,7 @@
 #if defined(ESP32)
 #include "esp_wifi.h"
 #include <WiFi.h>
+#include <ESP32Ping.h>
 #else
 #include <ESP8266WiFi.h>
 #endif
@@ -14,8 +15,16 @@ bool WiFiWasConnected = false;
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
     IPAddress myIP = WiFi.localIP();
-    if( myIP[3] != 89 ){
-        myIP[3] = 89;
+    if( myIP[3] != 77 ){
+        myIP[3] = 77;
+        if( Ping.ping(myIP, 3) ){
+          Serial.println("Found a steer module on this network, disconnecting...");
+          WiFi.disconnect(true);
+          delay(100);
+          Serial.println("Falling back to access point only");
+          WiFi.mode( WIFI_MODE_AP );
+          return;
+        }
         IPAddress gwIP = WiFi.gatewayIP();
         if (!WiFi.config(myIP, gwIP, IPAddress( 255, 255, 255, 0 ), gwIP)) {
           Serial.println("STA Failed to configure");
@@ -41,8 +50,8 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
       }
       delay(2000);
       WiFi.begin( steerConfig.ssid, steerConfig.password );
+      Serial.println("reconnecting");
     }
-    Serial.println("reconnecting");
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
@@ -109,6 +118,7 @@ void initWiFi( void ){
         }
         delay( 50 );
         WiFi.softAPConfig( softApIP, softApIP, IPAddress( 255, 255, 255, 0 ) );
+        delay( 50 );
         WiFi.begin( steerConfig.ssid, steerConfig.password );
     }
 }
