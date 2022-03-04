@@ -182,6 +182,7 @@ struct SteerConfig {
   bool invertWheelAngleSensor = false;
   float wheelAngleCountsPerDegree = 118;
   uint16_t wheelAnglePositionZero = 5450;
+  uint16_t ackermann = 100;
 
   float wheelAngleOffset = 0;
 

@@ -500,6 +500,10 @@ void sensorWorker100HzPoller( void* z ) {
 
         wheelAngleTmp -= steerConfig.wheelAngleOffset;
 
+        if (wheelAngleTmp > 0) {
+          wheelAngleTmp = ( wheelAngleTmp * steerConfig.ackermann) / 100;
+        }
+
         wheelAngleTmp = wheelAngleSensorFilter.step( wheelAngleTmp );
         steerSetpoints.actualSteerAngle = wheelAngleTmp;
 

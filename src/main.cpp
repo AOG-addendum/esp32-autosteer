@@ -627,6 +627,16 @@ void setup( void ) {
       ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
     }
+
+    {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Ackermann (%)", String( steerConfig.ackermann ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.ackermann = control->value.toFloat();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "200", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+    }
   }
 
   // Steering Tab
