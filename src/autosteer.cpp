@@ -54,6 +54,8 @@ AutoPID pid(
 JsonQueueSelector jsonQueueSelector;
 
 constexpr time_t Timeout = 1000;
+volatile bool steeringWheelState;
+volatile bool steeringWheelPrevState;
 volatile bool steerState = false;
 volatile bool steerChangeProcessed = true;
 volatile time_t steerChangeMillis = millis();
@@ -585,10 +587,15 @@ void IRAM_ATTR steerswitchMaintainedIsr() {
 
 void IRAM_ATTR steeringWheelIsr() {
     // interrupt service routine for the steering wheel
-    if( steeringPulseCount == 0 ){
+    // due to a problem in ESP32, we have to actually check for a change in the input state
+    steeringWheelState = digitalRead( ( uint8_t ) steerConfig.steeringWheelEncoder );
+    if( steeringWheelPrevState != steeringWheelState ){
+      steeringWheelPrevState = steeringWheelState;
+      if( steeringPulseCount == 0 ){
         steeringWheelActivityMillis = millis();
+      }
+      steeringPulseCount += 1;
     }
-    steeringPulseCount += 1;
 }
 
 void initAutosteer() {
