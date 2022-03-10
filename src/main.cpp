@@ -1202,6 +1202,5 @@ void setup( void ) {
 
 void loop( void ) {
   dnsServer.processNextRequest();
-  AsyncElegantOTA.loop();
   vTaskDelay( 100 );
 }
