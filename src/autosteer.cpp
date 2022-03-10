@@ -63,6 +63,8 @@ volatile time_t steeringWheelActivityMillis = millis();
 volatile uint16_t steeringPulseCount = 0;
 volatile uint16_t HZperiod = 0;
 
+bool disabledBySafety = false;
+bool safetyAlarmLatch = false;
 
 void autosteerWorker100Hz( void* z ) {
   constexpr TickType_t xFrequency = 10;
@@ -103,9 +105,28 @@ void autosteerWorker100Hz( void* z ) {
       }
     }
 
-    // check for timeout and data from AgOpenGPS
+    if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
+      disabledBySafety = true;
+      steerState = false;
+      safetyAlarmLatch = true;
+    } else if ( safetyAlarmLatch == false ) {
+      disabledBySafety = false; // only proceed from safety disable, AFTER autosteer switch is turned off
+    }
+
+    if( steerSetpoints.enabled == true && disabledBySafety == true ) {
+      if( steerConfig.gpioAlarm != SteerConfig::Gpio::None ) {
+        digitalWrite( ( uint8_t )steerConfig.gpioAlarm, HIGH );
+      }
+    } else if ( steerSetpoints.enabled == false && disabledBySafety == false ) {
+      if( steerConfig.gpioAlarm != SteerConfig::Gpio::None ) {
+        digitalWrite( ( uint8_t )steerConfig.gpioAlarm, LOW );
+      } // turn off alarm after safety AND autosteer are off
+    }
+
+    // check for timeout, data from AgOpenGPS, and safety disable
     if( steerSetpoints.lastPacketReceived < timeoutPoint ||
-        steerSetpoints.enabled == false
+        steerSetpoints.enabled == false ||
+        disabledBySafety == true
       ) {
 
       switch( initialisation.outputType ) {
@@ -397,6 +418,9 @@ void autosteerWorker100Hz( void* z ) {
               if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow) {
                 steerChangeProcessed = true;
                 steerState = ! steerState;
+                if( steerState == false ) {
+                  safetyAlarmLatch = false;
+                }
               }
             }
 
@@ -580,6 +604,7 @@ void IRAM_ATTR steerswitchMaintainedIsr() {
     // no debounce needed for maintained switches
     if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow){
         steerState = false;
+        safetyAlarmLatch = false;
     } else {
         steerState = true;
     }
@@ -677,7 +702,7 @@ void initAutosteer() {
         // see pgn.xlsx in https://github.com/farmerbriantee/AgOpenGPS/tree/master/AgOpenGPS_Dev
         switch( pgn ) {
           case 0x7FFE: {
-            steerSetpoints.speed = ( int16_t )( ( data[6] << 8 ) | data[5] );
+            steerSetpoints.speed = ( float )( (data[5] | data[6] << 8))*0.1 ;
             steerSetpoints.enabled = data[7];
             steerSetpoints.requestedSteerAngle = ( int16_t )( ( data[9] << 8 ) | data[8] ) / 100;
 
@@ -815,6 +840,11 @@ void initAutosteer() {
     if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
       pinMode( ( uint8_t )steerConfig.gpioSteerLED, OUTPUT );
       digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, LOW );
+    }
+
+    if( steerConfig.gpioAlarm != SteerConfig::Gpio::None ) {
+      pinMode( ( uint8_t )steerConfig.gpioAlarm, OUTPUT );
+      digitalWrite( ( uint8_t )steerConfig.gpioAlarm, LOW );
     }
 
     switch( steerConfig.outputType ) {

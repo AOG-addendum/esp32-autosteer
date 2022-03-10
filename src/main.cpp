@@ -885,6 +885,30 @@ void setup( void ) {
     }
   }
 
+  // Safety Tab
+  {
+    uint16_t tab = ESPUI.addControl( ControlType::Tab, "Safety", "Safety" );
+
+    {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Max autosteer speed", String( steerConfig.maxAutosteerSpeed ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.maxAutosteerSpeed = control->value.toFloat();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "30", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "0.5", ControlColor::Peterriver, num );
+    }
+    {
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Output Pin for Alarm*", String( ( int )steerConfig.gpioAlarm ), ControlColor::Wetasphalt, tab,
+      []( Control * control, int id ) {
+        steerConfig.gpioAlarm = ( SteerConfig::Gpio )control->value.toInt();
+        setResetButtonToRed();
+      } );
+      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+      addGpioOutput( sel );
+    }
+  }
+
   // NTRIP/GPS Tab
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "NTRIP/GPS", "NTRIP/GPS" );

@@ -181,6 +181,9 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["canBus"]["rpmThreshold"] = config.canBusRpmThreshold;
   j["canBus"]["rpmThresholdHysteresis"] = config.canBusRpmThresholdHysteresis;
 
+  j["safety"]["maxAutosteerSpeed"] = config.maxAutosteerSpeed;
+  j["safety"]["gpioAlarm"] = config.gpioAlarm;
+
   j["gps"]["correctionSource"] = int( config.rtkCorrectionType );
   j["gps"]["ntrip"]["server"] = config.rtkCorrectionServer;
   j["gps"]["ntrip"]["port"] = config.rtkCorrectionPort;
@@ -306,6 +309,9 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.canBusHitchThresholdHysteresis = j.value( "/canBus/hitchThresholdHysteresis"_json_pointer, steerConfigDefaults.canBusHitchThresholdHysteresis );
       config.canBusRpmThreshold = j.value( "/canBus/rpmThreshold"_json_pointer, steerConfigDefaults.canBusRpmThreshold );
       config.canBusRpmThresholdHysteresis = j.value( "/canBus/rpmThresholdHysteresis"_json_pointer, steerConfigDefaults.canBusRpmThresholdHysteresis );
+
+      config.maxAutosteerSpeed = j.value( "/safety/maxAutosteerSpeed"_json_pointer, steerConfigDefaults.maxAutosteerSpeed );
+      config.gpioAlarm = j.value( "/safety/gpioAlarm"_json_pointer, steerConfigDefaults.gpioAlarm );
 
       config.rtkCorrectionType = j.value( "/gps/correctionSource"_json_pointer, steerConfigDefaults.rtkCorrectionType );
       {

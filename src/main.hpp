@@ -228,6 +228,9 @@ struct SteerConfig {
   uint16_t canBusRpmThreshold = 400;
   uint16_t canBusRpmThresholdHysteresis = 100;
 
+  float maxAutosteerSpeed = 10;
+  SteerConfig::Gpio gpioAlarm = SteerConfig::Gpio::None;
+
   enum class RtkCorrectionType : uint8_t {
     None = 0,
     Ntrip = 1,
