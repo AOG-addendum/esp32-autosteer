@@ -590,9 +590,9 @@ void autosteerWorker100Hz( void* z ) {
     Control* labelSafetyHandle = ESPUI.getControl( labelStatusSafety );
     String str;
     str.reserve( 30 );
-    str = "Disabled by safety: ";
+    str = "Autosteer disabled by safety: ";
     str += ( bool )disabledBySafety;
-    str += ", AOG speed: ";
+    str += ", speed: ";
     str += ( float )steerSetpoints.speed;
     if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
       str += " MPH";
