@@ -236,39 +236,6 @@ struct SteerConfig {
   SteerConfig::Gpio gpioAlarm = SteerConfig::Gpio::None;
   SteerConfig::SpeedUnits speedUnits = SteerConfig::SpeedUnits::MilesPerHour;
 
-  enum class RtkCorrectionType : uint8_t {
-    None = 0,
-    Ntrip = 1,
-    udp,
-    tcp
-  } rtkCorrectionType = RtkCorrectionType::None;
-
-  char rtkCorrectionServer[48] = "example.com";
-  uint16_t rtkCorrectionPort = 2101;
-  char rtkCorrectionUsername[24] = "gps";
-  char rtkCorrectionPassword[24] = "gps";
-  char rtkCorrectionMountpoint[24] = "STALL";
-
-  char rtkCorrectionNmeaToSend[120] = "";
-
-  uint32_t rtkCorrectionBaudrate = 115200;
-
-  uint8_t ntripPositionSendIntervall = 30;
-
-  enum class SendNmeaDataTo : uint8_t {
-    None = 0,
-    UDP = 1,
-    TCP,
-    Serial,
-    Serial1,
-    Serial2,
-    Bluetooth
-  } sendNmeaDataTo = SendNmeaDataTo::None;
-
-  uint16_t sendNmeaDataTcpPort = 0;
-  uint16_t sendNmeaDataUdpPort = 0;
-  uint16_t sendNmeaDataUdpPortFrom = 0;
-
   uint16_t aogPortSendFrom = 5577;
   uint16_t aogPortListenTo = 8888;
   uint16_t aogPortSendTo = 9999;
@@ -342,9 +309,6 @@ struct Initialisation {
   uint16_t portListenTo = 8888;
   uint16_t portSendTo = 9999;
 
-  uint16_t sendNmeaDataUdpPort = 0;
-
-  String rtkCorrectionURL = "";
 };
 extern Initialisation initialisation;
 

@@ -915,116 +915,6 @@ void setup( void ) {
     }
   }
 
-  // NTRIP/GPS Tab
-  {
-    uint16_t tab = ESPUI.addControl( ControlType::Tab, "NTRIP/GPS", "NTRIP/GPS" );
-
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "RTK Correction*", String( ( int )steerConfig.rtkCorrectionType ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.rtkCorrectionType = ( SteerConfig::RtkCorrectionType )control->value.toInt();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Option, "No Correction", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "NTRIP", "1", ControlColor::Alizarin, sel );
-      // ESPUI.addControl( ControlType::Option, "UDP", "2", ControlColor::Alizarin, sel );
-      // ESPUI.addControl( ControlType::Option, "TCP", "3", ControlColor::Alizarin, sel );
-    }
-
-    ESPUI.addControl( ControlType::Text, "Server*", String( steerConfig.rtkCorrectionServer ), ControlColor::Wetasphalt, tab,
-    []( Control * control, int id ) {
-      control->value.toCharArray( steerConfig.rtkCorrectionServer, sizeof( steerConfig.rtkCorrectionServer ) );
-      setResetButtonToRed();
-    } );
-    ESPUI.addControl( ControlType::Text, "Username*", String( steerConfig.rtkCorrectionUsername ), ControlColor::Wetasphalt, tab,
-    []( Control * control, int id ) {
-      control->value.toCharArray( steerConfig.rtkCorrectionUsername, sizeof( steerConfig.rtkCorrectionUsername ) );
-      setResetButtonToRed();
-    } );
-    ESPUI.addControl( ControlType::Text, "Password*", String( steerConfig.rtkCorrectionPassword ), ControlColor::Wetasphalt, tab,
-    []( Control * control, int id ) {
-      control->value.toCharArray( steerConfig.rtkCorrectionPassword, sizeof( steerConfig.rtkCorrectionPassword ) );
-      setResetButtonToRed();
-    } );
-    ESPUI.addControl( ControlType::Text, "Mountpoint*", String( steerConfig.rtkCorrectionMountpoint ), ControlColor::Wetasphalt, tab,
-    []( Control * control, int id ) {
-      control->value.toCharArray( steerConfig.rtkCorrectionMountpoint, sizeof( steerConfig.rtkCorrectionMountpoint ) );
-      setResetButtonToRed();
-    } );
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Port*", String( steerConfig.rtkCorrectionPort ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.rtkCorrectionPort = control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "65535", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-    }
-
-    {
-      uint16_t baudrate = ESPUI.addControl( ControlType::Select, "Baudrate GPS", String( steerConfig.rtkCorrectionBaudrate ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        uint32_t baudrate = control->value.toInt();
-        steerConfig.rtkCorrectionBaudrate = baudrate;
-        Serial2.updateBaudRate( baudrate );
-      } );
-      ESPUI.addControl( ControlType::Option, "4800", "4800", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "9600", "9600", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "19200", "19200", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "38400", "38400", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "57600", "57600", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "115200", "115200", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "230400", "230400", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "460800", "460800", ControlColor::Alizarin, baudrate );
-      ESPUI.addControl( ControlType::Option, "921600", "921600", ControlColor::Alizarin, baudrate );
-    }
-
-    ESPUI.addControl( ControlType::Number, "Intervall to send Position", String( steerConfig.ntripPositionSendIntervall ), ControlColor::Peterriver, tab,
-    []( Control * control, int id ) {
-      steerConfig.ntripPositionSendIntervall = control->value.toInt();
-    } );
-
-    textNmeaToSend = ESPUI.addControl( ControlType::Text, "NMEA-String to send (leave empty to send live position)", String( steerConfig.rtkCorrectionNmeaToSend ), ControlColor::Peterriver, tab,
-    []( Control * control, int id ) {
-      control->value.toCharArray( steerConfig.rtkCorrectionNmeaToSend, sizeof( steerConfig.rtkCorrectionNmeaToSend ) );
-    } );
-
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Send NMEA-data to", String( ( int )steerConfig.sendNmeaDataTo ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.sendNmeaDataTo = ( SteerConfig::SendNmeaDataTo )control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Option, "Nowhere", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "UDP", "1", ControlColor::Alizarin, sel );
-      // ESPUI.addControl( ControlType::Option, "TCP", "2", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Serial", "3", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Serial1", "4", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Serial2", "5", ControlColor::Alizarin, sel );
-      // ESPUI.addControl( ControlType::Option, "Bluetooth", "6", ControlColor::Alizarin, sel );
-    }
-
-    ESPUI.addControl( ControlType::Number, "Port to send Data to*", String( steerConfig.sendNmeaDataUdpPort ), ControlColor::Wetasphalt, tab,
-    []( Control * control, int id ) {
-      steerConfig.sendNmeaDataUdpPort = control->value.toInt();
-      setResetButtonToRed();
-    } );
-    ESPUI.addControl( ControlType::Number, "Port to send Data from*", String( steerConfig.sendNmeaDataUdpPortFrom ), ControlColor::Wetasphalt, tab,
-    []( Control * control, int id ) {
-      steerConfig.sendNmeaDataUdpPortFrom = control->value.toInt();
-      setResetButtonToRed();
-    } );
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "TCP-Socket for a direct connection to the GPS-Receiver (set to 0 to deactivate, can be used for configuration with u-center or with 3rd-party software)*", String( steerConfig.sendNmeaDataTcpPort ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.sendNmeaDataTcpPort = control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "65535", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-    }
-  }
-
   if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
 
     // Channels Tab
@@ -1304,7 +1194,6 @@ void setup( void ) {
   initIdleStats();
 
   initSensors();
-  initRtkCorrection();
 
   initCan();
 

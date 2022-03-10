@@ -185,20 +185,6 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["safety"]["gpioAlarm"] = config.gpioAlarm;
   j["safety"]["speedUnits"] = config.speedUnits;
 
-  j["gps"]["correctionSource"] = int( config.rtkCorrectionType );
-  j["gps"]["ntrip"]["server"] = config.rtkCorrectionServer;
-  j["gps"]["ntrip"]["port"] = config.rtkCorrectionPort;
-  j["gps"]["ntrip"]["username"] = config.rtkCorrectionUsername;
-  j["gps"]["ntrip"]["password"] = config.rtkCorrectionPassword;
-  j["gps"]["ntrip"]["mountpoint"] = config.rtkCorrectionMountpoint;
-  j["gps"]["ntrip"]["NMEAToSend"] = config.rtkCorrectionNmeaToSend;
-  j["gps"]["ntrip"]["intervalSendPosition"] = config.ntripPositionSendIntervall;
-  j["gps"]["baudrate"] = config.rtkCorrectionBaudrate;
-  j["gps"]["outputTo"] = int( config.sendNmeaDataTo );
-  j["gps"]["tcpPort"] = config.sendNmeaDataTcpPort;
-  j["gps"]["sendNmeaDataUdpPort"] = config.sendNmeaDataUdpPort;
-  j["gps"]["sendNmeaDataUdpPortFrom"] = config.sendNmeaDataUdpPortFrom;
-
   j["connection"]["mode"] = int( config.mode );
   j["connection"]["baudrate"] = config.baudrate;
   j["connection"]["enableOTA"] = config.enableOTA;
@@ -314,36 +300,6 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.maxAutosteerSpeed = j.value( "/safety/maxAutosteerSpeed"_json_pointer, steerConfigDefaults.maxAutosteerSpeed );
       config.gpioAlarm = j.value( "/safety/gpioAlarm"_json_pointer, steerConfigDefaults.gpioAlarm );
       config.speedUnits = j.value( "/safety/speedUnits"_json_pointer, steerConfigDefaults.speedUnits );
-
-      config.rtkCorrectionType = j.value( "/gps/correctionSource"_json_pointer, steerConfigDefaults.rtkCorrectionType );
-      {
-        std::string str = j.value( "/gps/ntrip/server"_json_pointer, steerConfigDefaults.rtkCorrectionServer );
-        memcpy( config.rtkCorrectionServer, str.c_str(), std::min( str.size(), sizeof( config.rtkCorrectionServer ) ) );
-      }
-      config.rtkCorrectionPort = j.value( "/gps/ntrip/port"_json_pointer, steerConfigDefaults.rtkCorrectionPort );
-      {
-        std::string str = j.value( "/gps/ntrip/username"_json_pointer, steerConfigDefaults.rtkCorrectionUsername );
-        memcpy( config.rtkCorrectionUsername, str.c_str(), std::min( str.size(), sizeof( config.rtkCorrectionUsername ) ) );
-      }
-      {
-        std::string str = j.value( "/gps/ntrip/password"_json_pointer, steerConfigDefaults.rtkCorrectionPassword );
-        memcpy( config.rtkCorrectionPassword, str.c_str(), std::min( str.size(), sizeof( config.rtkCorrectionPassword ) ) );
-      }
-      {
-        std::string str = j.value( "/gps/ntrip/mountpoint"_json_pointer, steerConfigDefaults.rtkCorrectionMountpoint );
-        memcpy( config.rtkCorrectionMountpoint, str.c_str(), std::min( str.size(), sizeof( config.rtkCorrectionMountpoint ) ) );
-      }
-      {
-        std::string str = j.value( "/gps/ntrip/NMEAToSend"_json_pointer, steerConfigDefaults.rtkCorrectionNmeaToSend );
-        memcpy( config.rtkCorrectionNmeaToSend, str.c_str(), std::min( str.size(), sizeof( config.rtkCorrectionNmeaToSend ) ) );
-      }
-
-      config.ntripPositionSendIntervall = j.value( "/gps/ntrip/intervalSendPosition"_json_pointer, steerConfigDefaults.ntripPositionSendIntervall );
-      config.rtkCorrectionBaudrate = j.value( "/gps/baudrate"_json_pointer, steerConfigDefaults.rtkCorrectionBaudrate );
-      config.sendNmeaDataTo = j.value( "/gps/outputTo"_json_pointer, steerConfigDefaults.sendNmeaDataTo );
-      config.sendNmeaDataTcpPort = j.value( "/gps/tcpPort"_json_pointer, steerConfigDefaults.sendNmeaDataTcpPort );
-      config.sendNmeaDataUdpPort = j.value( "/gps/sendNmeaDataUdpPort"_json_pointer, steerConfigDefaults.sendNmeaDataUdpPort );
-      config.sendNmeaDataUdpPortFrom = j.value( "/gps/sendNmeaDataUdpPortFrom"_json_pointer, steerConfigDefaults.sendNmeaDataUdpPortFrom );
 
       config.baudrate = j.value( "/connection/baudrate"_json_pointer, steerConfigDefaults.baudrate );
       config.enableOTA = j.value( "/connection/enableOTA"_json_pointer, steerConfigDefaults.enableOTA );
