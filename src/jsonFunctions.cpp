@@ -183,6 +183,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
 
   j["safety"]["maxAutosteerSpeed"] = config.maxAutosteerSpeed;
   j["safety"]["gpioAlarm"] = config.gpioAlarm;
+  j["safety"]["speedUnits"] = config.speedUnits;
 
   j["gps"]["correctionSource"] = int( config.rtkCorrectionType );
   j["gps"]["ntrip"]["server"] = config.rtkCorrectionServer;
@@ -312,6 +313,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
 
       config.maxAutosteerSpeed = j.value( "/safety/maxAutosteerSpeed"_json_pointer, steerConfigDefaults.maxAutosteerSpeed );
       config.gpioAlarm = j.value( "/safety/gpioAlarm"_json_pointer, steerConfigDefaults.gpioAlarm );
+      config.speedUnits = j.value( "/safety/speedUnits"_json_pointer, steerConfigDefaults.speedUnits );
 
       config.rtkCorrectionType = j.value( "/gps/correctionSource"_json_pointer, steerConfigDefaults.rtkCorrectionType );
       {

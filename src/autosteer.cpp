@@ -587,6 +587,21 @@ void autosteerWorker100Hz( void* z ) {
         }
       }
     }
+    Control* labelSafetyHandle = ESPUI.getControl( labelStatusSafety );
+    String str;
+    str.reserve( 30 );
+    str = "Disabled by safety: ";
+    str += ( bool )disabledBySafety;
+    str += ", AOG speed: ";
+    str += ( float )steerSetpoints.speed;
+    if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
+      str += " MPH";
+    } else {
+      str += " KPH";
+    }
+    labelSafetyHandle->value = str;
+    labelSafetyHandle->color = ControlColor::Emerald;
+    ESPUI.updateControlAsync( labelSafetyHandle );
 
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
@@ -703,6 +718,9 @@ void initAutosteer() {
         switch( pgn ) {
           case 0x7FFE: {
             steerSetpoints.speed = ( float )( (data[5] | data[6] << 8))*0.1 ;
+            if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
+              steerSetpoints.speed *= 0.6213711922;
+            }
             steerSetpoints.enabled = data[7];
             steerSetpoints.requestedSteerAngle = ( int16_t )( ( data[9] << 8 ) | data[8] ) / 100;
 

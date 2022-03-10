@@ -51,8 +51,7 @@ extern uint16_t labelStatusAdc;
 extern uint16_t labelStatusCan;
 extern uint16_t labelStatusImu;
 extern uint16_t labelStatusInclino;
-extern uint16_t labelStatusGps;
-extern uint16_t labelStatusNtrip;
+extern uint16_t labelStatusSafety;
 
 extern SemaphoreHandle_t i2cMutex;
 
@@ -104,6 +103,11 @@ struct SteerConfig {
     ADS1115A3Single         = 103,
     ADS1115A0A1Differential = 200,
     ADS1115A2A3Differential = 202
+  };
+
+  enum class SpeedUnits : int8_t {
+    MilesPerHour      = 0,
+    KilometersPerHour = 1
   };
 
   enum class Mode : uint8_t {
@@ -230,6 +234,7 @@ struct SteerConfig {
 
   float maxAutosteerSpeed = 10;
   SteerConfig::Gpio gpioAlarm = SteerConfig::Gpio::None;
+  SteerConfig::SpeedUnits speedUnits = SteerConfig::SpeedUnits::MilesPerHour;
 
   enum class RtkCorrectionType : uint8_t {
     None = 0,

@@ -63,8 +63,7 @@ uint16_t labelStatusAdc;
 uint16_t labelStatusCan;
 uint16_t labelStatusImu;
 uint16_t labelStatusInclino;
-uint16_t labelStatusGps;
-uint16_t labelStatusNtrip;
+uint16_t labelStatusSafety;
 
 ///////////////////////////////////////////////////////////////////////////
 // external Libraries
@@ -210,8 +209,7 @@ void setup( void ) {
       labelStatusInclino = ESPUI.addControl( ControlType::Label, "Inclinometer:", "No Inclinometer configured", ControlColor::Turquoise, tab );
     }
 
-    labelStatusGps = ESPUI.addControl( ControlType::Label, "GPS:", "Not configured", ControlColor::Turquoise, tab );
-    labelStatusNtrip = ESPUI.addControl( ControlType::Label, "NTRIP:", "Not configured", ControlColor::Turquoise, tab );
+    labelStatusSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Turquoise, tab );
   }
 
   // Info Tab, disabled to allow more widgets
@@ -906,6 +904,14 @@ void setup( void ) {
       } );
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
       addGpioOutput( sel );
+    }
+    {
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Speed units", String( ( int )steerConfig.speedUnits ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.speedUnits =  ( SteerConfig::SpeedUnits )control->value.toInt();
+      } );
+      ESPUI.addControl( ControlType::Option, "MPH", "0", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "KPH", "1", ControlColor::Alizarin, sel );
     }
   }
 
