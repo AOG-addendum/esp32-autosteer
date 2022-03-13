@@ -204,7 +204,7 @@ void setup( void ) {
     labelStatusAdc = ESPUI.addControl( ControlType::Label, "ADC:", "No ADC configured", ControlColor::Turquoise, tab );
     labelStatusCan = ESPUI.addControl( ControlType::Label, "CAN:", "No CAN BUS configured", ControlColor::Turquoise, tab );
     labelStatusImu = ESPUI.addControl( ControlType::Label, "IMU:", "No IMU configured", ControlColor::Turquoise, tab );
-    ESPUI.addControl( ControlType::Label, "AOG Version:", "5.x.x", ControlColor::Turquoise, tab );
+    ESPUI.addControl( ControlType::Label, "Compatible with AOG Version:", "5.x.x", ControlColor::Turquoise, tab );
 
     if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
       labelStatusInclino = ESPUI.addControl( ControlType::Label, "Inclinometer:", "No Inclinometer configured", ControlColor::Turquoise, tab );
