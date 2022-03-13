@@ -528,9 +528,9 @@ void autosteerWorker100Hz( void* z ) {
             str = "IBT2 Motor, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°, timeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
+            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled;
+            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -544,9 +544,9 @@ void autosteerWorker100Hz( void* z ) {
             str = "Cytron Motor, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°, timeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
+            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled;
+            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -560,9 +560,9 @@ void autosteerWorker100Hz( void* z ) {
             str = "IBT2 Hydraulic PWM 2 Coil, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°, timeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
+            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled;
+            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -576,9 +576,9 @@ void autosteerWorker100Hz( void* z ) {
             str = "IBT2 Hydraulic Danfoss, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°, timeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
+            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled;
+            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -592,9 +592,9 @@ void autosteerWorker100Hz( void* z ) {
             str = "IBT2 Hydraulic Bang Bang, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
             str += "°, timeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint );
+            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled;
+            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -611,7 +611,7 @@ void autosteerWorker100Hz( void* z ) {
     String str;
     str.reserve( 30 );
     str = "Autosteer disabled by safety: ";
-    str += ( bool )disabledBySafety;
+    str += ( bool )disabledBySafety ? "Yes" : "No" ;
     str += ", speed: ";
     str += ( float )steerSetpoints.speed;
     if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
