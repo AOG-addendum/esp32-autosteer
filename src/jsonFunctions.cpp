@@ -122,6 +122,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["output"]["gpioDir"] = int( config.gpioDir );
   j["output"]["gpioEn"] = int( config.gpioEn );
   j["output"]["invertOutput"] = config.invertOutput;
+  j["output"]["dither"] = config.dither;
 
   j["PID"]["P"] = config.steeringPidKp;
   j["PID"]["I"] = config.steeringPidKi;
@@ -239,6 +240,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.gpioDir = j.value( "/output/gpioDir"_json_pointer, steerConfigDefaults.gpioDir );
       config.gpioEn = j.value( "/output/gpioEn"_json_pointer, steerConfigDefaults.gpioEn );
       config.invertOutput = j.value( "/output/invertOutput"_json_pointer, steerConfigDefaults.invertOutput );
+      config.dither = j.value( "/output/dither"_json_pointer, steerConfigDefaults.dither );
 
       config.steeringPidKp = j.value( "/PID/P"_json_pointer, steerConfigDefaults.steeringPidKp );
       config.steeringPidKi = j.value( "/PID/I"_json_pointer, steerConfigDefaults.steeringPidKi );

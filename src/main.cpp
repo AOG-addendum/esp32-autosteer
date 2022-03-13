@@ -50,6 +50,7 @@ SemaphoreHandle_t i2cMutex;
 const byte DNS_PORT = 53;
 IPAddress apIP( 192, 168, 1, 1 );
 
+int8_t ditherAmount = 0;
 uint16_t labelLoad;
 uint16_t labelOrientation;
 uint16_t labelWheelAngle;
@@ -698,6 +699,17 @@ void setup( void ) {
       } );
       ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Max, "Max", "4000", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+    }
+
+    {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Dither (Hydraulic Pwm 2 Coil only)", String( steerConfig.dither ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.dither = control->value.toInt();
+        ditherAmount = 0;
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
     }
   }

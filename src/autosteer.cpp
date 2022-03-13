@@ -65,6 +65,24 @@ volatile uint16_t HZperiod = 0;
 
 bool disabledBySafety = false;
 bool safetyAlarmLatch = false;
+bool ditherDirection = false;
+
+void ditherWorkerVariHz( void* z ) {
+
+  for( ;; ) {
+    if( steerConfig.dither == 0 ){ // prevent division by zero error
+      vTaskDelay( pdMS_TO_TICKS( 500 ) );
+      ditherAmount = 0;
+    } else {
+      vTaskDelay( pdMS_TO_TICKS( 500 / steerConfig.dither ) );
+      ditherAmount += ditherDirection ? -1 : 1 ;
+      if( abs( ditherAmount ) >= steerConfig.dither ){
+        ditherDirection = !ditherDirection;
+      }
+    }
+  }
+  vTaskDelete( NULL );
+}
 
 void autosteerWorker100Hz( void* z ) {
   constexpr TickType_t xFrequency = 10;
@@ -194,6 +212,8 @@ void autosteerWorker100Hz( void* z ) {
         if( pidOutputTmp > 0 && pidOutputTmp < steerConfig.steeringPidMinPwm ) {
           pidOutputTmp = steerConfig.steeringPidMinPwm;
         }
+
+        pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil
 
         switch( initialisation.outputType ) {
           case SteerConfig::OutputType::SteeringMotorIBT2:
@@ -997,4 +1017,7 @@ void initAutosteer() {
   }
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
+  if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ) {
+    xTaskCreate( ditherWorkerVariHz, "ditherWorker", 1024, NULL, 1, NULL );
+  }
 }

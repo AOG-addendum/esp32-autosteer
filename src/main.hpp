@@ -41,6 +41,7 @@
 
 extern JsonQueueSelector jsonQueueSelector;
 
+extern int8_t ditherAmount;
 extern uint16_t labelLoad;
 extern uint16_t labelOrientation;
 extern uint16_t labelWheelAngle;
@@ -154,6 +155,7 @@ struct SteerConfig {
 //   uint16_t steeringPidDflTurnIdOff = 40;
   uint8_t steeringPidMinPwm = 20;
 
+  uint8_t dither = 0;
 
   enum class WorkswitchType : uint8_t {
     None = 0,
