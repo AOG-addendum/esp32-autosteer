@@ -189,6 +189,7 @@ struct SteerConfig {
   float wheelAngleCountsPerDegree = 118;
   uint16_t wheelAnglePositionZero = 5450;
   uint16_t ackermann = 100;
+  bool ackermannAboveZero = true;
 
   float wheelAngleOffset = 0;
 
