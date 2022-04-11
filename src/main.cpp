@@ -641,10 +641,12 @@ void setup( void ) {
     }
 
     {
-      ESPUI.addControl( ControlType::Switcher, "Ackermann above zero ° (Actual)", steerConfig.ackermannAboveZero ? "1" : "0", ControlColor::Peterriver, tab,
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Ackermann - Wheel with WAS has smaller radius", String( ( int )steerConfig.ackermannAboveZero ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.ackermannAboveZero = control->value.toInt() == 1;
       } );
+      ESPUI.addControl( ControlType::Option, "when Actual degrees are below zero", "0", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "when Actual degrees are above zero", "1", ControlColor::Alizarin, sel );
     }
   }
 
