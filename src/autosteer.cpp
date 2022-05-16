@@ -606,23 +606,23 @@ void autosteerWorker100Hz( void* z ) {
 
         }
       }
-    }
-    Control* labelSafetyHandle = ESPUI.getControl( labelStatusSafety );
-    String str;
-    str.reserve( 30 );
-    str = "Autosteer disabled by safety: ";
-    str += ( bool )disabledBySafety ? "Yes" : "No" ;
-    str += ", speed: ";
-    str += ( float )steerSetpoints.speed;
-    if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
-      str += " MPH";
-    } else {
-      str += " KPH";
-    }
-    labelSafetyHandle->value = str;
-    labelSafetyHandle->color = ControlColor::Emerald;
-    ESPUI.updateControlAsync( labelSafetyHandle );
+      Control* labelSafetyHandle = ESPUI.getControl( labelStatusSafety );
+      String str;
+      str.reserve( 30 );
+      str = "Autosteer disabled by safety: ";
+      str += ( bool )disabledBySafety ? "Yes" : "No" ;
+      str += ", speed: ";
+      str += ( float )steerSetpoints.speed;
+      if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
+        str += " MPH";
+      } else {
+        str += " KPH";
+      }
+      labelSafetyHandle->value = str;
+      labelSafetyHandle->color = ControlColor::Emerald;
+      ESPUI.updateControlAsync( labelSafetyHandle );
 
+    }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }
