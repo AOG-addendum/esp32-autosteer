@@ -52,7 +52,6 @@ IPAddress apIP( 192, 168, 1, 1 );
 
 int8_t ditherAmount = 0;
 uint16_t labelLoad;
-uint16_t labelOrientation;
 uint16_t labelWheelAngle;
 uint16_t buttonReset;
 uint16_t textNmeaToSend;
@@ -62,7 +61,6 @@ uint16_t labelWheelAngleDisplacement;
 uint16_t labelStatusOutput;
 uint16_t labelStatusAdc;
 uint16_t labelStatusCan;
-uint16_t labelStatusImu;
 uint16_t labelStatusInclino;
 uint16_t labelStatusSafety;
 
@@ -170,11 +168,7 @@ void setup( void ) {
   Serial.print( "IP address: " );
   Serial.println( WiFi.getMode() == WIFI_AP ? WiFi.softAPIP() : WiFi.localIP() );
 
-
-  steerImuInclinometerData.sendCalibrationDataFromImu = false;
-
   labelLoad = ESPUI.addControl( ControlType::Label, "Load:", "", ControlColor::Turquoise );
-  labelOrientation = ESPUI.addControl( ControlType::Label, "Orientation:", "", ControlColor::Emerald );
   labelWheelAngle = ESPUI.addControl( ControlType::Label, "Wheel Angle:", "0°", ControlColor::Emerald );
   // graphWheelAngle = ESPUI.addControl( ControlType::Graph, "Wheel Angle:", "", ControlColor::Emerald );
 
@@ -203,12 +197,7 @@ void setup( void ) {
     labelStatusOutput = ESPUI.addControl( ControlType::Label, "Output:", "No Output configured", ControlColor::Turquoise, tab );
     labelStatusAdc = ESPUI.addControl( ControlType::Label, "ADC:", "No ADC configured", ControlColor::Turquoise, tab );
     labelStatusCan = ESPUI.addControl( ControlType::Label, "CAN:", "No CAN BUS configured", ControlColor::Turquoise, tab );
-    labelStatusImu = ESPUI.addControl( ControlType::Label, "IMU:", "No IMU configured", ControlColor::Turquoise, tab );
     ESPUI.addControl( ControlType::Label, "Compatible with AOG Version:", "5.x.x", ControlColor::Turquoise, tab );
-
-    if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-      labelStatusInclino = ESPUI.addControl( ControlType::Label, "Inclinometer:", "No Inclinometer configured", ControlColor::Turquoise, tab );
-    }
 
     labelStatusSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Turquoise, tab );
   }
@@ -224,8 +213,6 @@ void setup( void ) {
     ESPUI.addControl( ControlType::Label, "Wheel Angle Sensor:", "To enable the wheel angle sensor, configure the input first. If you use two arms connected to the tie rod, measure them exactly and configure the values. This is to calculate out the unlinearities.", ControlColor::Turquoise, tab );
     ESPUI.addControl( ControlType::Label, "Steering:", "Set up the type and the GPIOs", ControlColor::Turquoise, tab );
     ESPUI.addControl( ControlType::Label, "Steering PID:", "This controller uses its own PID-controller. No values are taken over from AOG, so everything is entered here.", ControlColor::Turquoise, tab );
-    ESPUI.addControl( ControlType::Label, "Sensors:", "Here the IMU and inclinometer are set up. The Mounting Correction is entered as three angles relative to the tractor axis, so the IMU can be mounted in every position, as long as the chips are positioned relative to each other with no difference (normaly, the manufacturer of the sensor pcb does this anyway). The FXAS2100/FXOS8700-combo is recomned, as they give the most precise roll/pitch/heading with the least amount of calibration.", ControlColor::Turquoise, tab );
-    ESPUI.addControl( ControlType::Label, "NTRIP/GPS:", "Here the connection to the GPS is set up, also the NTRIP-client. Usualy, you want to send the data to AOG via UDP, a serial connection via USB is also possible. The TCP-Socket enables 3rd-party GPS-Software and configuring the GPS-Receiver with u-center.", ControlColor::Turquoise, tab );
   }
 
   // Network Tab
@@ -835,76 +822,7 @@ void setup( void ) {
       ESPUI.addControl( ControlType::Max, "Max", "5000000", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
     }
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "IMU*", String( ( int )steerConfig.imuType ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.imuType = ( SteerConfig::ImuType )control->value.toInt();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Option, "No IMU", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "FXOS8700/FXAS21002", "2", ControlColor::Alizarin, sel );
-    }
 
-    {
-      ESPUI.addControl( ControlType::Switcher, "Send Calibration Data from IMU to USB", steerImuInclinometerData.sendCalibrationDataFromImu ? "1" : "0", ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerImuInclinometerData.sendCalibrationDataFromImu = control->value.toInt() == 1;
-      } );
-    }
-
-    if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-      {
-        uint16_t sel = ESPUI.addControl( ControlType::Select, "Inclinometer*", String( ( int )steerConfig.inclinoType ), ControlColor::Wetasphalt, tab,
-        []( Control * control, int id ) {
-          steerConfig.inclinoType = ( SteerConfig::InclinoType )control->value.toInt();
-          setResetButtonToRed();
-        } );
-        ESPUI.addControl( ControlType::Option, "No Inclinometer", "0", ControlColor::Alizarin, sel );
-        ESPUI.addControl( ControlType::Option, "MMA8451", "1", ControlColor::Alizarin, sel );
-        // ESPUI.addControl( ControlType::Option, "DOGS2", "2", ControlColor::Alizarin, sel );
-        ESPUI.addControl( ControlType::Option, "FXOS8700/FXAS21002", "3", ControlColor::Alizarin, sel );
-      }
-
-      {
-        ESPUI.addControl( ControlType::Switcher, "Invert Roll Axis (enable for older versions of AgOpenGPS)", steerConfig.invertRoll ? "1" : "0", ControlColor::Peterriver, tab,
-        []( Control * control, int id ) {
-          steerConfig.invertRoll = control->value.toInt() == 1;
-        } );
-      }
-    }
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Mounting Correction (Roll) of Imu", String( steerConfig.mountCorrectionImuRoll ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.mountCorrectionImuRoll = control->value.toFloat();
-        calculateMountingCorrection();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "-180", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "180", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "0.05", ControlColor::Peterriver, num );
-    }
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Mounting Correction (Pitch) of Imu", String( steerConfig.mountCorrectionImuPitch ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.mountCorrectionImuPitch = control->value.toFloat();
-        calculateMountingCorrection();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "-180", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "180", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "0.05", ControlColor::Peterriver, num );
-    }
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Mounting Correction (Yaw) of Imu", String( steerConfig.mountCorrectionImuYaw ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.mountCorrectionImuYaw = control->value.toFloat();
-        calculateMountingCorrection();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "-180", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "180", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "0.05", ControlColor::Peterriver, num );
-    }
   }
 
   // Safety Tab

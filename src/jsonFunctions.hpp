@@ -44,7 +44,3 @@ extern json parseSteerConfigToJson( const SteerConfig& config );
 extern void sendBase64DataTransmission( uint16_t channelId, const char* data, size_t len );
 extern void sendStateTransmission( uint16_t channelId, bool state );
 extern void sendNumberTransmission( uint16_t channelId, double number );
-extern void sendQuaternionTransmission( uint16_t channelId, imu::Quaternion quaterion );
-
-extern void parseJsonToFxos8700Fxas21002Calibration( json& config, Fxos8700Fxas21002CalibrationData& calibration );
-extern json parseFxos8700Fxas21002CalibrationToJson( Fxos8700Fxas21002CalibrationData& calibration );

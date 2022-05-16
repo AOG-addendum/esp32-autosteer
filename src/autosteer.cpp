@@ -328,36 +328,6 @@ void autosteerWorker100Hz( void* z ) {
             data[5] = ( uint16_t )steerAngle;
             data[6] = ( uint16_t )steerAngle >> 8;
           }
-
-          {
-            uint16_t heading;
-
-            if( initialisation.imuType != SteerConfig::ImuType::None ) {
-              heading = ( float )steerImuInclinometerData.heading * 16;
-            } else {
-              heading = 9999;
-            }
-
-            data[7] = heading >> 8;
-            data[8] = heading;
-          }
-
-          {
-            int16_t roll;
-
-            if( initialisation.inclinoType != SteerConfig::InclinoType::None ) {
-              roll = steerImuInclinometerData.roll * 16;
-
-              if( steerConfig.invertRoll ) {
-                roll = -roll;
-              }
-            } else {
-              roll = 9999;
-            }
-
-            data[9] = ( uint16_t )roll >> 8;
-            data[10] = ( uint16_t )roll;
-          }
         }
 
         // read inputs
@@ -472,51 +442,6 @@ void autosteerWorker100Hz( void* z ) {
           udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
         }
 
-      } else {
-        if( ( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) &&
-            ( initialisation.inclinoType !=  SteerConfig::InclinoType::None || initialisation.imuType != SteerConfig::ImuType::None ) ) {
-            uint8_t data[14] = {0};
-            data[0] = 0x80; // AOG specific
-            data[1] = 0x81; // AOG specific
-            data[2] = 0x7F; // autosteer module to AOG
-            data[3] = 0xFD; // autosteer module to AOG
-            data[4] = 8;    // length of data
-
-          {
-            uint16_t heading;
-
-            if( initialisation.imuType != SteerConfig::ImuType::None ) {
-              heading = ( float )steerImuInclinometerData.heading * 16;
-            } else {
-              heading = 9999;
-            }
-
-            data[7] = heading >> 8;
-            data[8] = heading;
-          }
-
-          {
-            uint16_t roll;
-
-            if( initialisation.inclinoType != SteerConfig::InclinoType::None ) {
-              roll = steerImuInclinometerData.roll * 16;
-            } else {
-              roll = 9999;
-            }
-
-            data[9] = roll >> 8;
-            data[10] = roll;
-          }
-          //add the checksum
-          int CRCtoAOG = 0;
-          for (byte i = 2; i < sizeof(data) - 1; i++)
-          {
-            CRCtoAOG = (CRCtoAOG + data[i]);
-          }
-          data[sizeof(data) - 1] = CRCtoAOG;
-
-          udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
-        }
       }
 
       {
@@ -776,40 +701,6 @@ void initAutosteer() {
             break;
         }
       } );
-    }
-
-    // if no inclinometer is configured, try to receive the value from the net
-    if( initialisation.inclinoType == SteerConfig::InclinoType::None ) {
-      if( udpRemotePort.listen( initialisation.portSendTo ) ) {
-        udpRemotePort.onPacket( []( AsyncUDPPacket packet ) {
-          uint8_t* data = packet.data();
-          uint16_t pgn = data[1] + ( data[0] << 8 );
-
-          // see pgn.xlsx in https://github.com/farmerbriantee/AgOpenGPS/tree/master/AgOpenGPS_Dev
-          switch( pgn ) {
-            case 0x7FFD: {
-              uint16_t rollInteger = data[7] + ( data[6 << 8] );
-
-              if( rollInteger != 9999 ) {
-                steerSetpoints.receivedRoll = ( float )rollInteger / 16;
-              }
-            }
-            break;
-
-            case 0x7FEE: {
-              uint16_t rollInteger = data[7] + ( data[6 << 8] );
-
-              if( rollInteger != 9999 ) {
-                steerSetpoints.receivedRoll = ( float )rollInteger / 16;
-              }
-            }
-            break;
-
-            default:
-              break;
-          }
-        } );
-      }
     }
   }
 

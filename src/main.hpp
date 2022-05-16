@@ -43,7 +43,6 @@ extern JsonQueueSelector jsonQueueSelector;
 
 extern int8_t ditherAmount;
 extern uint16_t labelLoad;
-extern uint16_t labelOrientation;
 extern uint16_t labelWheelAngle;
 extern uint16_t textNmeaToSend;
 
@@ -202,24 +201,6 @@ struct SteerConfig {
   SteerConfig::Gpio gpioSDA = SteerConfig::Gpio::Default;
   SteerConfig::Gpio gpioSCL = SteerConfig::Gpio::Default;
   uint32_t i2cBusSpeed = 400000;
-  enum class ImuType : uint8_t {
-    None = 0,
-//     BNO055 = 1,
-    Fxos8700Fxas21002 = 2
-  } imuType = ImuType::None;
-
-  enum class InclinoType : uint8_t {
-    None = 0,
-    MMA8451 = 1,
-    DOGS2,
-    Fxos8700Fxas21002
-  } inclinoType = InclinoType::None;
-
-  bool invertRoll = false;
-
-  float mountCorrectionImuRoll = 0;
-  float mountCorrectionImuPitch = 0;
-  float mountCorrectionImuYaw = 0;
 
   bool canBusEnabled = false;
   SteerConfig::Gpio canBusRx = SteerConfig::Gpio::Esp32Gpio26;
@@ -265,48 +246,9 @@ struct SteerConfig {
 };
 extern SteerConfig steerConfig, steerConfigDefaults;
 
-struct Fxos8700Fxas21002CalibrationData {
-
-  Fxos8700Fxas21002CalibrationData() {
-    mag_offsets[0] = -13.56f;
-    mag_offsets[1] = -11.98f;
-    mag_offsets[2] = -85.02f;
-
-    mag_softiron_matrix[0][0] =  0.998;
-    mag_softiron_matrix[0][1] = -0.048;
-    mag_softiron_matrix[0][2] = -0.009;
-    mag_softiron_matrix[1][0] = -0.048;
-    mag_softiron_matrix[1][1] =  1.022;
-    mag_softiron_matrix[1][2] =  0.016;
-    mag_softiron_matrix[2][0] = -0.009;
-    mag_softiron_matrix[2][1] =  0.016;
-    mag_softiron_matrix[2][2] =  0.983;
-
-    mag_field_strength = 53.21f;
-
-    gyro_zero_offsets[0] = 0;
-    gyro_zero_offsets[1] = 0;
-    gyro_zero_offsets[2] = 0;
-  };
-
-  // Offsets applied to raw x/y/z mag values
-  float mag_offsets[3];
-
-  // Soft iron error compensation matrix
-  float mag_softiron_matrix[3][3];
-
-  float mag_field_strength;
-
-  // Offsets applied to compensate for gyro zero-drift error for x/y/z
-  float gyro_zero_offsets[3];
-};
-extern Fxos8700Fxas21002CalibrationData fxos8700Fxas21002CalibrationData, fxos8700Fxas21002CalibrationDefault;
-
 struct Initialisation {
   SteerConfig::OutputType outputType = SteerConfig::OutputType::None;
   SteerConfig::AnalogIn wheelAngleInput = SteerConfig::AnalogIn::None;
-  SteerConfig::ImuType imuType = SteerConfig::ImuType::None;
-  SteerConfig::InclinoType inclinoType = SteerConfig::InclinoType::None;
 
   uint16_t portSendFrom = 5577;
   uint16_t portListenTo = 8888;
@@ -361,17 +303,6 @@ struct SteerMachineControl {
   time_t lastPacketReceived = 0;
 };
 extern SteerMachineControl steerMachineControl;
-
-struct SteerImuInclinometerData {
-  bool sendCalibrationDataFromImu = false;
-
-  float heading;
-  float roll;
-  float pitch;
-
-  imu::Quaternion orientation;
-};
-extern SteerImuInclinometerData steerImuInclinometerData;
 
 struct SteerCanData {
   float speed;
