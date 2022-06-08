@@ -397,7 +397,7 @@ void autosteerWorker100Hz( void* z ) {
             }
 
             if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-              //data[10] |= workswitchState ? 1 : 0;
+              data[10] |= workswitchState ? 1 : 0;
             }
             if( steerConfig.gpioWorkLED != SteerConfig::Gpio::None ) {
               digitalWrite( ( uint8_t )steerConfig.gpioWorkLED, workswitchState);
