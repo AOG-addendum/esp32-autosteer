@@ -61,7 +61,7 @@ uint16_t labelWheelAngleDisplacement;
 uint16_t labelStatusOutput;
 uint16_t labelStatusAdc;
 uint16_t labelStatusCan;
-uint16_t labelStatusInclino;
+uint16_t labelBuildDate;
 uint16_t labelStatusSafety;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,10 @@ void setup( void ) {
     labelStatusAdc = ESPUI.addControl( ControlType::Label, "ADC:", "No ADC configured", ControlColor::Turquoise, tab );
     labelStatusCan = ESPUI.addControl( ControlType::Label, "CAN:", "No CAN BUS configured", ControlColor::Turquoise, tab );
     ESPUI.addControl( ControlType::Label, "Compatible with AOG Version:", "5.x.x", ControlColor::Turquoise, tab );
-
+    String buildDate = String(__DATE__);
+    buildDate += String(" ");
+    buildDate += String(__TIME__);
+    labelBuildDate = ESPUI.addControl( ControlType::Label, "Build date :", buildDate, ControlColor::Turquoise, tab );
     labelStatusSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Turquoise, tab );
   }
 

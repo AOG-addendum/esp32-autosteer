@@ -49,8 +49,7 @@ extern uint16_t textNmeaToSend;
 extern uint16_t labelStatusOutput;
 extern uint16_t labelStatusAdc;
 extern uint16_t labelStatusCan;
-extern uint16_t labelStatusImu;
-extern uint16_t labelStatusInclino;
+extern uint16_t labelBuildDate;
 extern uint16_t labelStatusSafety;
 
 extern SemaphoreHandle_t i2cMutex;
