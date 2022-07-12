@@ -25,9 +25,6 @@
 #include <FS.h>
 #include <SPIFFS.h>
 
-extern "C" {
-#include <crypto/base64.h>
-}
 
 #include "main.hpp"
 #include "jsonFunctions.hpp"
@@ -281,22 +278,6 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       Serial.println( e.id );
       Serial.flush();
     }
-  }
-}
-
-void sendBase64DataTransmission( uint16_t channelId, const char* data, size_t len ) {
-  json j;
-  j["channelId"] = channelId;
-
-  size_t outputLength;
-  char* encoded = ( char* )base64_encode( ( const unsigned char* )data, len, &outputLength );
-
-  if( encoded ) {
-    j["data"] = std::string( encoded, outputLength );
-    free( encoded );
-
-    std::vector<std::uint8_t> cbor = json::to_cbor( j );
-    udpSendFrom.broadcastTo( cbor.data(), cbor.size(), initialisation.portSendTo );
   }
 }
 
