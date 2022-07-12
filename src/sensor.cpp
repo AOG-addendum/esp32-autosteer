@@ -77,9 +77,6 @@ void sensorWorker100HzPoller( void* z ) {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_SingleEnded(
                                     ( uint8_t )steerConfig.wheelAngleInput - ( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single );
-            if( Wire.lastError() != 0 ){
-              vTaskDelete( NULL );
-            }
             xSemaphoreGive( i2cMutex );
           }
         }
@@ -88,9 +85,6 @@ void sensorWorker100HzPoller( void* z ) {
         case( uint8_t )SteerConfig::AnalogIn::ADS1115A0A1Differential: {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_Differential_0_1();
-            if( Wire.lastError() != 0 ){
-              vTaskDelete( NULL );
-            }
             xSemaphoreGive( i2cMutex );
           }
         }
