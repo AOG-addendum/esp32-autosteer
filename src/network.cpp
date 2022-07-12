@@ -44,9 +44,11 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
       if( !WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE) ) {
         Serial.println("STA Failed to unset configuration");
       }
-      delay(2000);
+      delay( 25 );
       WiFi.begin( steerConfig.ssid, steerConfig.password );
       Serial.println("reconnecting");
+    } else {
+      WiFi.reconnect();
     }
 }
 
@@ -70,49 +72,48 @@ void initWiFi( void ){
   delay( 50 );
   WiFi.config( INADDR_NONE, INADDR_NONE, INADDR_NONE );
   delay( 50 );
-  #if defined(ESP32)
-    WiFi.onEvent( WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED );
-    WiFi.onEvent( WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED );
-    WiFi.onEvent( WiFiStationGotIP, SYSTEM_EVENT_STA_GOT_IP );
-    WiFi.onEvent( WiFiAPStaConnected, SYSTEM_EVENT_AP_STACONNECTED );
-  #endif
-    // try to connect to existing network
-    WiFi.begin( steerConfig.ssid, steerConfig.password );
-    Serial.print( "\n\nTry to connect to existing network \"" );
-    Serial.print( steerConfig.ssid );
-    Serial.print( "\" with password \"" );
-    Serial.print( steerConfig.password );
-    Serial.println( "\"" );
+  WiFi.onEvent( WiFiStationConnected, ARDUINO_EVENT_WIFI_STA_CONNECTED );
+  WiFi.onEvent( WiFiStationDisconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED );
+  WiFi.onEvent( WiFiStationGotIP, ARDUINO_EVENT_WIFI_STA_GOT_IP );
+  WiFi.onEvent( WiFiAPStaConnected, ARDUINO_EVENT_WIFI_AP_STACONNECTED );
+  // try to connect to existing network
+  WiFi.begin( steerConfig.ssid, steerConfig.password );
+  WiFi.setAutoReconnect (false);
+  Serial.print( "\n\nTry to connect to existing network \"" );
+  Serial.print( steerConfig.ssid );
+  Serial.print( "\" with password \"" );
+  Serial.print( steerConfig.password );
+  Serial.println( "\"" );
 
-    uint8_t timeout = 5;
-    // Wait for connection, 2.5s timeout
-    do {
-    delay( 500 );
-    Serial.print( "." );
-    timeout--;
-    } while( timeout && WiFi.status() != WL_CONNECTED );
-    // not connected -> create hotspot
-    if( WiFi.status() != WL_CONNECTED ) {
-        WiFi.disconnect( true );
+  uint8_t timeout = 5;
+  // Wait for connection, 2.5s timeout
+  do {
+  delay( 500 );
+  Serial.print( "." );
+  timeout--;
+  } while( timeout && WiFi.status() != WL_CONNECTED );
+  // not connected -> create hotspot
+  if( WiFi.status() != WL_CONNECTED ) {
+      WiFi.disconnect( true );
 
-        digitalWrite( steerConfig.apModePin, LOW );
+      digitalWrite( steerConfig.apModePin, LOW );
 
-        apName = String( "Steer module " );
-        apName += WiFi.macAddress();
-        apName.replace( ":", "" );
+      apName = String( "Steer module " );
+      apName += WiFi.macAddress();
+      apName.replace( ":", "" );
 
-        Serial.print( "\n\nCreating hotspot \"" );
-        Serial.print( apName.c_str() );
-        Serial.println( "\"" );
-        WiFi.mode( WIFI_MODE_APSTA );
-        WiFi.softAP( apName.c_str() );
-        while (!SYSTEM_EVENT_AP_START) { // wait until AP has started
-            delay(100);
-            Serial.print(".");
-        }
-        delay( 50 );
-        WiFi.softAPConfig( softApIP, softApIP, IPAddress( 255, 255, 255, 0 ) );
-        delay( 50 );
-        WiFi.begin( steerConfig.ssid, steerConfig.password );
+      Serial.print( "\n\nCreating hotspot \"" );
+      Serial.print( apName.c_str() );
+      Serial.println( "\"" );
+      WiFi.mode( WIFI_MODE_APSTA );
+      delay( 25 );
+      WiFi.softAP( apName.c_str() );
+      WiFi.begin( steerConfig.ssid, steerConfig.password );
+      while (!SYSTEM_EVENT_AP_START) { // wait until AP has started
+          delay(100);
+          Serial.print(".");
+      }
+      WiFi.softAPConfig( softApIP, softApIP, IPAddress( 255, 255, 255, 0 ) );
+      delay( 25 );
     }
 }
