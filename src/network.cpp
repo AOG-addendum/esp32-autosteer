@@ -33,16 +33,12 @@ void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
         WiFi.softAPdisconnect (true);
         WiFi.mode( WIFI_MODE_STA );
     }
-    if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
-        digitalWrite( ( int )steerConfig.apModePin, HIGH );
-    }
+    digitalWrite( steerConfig.apModePin, HIGH );
     WiFiWasConnected = true;
 }
 
 void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
-    if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
-        digitalWrite( ( int )steerConfig.apModePin, LOW );
-    }
+    digitalWrite( steerConfig.apModePin, LOW );
     if( WiFiWasConnected == true ){
       WiFi.disconnect(true);
       if( !WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE) ) {
@@ -98,10 +94,8 @@ void initWiFi( void ){
     // not connected -> create hotspot
     if( WiFi.status() != WL_CONNECTED ) {
         WiFi.disconnect( true );
-        
-        if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
-          digitalWrite( ( int )steerConfig.apModePin, LOW );
-        }
+
+        digitalWrite( steerConfig.apModePin, LOW );
 
         apName = String( "Steer module " );
         apName += WiFi.macAddress();

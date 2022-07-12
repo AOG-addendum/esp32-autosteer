@@ -102,15 +102,11 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["wifi"]["ssid"] = config.ssid;
   j["wifi"]["password"] = config.password;
   j["wifi"]["hostname"] = config.hostname;
-  j["wifi"]["apModePin"] = int( config.apModePin );
   j["wifi"]["retainSettings"] = config.retainWifiSettings;
 
   j["output"]["type"] = int( config.outputType );
   j["output"]["pwmFrequency"] = config.pwmFrequency;
   j["output"]["minPWM"] = config.steeringPidMinPwm;
-  j["output"]["gpioPwm"] = int( config.gpioPwm );
-  j["output"]["gpioDir"] = int( config.gpioDir );
-  j["output"]["gpioEn"] = int( config.gpioEn );
   j["output"]["invertOutput"] = config.invertOutput;
   j["output"]["dither"] = config.dither;
 
@@ -123,14 +119,9 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["PID"]["bangOff"] = config.steeringPidBangOff;
 
   j["workswitch"]["workswitchType"] = int( config.workswitchType );
-  j["workswitch"]["gpioWorkswitch"] = int( config.gpioWorkswitch );
-  j["workswitch"]["gpioWorkLED"] = int( config.gpioWorkLED );
-  j["workswitch"]["gpioSteerswitch"] = int( config.gpioSteerswitch );
-  j["workswitch"]["gpioSteerLED"] = int( config.gpioSteerLED );
   j["workswitch"]["steeringWheelEncoder"] = int( config.steeringWheelEncoder );
   j["workswitch"]["steeringWheelFramePulses"] = int( config.steeringWheelFramePulses );
   j["workswitch"]["steeringWheelFrameMillis"] = int( config.steeringWheelFrameMillis );
-  j["workswitch"]["msAutoRecogniseSteerGpioAsSwitch"] = config.autoRecogniseSteerGpioAsSwitchOrButton;
   j["workswitch"]["workswitchActiveLow"] = config.workswitchActiveLow;
   j["workswitch"]["steerswitchActiveLow"] = config.steerswitchActiveLow;
   j["workswitch"]["steerSwitchIsMomentary"] = config.steerSwitchIsMomentary;
@@ -151,13 +142,9 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["wheelangle"]["tierod"]["MinimumAngle"] = config.wheelAngleMinimumAngle;
   j["wheelangle"]["tierod"]["TrackArmLenght"] = config.wheelAngleTrackArmLenght;
 
-  j["i2c"]["sda"] = int( config.gpioSDA );
-  j["i2c"]["scl"] = int( config.gpioSCL );
   j["i2c"]["speed"] = config.i2cBusSpeed;
 
   j["canBus"]["enabled"] = config.canBusEnabled;
-  j["canBus"]["rxPin"] = int( config.canBusRx );
-  j["canBus"]["txPin"] = int( config.canBusTx );
   j["canBus"]["speed"] = int( config.canBusSpeed );
   j["canBus"]["hitchThreshold"] = config.canBusHitchThreshold;
   j["canBus"]["hitchThresholdHysteresis"] = config.canBusHitchThresholdHysteresis;
@@ -165,7 +152,6 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["canBus"]["rpmThresholdHysteresis"] = config.canBusRpmThresholdHysteresis;
 
   j["safety"]["maxAutosteerSpeed"] = config.maxAutosteerSpeed;
-  j["safety"]["gpioAlarm"] = config.gpioAlarm;
   j["safety"]["speedUnits"] = config.speedUnits;
 
   j["connection"]["mode"] = int( config.mode );
@@ -212,15 +198,11 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
         memset( config.hostname, 0, sizeof( config.hostname ) );
         memcpy( config.hostname, str.c_str(), str.size() );
       }
-      config.apModePin = j.value( "/wifi/apModePin"_json_pointer, steerConfigDefaults.apModePin );
       config.retainWifiSettings = j.value( "/wifi/retainSettings"_json_pointer, steerConfigDefaults.retainWifiSettings );
 
       config.outputType = j.value( "/output/type"_json_pointer, steerConfigDefaults.outputType );
       config.pwmFrequency = j.value( "/output/pwmFrequency"_json_pointer, steerConfigDefaults.pwmFrequency );
       config.steeringPidMinPwm = j.value( "/output/minPWM"_json_pointer, steerConfigDefaults.steeringPidMinPwm );
-      config.gpioPwm = j.value( "/output/gpioPwm"_json_pointer, steerConfigDefaults.gpioPwm );
-      config.gpioDir = j.value( "/output/gpioDir"_json_pointer, steerConfigDefaults.gpioDir );
-      config.gpioEn = j.value( "/output/gpioEn"_json_pointer, steerConfigDefaults.gpioEn );
       config.invertOutput = j.value( "/output/invertOutput"_json_pointer, steerConfigDefaults.invertOutput );
       config.dither = j.value( "/output/dither"_json_pointer, steerConfigDefaults.dither );
 
@@ -233,14 +215,9 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.steeringPidBangOff = j.value( "/PID/bangOff"_json_pointer, steerConfigDefaults.steeringPidBangOff );
 
       config.workswitchType = j.value( "/workswitch/workswitchType"_json_pointer, steerConfigDefaults.workswitchType );
-      config.gpioWorkswitch = j.value( "/workswitch/gpioWorkswitch"_json_pointer, steerConfigDefaults.gpioWorkswitch );
-      config.gpioWorkLED = j.value( "/workswitch/gpioWorkLED"_json_pointer, steerConfigDefaults.gpioWorkLED );
-      config.gpioSteerswitch = j.value( "/workswitch/gpioSteerswitch"_json_pointer, steerConfigDefaults.gpioSteerswitch );
-      config.gpioSteerLED = j.value( "/workswitch/gpioSteerLED"_json_pointer, steerConfigDefaults.gpioSteerLED );
       config.steeringWheelEncoder = j.value( "/workswitch/steeringWheelEncoder"_json_pointer, steerConfigDefaults.steeringWheelEncoder );
       config.steeringWheelFramePulses = j.value( "/workswitch/steeringWheelFramePulses"_json_pointer, steerConfigDefaults.steeringWheelFramePulses );
       config.steeringWheelFrameMillis = j.value( "/workswitch/steeringWheelFrameMillis"_json_pointer, steerConfigDefaults.steeringWheelFrameMillis );
-      config.autoRecogniseSteerGpioAsSwitchOrButton = j.value( "/workswitch/msAutoRecogniseSteerGpioAsSwitch"_json_pointer, steerConfigDefaults.autoRecogniseSteerGpioAsSwitchOrButton );
       config.workswitchActiveLow = j.value( "/workswitch/workswitchActiveLow"_json_pointer, steerConfigDefaults.workswitchActiveLow );
       config.steerswitchActiveLow = j.value( "/workswitch/steerswitchActiveLow"_json_pointer, steerConfigDefaults.steerswitchActiveLow );
       config.steerSwitchIsMomentary = j.value( "/workswitch/steerSwitchIsMomentary"_json_pointer, steerConfigDefaults.steerSwitchIsMomentary );
@@ -260,13 +237,9 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.wheelAngleMinimumAngle = j.value( "/wheelangle/tierod/MinimumAngle"_json_pointer, steerConfigDefaults.wheelAngleMinimumAngle );
       config.wheelAngleTrackArmLenght = j.value( "/wheelangle/tierod/TrackArmLenght"_json_pointer, steerConfigDefaults.wheelAngleTrackArmLenght );
 
-      config.gpioSDA = j.value( "/i2c/sda"_json_pointer, steerConfigDefaults.gpioSDA );
-      config.gpioSCL = j.value( "/i2c/scl"_json_pointer, steerConfigDefaults.gpioSCL );
       config.i2cBusSpeed = j.value( "/i2c/speed"_json_pointer, steerConfigDefaults.i2cBusSpeed );
 
       config.canBusEnabled = j.value( "/canBus/enabled"_json_pointer, steerConfigDefaults.canBusEnabled );
-      config.canBusRx = j.value( "/canBus/rxPin"_json_pointer, steerConfigDefaults.canBusRx );
-      config.canBusTx = j.value( "/canBus/txPin"_json_pointer, steerConfigDefaults.canBusTx );
       config.canBusSpeed = j.value( "/canBus/speed"_json_pointer, steerConfigDefaults.canBusSpeed );
       config.canBusHitchThreshold = j.value( "/canBus/hitchThreshold"_json_pointer, steerConfigDefaults.canBusHitchThreshold );
       config.canBusHitchThresholdHysteresis = j.value( "/canBus/hitchThresholdHysteresis"_json_pointer, steerConfigDefaults.canBusHitchThresholdHysteresis );
@@ -274,7 +247,6 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.canBusRpmThresholdHysteresis = j.value( "/canBus/rpmThresholdHysteresis"_json_pointer, steerConfigDefaults.canBusRpmThresholdHysteresis );
 
       config.maxAutosteerSpeed = j.value( "/safety/maxAutosteerSpeed"_json_pointer, steerConfigDefaults.maxAutosteerSpeed );
-      config.gpioAlarm = j.value( "/safety/gpioAlarm"_json_pointer, steerConfigDefaults.gpioAlarm );
       config.speedUnits = j.value( "/safety/speedUnits"_json_pointer, steerConfigDefaults.speedUnits );
 
       config.baudrate = j.value( "/connection/baudrate"_json_pointer, steerConfigDefaults.baudrate );

@@ -132,13 +132,9 @@ void autosteerWorker100Hz( void* z ) {
     }
 
     if( steerSetpoints.enabled == true && disabledBySafety == true ) {
-      if( steerConfig.gpioAlarm != SteerConfig::Gpio::None ) {
-        digitalWrite( ( uint8_t )steerConfig.gpioAlarm, HIGH );
-      }
+      digitalWrite( steerConfig.gpioAlarm, HIGH );
     } else if ( steerSetpoints.enabled == false && disabledBySafety == false ) {
-      if( steerConfig.gpioAlarm != SteerConfig::Gpio::None ) {
-        digitalWrite( ( uint8_t )steerConfig.gpioAlarm, LOW );
-      } // turn off alarm after safety AND autosteer are off
+      digitalWrite( steerConfig.gpioAlarm, LOW ); // turn off alarm after safety AND autosteer are off
     }
 
     // check for timeout, data from AgOpenGPS, and safety disable
@@ -167,12 +163,8 @@ void autosteerWorker100Hz( void* z ) {
         break;
       }
 
-      if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-        digitalWrite( ( uint8_t )steerConfig.gpioEn, LOW );
-      }
-      if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
-        digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, LOW );
-      }
+      digitalWrite( steerConfig.gpioEn, LOW );
+      digitalWrite( steerConfig.gpioSteerLED, LOW );
     } else {
 
       pid.setGains( steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
@@ -240,9 +232,7 @@ void autosteerWorker100Hz( void* z ) {
 
             ledcWrite( 0, pidOutputTmp );
 
-            if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-              digitalWrite( ( uint8_t )steerConfig.gpioEn, HIGH );
-            }
+            digitalWrite( steerConfig.gpioEn, HIGH );
           }
           break;
 
@@ -282,12 +272,8 @@ void autosteerWorker100Hz( void* z ) {
             break;
         }
 
-        if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-          digitalWrite( ( uint8_t )steerConfig.gpioEn, HIGH );
-        }
-        if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
-          digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, HIGH );
-        }
+        digitalWrite( steerConfig.gpioEn, HIGH );
+        digitalWrite( steerConfig.gpioSteerLED, HIGH );
       } else {
         switch( initialisation.outputType ) {
           case SteerConfig::OutputType::HydraulicBangBang: {
@@ -399,9 +385,7 @@ void autosteerWorker100Hz( void* z ) {
             if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
               data[10] |= workswitchState ? 1 : 0;
             }
-            if( steerConfig.gpioWorkLED != SteerConfig::Gpio::None ) {
-              digitalWrite( ( uint8_t )steerConfig.gpioWorkLED, workswitchState);
-            }
+            digitalWrite( steerConfig.gpioWorkLED, workswitchState);
           }
 
             if( steerChangeProcessed == false && ( millis() - steerChangeMillis ) > 200 ) {
@@ -452,7 +436,7 @@ void autosteerWorker100Hz( void* z ) {
             str.reserve( 30 );
             str = "IBT2 Motor, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°, timeout: ";
+            str += "°,\ntimeout: ";
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
@@ -468,7 +452,7 @@ void autosteerWorker100Hz( void* z ) {
             str.reserve( 30 );
             str = "Cytron Motor, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°, timeout: ";
+            str += "°\ntimeout: ";
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
@@ -484,7 +468,7 @@ void autosteerWorker100Hz( void* z ) {
             str.reserve( 30 );
             str = "IBT2 Hydraulic PWM 2 Coil, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°, timeout: ";
+            str += "°,\ntimeout: ";
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
@@ -500,7 +484,7 @@ void autosteerWorker100Hz( void* z ) {
             str.reserve( 30 );
             str = "IBT2 Hydraulic Danfoss, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°, timeout: ";
+            str += "°,\ntimeout: ";
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
@@ -516,7 +500,7 @@ void autosteerWorker100Hz( void* z ) {
             str.reserve( 30 );
             str = "IBT2 Hydraulic Bang Bang, SetPoint: ";
             str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°, timeout: ";
+            str += "°,\ntimeout: ";
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
@@ -707,174 +691,88 @@ void initAutosteer() {
   // init output
   {
     HZperiod = 3999 / steerConfig.pwmFrequency; // scale for MCPWM, 3999 = 1hz and 0 = 4khz
-    if( steerConfig.gpioPwm != SteerConfig::Gpio::None ) {
-      pinMode( ( uint8_t )steerConfig.gpioPwm, OUTPUT );
-      switch( steerConfig.outputType ) {
-        case SteerConfig::OutputType::HydraulicBangBang: {
-          //https://forum.arduino.cc/t/esp32-what-is-the-minimum-pwm-frequency/671077/3
-          mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, ( uint8_t )steerConfig.gpioPwm);     // Initialise channel MCPWM0A on GPIO pin
-          MCPWM0.clk_cfg.prescale = 199;                // Set the 160MHz clock prescaler to 199 (160MHz/(199+1)=800kHz)
-          MCPWM0.timer[0].period.prescale = 199;        // Set timer 0 prescaler to 199 (800kHz/(199+1))=4kHz)
-          MCPWM0.timer[0].period.period = HZperiod;     // Set the PWM period to Hz (4kHz/(3999+1)=1Hz), see above
-          MCPWM0.channel[0].cmpr_value[0].val = 0;      // Set the counter compare for 0% duty-cycle
-          MCPWM0.channel[0].generator[0].utez = 2;      // Set the PWM0A ouput to go high at the start of the timer period
-          MCPWM0.channel[0].generator[0].utea = 1;      // Clear on compare match
-          MCPWM0.timer[0].mode.mode = 1;                // Set timer 0 to increment
-          MCPWM0.timer[0].mode.start = 2;               // Set timer 0 to free-run
-        }
-        break;
-
-        default: {
-          ledcSetup( 0, ( uint8_t )steerConfig.pwmFrequency, 8 );
-          ledcAttachPin( ( uint8_t )steerConfig.gpioPwm, 0 );
-          ledcWrite( 0, 0 );
-        }
-        break;
-
+    pinMode( steerConfig.gpioPwm, OUTPUT );
+    switch( steerConfig.outputType ) {
+      case SteerConfig::OutputType::HydraulicBangBang: {
+        //https://forum.arduino.cc/t/esp32-what-is-the-minimum-pwm-frequency/671077/3
+        mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, steerConfig.gpioPwm);     // Initialise channel MCPWM0A on GPIO pin
+        MCPWM0.clk_cfg.prescale = 199;                // Set the 160MHz clock prescaler to 199 (160MHz/(199+1)=800kHz)
+        MCPWM0.timer[0].period.prescale = 199;        // Set timer 0 prescaler to 199 (800kHz/(199+1))=4kHz)
+        MCPWM0.timer[0].period.period = HZperiod;     // Set the PWM period to Hz (4kHz/(3999+1)=1Hz), see above
+        MCPWM0.channel[0].cmpr_value[0].val = 0;      // Set the counter compare for 0% duty-cycle
+        MCPWM0.channel[0].generator[0].utez = 2;      // Set the PWM0A ouput to go high at the start of the timer period
+        MCPWM0.channel[0].generator[0].utea = 1;      // Clear on compare match
+        MCPWM0.timer[0].mode.mode = 1;                // Set timer 0 to increment
+        MCPWM0.timer[0].mode.start = 2;               // Set timer 0 to free-run
       }
-    }
+      break;
 
-    if( steerConfig.gpioDir != SteerConfig::Gpio::None ) {
-      pinMode( ( uint8_t )steerConfig.gpioDir, OUTPUT );
-      switch( steerConfig.outputType ) {
-        case SteerConfig::OutputType::HydraulicBangBang: {
-          //https://forum.arduino.cc/t/esp32-what-is-the-minimum-pwm-frequency/671077/3
-          mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, ( uint8_t )steerConfig.gpioDir);     // Initialise channel MCPWM0A on GPIO pin
-          MCPWM0.clk_cfg.prescale = 199;                // Set the 160MHz clock prescaler to 199 (160MHz/(199+1)=800kHz)
-          MCPWM0.timer[1].period.prescale = 199;        // Set timer 0 prescaler to 199 (800kHz/(199+1))=4kHz)
-          MCPWM0.timer[1].period.period = HZperiod;     // Set the PWM period to Hz (4kHz/(3999+1)=1Hz), see above
-          MCPWM0.channel[1].cmpr_value[0].val = 0;      // Set the counter compare for 0% duty-cycle
-          MCPWM0.channel[1].generator[0].utez = 2;      // Set the PWM0A ouput to go high at the start of the timer period
-          MCPWM0.channel[1].generator[0].utea = 1;      // Clear on compare match
-          MCPWM0.timer[1].mode.mode = 1;                // Set timer 0 to increment
-          MCPWM0.timer[1].mode.start = 2;               // Set timer 0 to free-run
-        }
-        break;
-
-        default: {
-          ledcSetup( 1, ( uint8_t )steerConfig.pwmFrequency, 8 );
-          ledcAttachPin( ( uint8_t )steerConfig.gpioDir, 1 );
-          ledcWrite( 1, 0 );
-        }
-        break;
-
+      default: {
+        ledcSetup( 0, steerConfig.pwmFrequency, 8 );
+        ledcAttachPin( steerConfig.gpioPwm, 0 );
+        ledcWrite( 0, 0 );
       }
+      break;
+
     }
 
-    if( steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-      pinMode( ( uint8_t )steerConfig.gpioEn, OUTPUT );
-      digitalWrite( ( uint8_t )steerConfig.gpioEn, LOW );
+    pinMode( steerConfig.gpioDir, OUTPUT );
+    switch( steerConfig.outputType ) {
+      case SteerConfig::OutputType::HydraulicBangBang: {
+        //https://forum.arduino.cc/t/esp32-what-is-the-minimum-pwm-frequency/671077/3
+        mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, ( uint8_t )steerConfig.gpioDir);     // Initialise channel MCPWM0A on GPIO pin
+        MCPWM0.clk_cfg.prescale = 199;                // Set the 160MHz clock prescaler to 199 (160MHz/(199+1)=800kHz)
+        MCPWM0.timer[1].period.prescale = 199;        // Set timer 0 prescaler to 199 (800kHz/(199+1))=4kHz)
+        MCPWM0.timer[1].period.period = HZperiod;     // Set the PWM period to Hz (4kHz/(3999+1)=1Hz), see above
+        MCPWM0.channel[1].cmpr_value[0].val = 0;      // Set the counter compare for 0% duty-cycle
+        MCPWM0.channel[1].generator[0].utez = 2;      // Set the PWM0A ouput to go high at the start of the timer period
+        MCPWM0.channel[1].generator[0].utea = 1;      // Clear on compare match
+        MCPWM0.timer[1].mode.mode = 1;                // Set timer 0 to increment
+        MCPWM0.timer[1].mode.start = 2;               // Set timer 0 to free-run
+      }
+      break;
+
+      default: {
+        ledcSetup( 1, steerConfig.pwmFrequency, 8 );
+        ledcAttachPin( steerConfig.gpioDir, 1 );
+        ledcWrite( 1, 0 );
+      }
+      break;
+
     }
 
-    if( steerConfig.gpioSteerLED != SteerConfig::Gpio::None ) {
-      pinMode( ( uint8_t )steerConfig.gpioSteerLED, OUTPUT );
-      digitalWrite( ( uint8_t )steerConfig.gpioSteerLED, LOW );
-    }
+    pinMode( steerConfig.gpioEn, OUTPUT );
+    digitalWrite( steerConfig.gpioEn, LOW );
 
-    if( steerConfig.gpioAlarm != SteerConfig::Gpio::None ) {
-      pinMode( ( uint8_t )steerConfig.gpioAlarm, OUTPUT );
-      digitalWrite( ( uint8_t )steerConfig.gpioAlarm, LOW );
-    }
+    pinMode( steerConfig.gpioSteerLED, OUTPUT );
+    digitalWrite( steerConfig.gpioSteerLED, LOW );
+
+    pinMode( steerConfig.gpioAlarm, OUTPUT );
+    digitalWrite( steerConfig.gpioAlarm, LOW );
 
     switch( steerConfig.outputType ) {
       case SteerConfig::OutputType::SteeringMotorIBT2: {
-        Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-
-        if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
-            steerConfig.gpioDir != SteerConfig::Gpio::None &&
-            steerConfig.gpioEn  != SteerConfig::Gpio::None ) {
-          labelStatusOutputHandle->value = "Output configured";
-          labelStatusOutputHandle->color = ControlColor::Emerald;
-          ESPUI.updateControlAsync( labelStatusOutputHandle );
-
-          initialisation.outputType = SteerConfig::OutputType::SteeringMotorIBT2;
-        } else {
-          {
-            labelStatusOutputHandle->value = "GPIOs not correctly defined";
-            labelStatusOutputHandle->color = ControlColor::Carrot;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-        }
+        initialisation.outputType = SteerConfig::OutputType::SteeringMotorIBT2;
       }
       break;
 
       case SteerConfig::OutputType::SteeringMotorCytron: {
-        Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-
-        if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
-            steerConfig.gpioDir != SteerConfig::Gpio::None ) {
-          labelStatusOutputHandle->value = "Output configured";
-          labelStatusOutputHandle->color = ControlColor::Emerald;
-          ESPUI.updateControlAsync( labelStatusOutputHandle );
-
-          initialisation.outputType = SteerConfig::OutputType::SteeringMotorCytron;
-        } else {
-          {
-            labelStatusOutputHandle->value = "GPIOs not correctly defined";
-            labelStatusOutputHandle->color = ControlColor::Carrot;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-        }
+        initialisation.outputType = SteerConfig::OutputType::SteeringMotorCytron;
       }
       break;
 
       case SteerConfig::OutputType::HydraulicPwm2Coil: {
-        Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-
-        if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
-            steerConfig.gpioDir != SteerConfig::Gpio::None ) {
-          labelStatusOutputHandle->value = "Output configured";
-          labelStatusOutputHandle->color = ControlColor::Emerald;
-          ESPUI.updateControlAsync( labelStatusOutputHandle );
-
-          initialisation.outputType = SteerConfig::OutputType::HydraulicPwm2Coil;
-        } else {
-          {
-            labelStatusOutputHandle->value = "GPIOs not correctly defined";
-            labelStatusOutputHandle->color = ControlColor::Carrot;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-        }
+        initialisation.outputType = SteerConfig::OutputType::HydraulicPwm2Coil;
       }
       break;
 
       case SteerConfig::OutputType::HydraulicDanfoss: {
-        Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-
-        if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
-            steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-          labelStatusOutputHandle->value = "Output configured";
-          labelStatusOutputHandle->color = ControlColor::Emerald;
-          ESPUI.updateControlAsync( labelStatusOutputHandle );
-
-          initialisation.outputType = SteerConfig::OutputType::HydraulicDanfoss;
-        } else {
-          {
-            labelStatusOutputHandle->value = "GPIOs not correctly defined";
-            labelStatusOutputHandle->color = ControlColor::Carrot;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-        }
+        initialisation.outputType = SteerConfig::OutputType::HydraulicDanfoss;
       }
       break;
 
       case SteerConfig::OutputType::HydraulicBangBang: {
-        Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-
-        if( steerConfig.gpioPwm != SteerConfig::Gpio::None &&
-            steerConfig.gpioEn != SteerConfig::Gpio::None ) {
-          labelStatusOutputHandle->value = "Output configured";
-          labelStatusOutputHandle->color = ControlColor::Emerald;
-          ESPUI.updateControlAsync( labelStatusOutputHandle );
-
-          initialisation.outputType = SteerConfig::OutputType::HydraulicBangBang;
-        } else {
-          {
-            labelStatusOutputHandle->value = "GPIOs not correctly defined";
-            labelStatusOutputHandle->color = ControlColor::Carrot;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-        }
+        initialisation.outputType = SteerConfig::OutputType::HydraulicBangBang;
       }
       break;
 
@@ -884,28 +782,20 @@ void initAutosteer() {
     }
   }
 
-  if( steerConfig.gpioWorkswitch != SteerConfig::Gpio::None ) {
-    pinMode( ( uint8_t )steerConfig.gpioWorkswitch, INPUT_PULLUP );
-  }
-  if( steerConfig.gpioWorkLED != SteerConfig::Gpio::None ) {
-    pinMode( ( uint8_t )steerConfig.gpioWorkLED, OUTPUT );
-  }
+  pinMode( steerConfig.gpioWorkswitch, INPUT_PULLUP );
+  pinMode( steerConfig.gpioWorkLED, OUTPUT );
 
   // use interrupt callbacks to simpify steer state tracking,
   // whichever callback happens last (steering wheel or steer switch) gets priority
-  if( steerConfig.gpioSteerswitch != SteerConfig::Gpio::None ) {
-    pinMode( ( uint8_t )steerConfig.gpioSteerswitch, INPUT_PULLUP );
-    if( steerConfig.steerSwitchIsMomentary ){
-        attachInterrupt( ( uint8_t )steerConfig.gpioSteerswitch, steerswitchMomentaryIsr, CHANGE);
-    } else {
-        attachInterrupt( ( uint8_t )steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
-    }
+  pinMode( steerConfig.gpioSteerswitch, INPUT_PULLUP );
+  if( steerConfig.steerSwitchIsMomentary ){
+      attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMomentaryIsr, CHANGE);
+  } else {
+      attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
   }
 
-  if( steerConfig.steeringWheelEncoder != SteerConfig::Gpio::None ) {
-    pinMode( ( uint8_t )steerConfig.steeringWheelEncoder, INPUT_PULLUP );
-    attachInterrupt( ( uint8_t )steerConfig.steeringWheelEncoder, steeringWheelIsr, CHANGE);
-  }
+  pinMode( steerConfig.steeringWheelEncoder, INPUT_PULLUP );
+  attachInterrupt( steerConfig.steeringWheelEncoder, steeringWheelIsr, CHANGE);
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
   if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ) {

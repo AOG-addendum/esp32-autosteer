@@ -152,10 +152,8 @@ void setup( void ) {
     Serial.println( "Welcome to esp32-aog.\nThe selected mode is AgOpenGps.\nTo configure, please open the webui." );
   }
 
-  if( steerConfig.apModePin != SteerConfig::Gpio::None ) {
-    pinMode( ( int )steerConfig.apModePin, OUTPUT );
-    digitalWrite( ( int )steerConfig.apModePin, LOW );
-  }
+  pinMode( steerConfig.apModePin, OUTPUT );
+  digitalWrite( steerConfig.apModePin, LOW );
 
   initWiFi();
   apIP = WiFi.localIP();

@@ -73,12 +73,7 @@ void sensorWorker100HzPoller( void* z ) {
       float wheelAngleTmp = 0;
 
       switch( ( uint8_t )steerConfig.wheelAngleInput ) {
-        case( uint8_t )SteerConfig::AnalogIn::Esp32GpioA2 ...( uint8_t )SteerConfig::AnalogIn::Esp32GpioA12: {
-          wheelAngleTmp = analogRead( ( uint8_t )steerConfig.wheelAngleInput );
-        }
-        break;
-
-        case( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single ...( uint8_t )SteerConfig::AnalogIn::ADS1115A3Single: {
+        case( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single ...( uint8_t )SteerConfig::AnalogIn::ADS1115A1Single: {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_SingleEnded(
                                     ( uint8_t )steerConfig.wheelAngleInput - ( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single );
@@ -93,17 +88,6 @@ void sensorWorker100HzPoller( void* z ) {
         case( uint8_t )SteerConfig::AnalogIn::ADS1115A0A1Differential: {
           if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
             wheelAngleTmp = ads.readADC_Differential_0_1();
-            if( Wire.lastError() != 0 ){
-              vTaskDelete( NULL );
-            }
-            xSemaphoreGive( i2cMutex );
-          }
-        }
-        break;
-
-        case( uint8_t )SteerConfig::AnalogIn::ADS1115A2A3Differential: {
-          if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
-            wheelAngleTmp = ads.readADC_Differential_2_3();
             if( Wire.lastError() != 0 ){
               vTaskDelete( NULL );
             }
@@ -218,7 +202,7 @@ void sensorWorker100HzPoller( void* z ) {
 
 void initSensors() {
 
-  // initialise ads1115 everytime, even if not avaible (no answer in the init -> just sending)
+  // initialise ads1115 everytime, even if not available (no answer in the init -> just sending)
   {
     ads.setGain( GAIN_TWOTHIRDS );   // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
     // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV

@@ -41,15 +41,13 @@
 
 extern JsonQueueSelector jsonQueueSelector;
 
-extern int8_t ditherAmount;
+extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
-extern uint16_t textNmeaToSend;
 
 extern uint16_t labelStatusOutput;
 extern uint16_t labelStatusAdc;
 extern uint16_t labelStatusCan;
-extern uint16_t labelBuildDate;
 extern uint16_t labelStatusSafety;
 
 extern SemaphoreHandle_t i2cMutex;
@@ -60,42 +58,8 @@ extern SemaphoreHandle_t i2cMutex;
 
 struct SteerConfig {
 
-  enum class Gpio : int8_t {
-    Default     = -1,
-    None        = 0,
-    Esp32Gpio2  = 2,
-    Esp32Gpio4  = 4,
-    Esp32Gpio5  = 5,
-    Esp32Gpio12 = 12,
-    Esp32Gpio13 = 13,
-    Esp32Gpio14 = 14,
-    Esp32Gpio15 = 15,
-    Esp32Gpio16 = 16,
-    Esp32Gpio17 = 17,
-    Esp32Gpio18 = 18,
-    Esp32Gpio19 = 19,
-    Esp32Gpio21 = 21,
-    Esp32Gpio22 = 22,
-    Esp32Gpio23 = 23,
-    Esp32Gpio25 = 25,
-    Esp32Gpio26 = 26,
-    Esp32Gpio27 = 27,
-    Esp32Gpio32 = 32,
-    Esp32Gpio33 = 33,
-    Esp32Gpio34 = 34,
-    Esp32Gpio35 = 35,
-    Esp32Gpio36 = 36,
-    Esp32Gpio39 = 39
-  };
-
   enum class AnalogIn : uint8_t {
     None                    = 0,
-    Esp32GpioA2             = 2,
-    Esp32GpioA3             = 3,
-    Esp32GpioA4             = 4,
-    Esp32GpioA7             = 7,
-    Esp32GpioA9             = 9,
-    Esp32GpioA12            = 12,
     ADS1115A0Single         = 100,
     ADS1115A1Single         = 101,
     ADS1115A2Single         = 102,
@@ -107,7 +71,7 @@ struct SteerConfig {
   enum class SpeedUnits : int8_t {
     MilesPerHour      = 0,
     KilometersPerHour = 1
-  };
+  } speedUnits = SpeedUnits::MilesPerHour;
 
   enum class Mode : uint8_t {
     QtOpenGuidance = 0,
@@ -117,7 +81,7 @@ struct SteerConfig {
   char ssid[24] = "NetzRosegghof3";
   char password[24] = "gghof080";
   char hostname[24] = "ESP32-QOG";
-  SteerConfig::Gpio apModePin = SteerConfig::Gpio::Esp32Gpio13;
+  uint8_t apModePin = 13;
 
   uint32_t baudrate = 115200;
 
@@ -138,9 +102,9 @@ struct SteerConfig {
 
   double pwmFrequency = 1000;
   bool invertOutput = false;
-  SteerConfig::Gpio gpioPwm = SteerConfig::Gpio::Esp32Gpio15;
-  SteerConfig::Gpio gpioDir = SteerConfig::Gpio::Esp32Gpio32;
-  SteerConfig::Gpio gpioEn = SteerConfig::Gpio::Esp32Gpio14;
+  uint8_t gpioPwm = 27;
+  uint8_t gpioDir = 26;
+  uint8_t gpioEn = 25;
 
   bool allowPidOverwrite = false;
   double steeringPidKp = 20;
@@ -150,7 +114,6 @@ struct SteerConfig {
   double steeringPidAutoBangOnFactor = 2;
   double steeringPidBangOn = 40;
   double steeringPidBangOff = 0.1;
-//   uint16_t steeringPidDflTurnIdOff = 40;
   uint8_t steeringPidMinPwm = 20;
 
   uint8_t dither = 0;
@@ -164,14 +127,13 @@ struct SteerConfig {
     FrontPtoRpm,
     MotorRpm
   } workswitchType = WorkswitchType::None;
-  SteerConfig::Gpio gpioWorkswitch = SteerConfig::Gpio::None;
-  SteerConfig::Gpio gpioWorkLED = SteerConfig::Gpio::None;
-  SteerConfig::Gpio gpioSteerswitch = SteerConfig::Gpio::None;
-  SteerConfig::Gpio gpioSteerLED = SteerConfig::Gpio::None;
-  SteerConfig::Gpio steeringWheelEncoder = SteerConfig::Gpio::None;
+  uint8_t gpioWorkswitch = 2;
+  uint8_t gpioWorkLED = 14;
+  uint8_t gpioSteerswitch = 15;
+  uint8_t gpioSteerLED = 12;
+  uint8_t steeringWheelEncoder = 23;
   uint16_t steeringWheelFramePulses = 3;
   uint16_t steeringWheelFrameMillis = 1000;
-  uint16_t autoRecogniseSteerGpioAsSwitchOrButton = 500;
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;
   bool steerSwitchIsMomentary = false;
@@ -197,17 +159,17 @@ struct SteerConfig {
   float wheelAngleMinimumAngle = 37;
   float wheelAngleTrackArmLenght = 165;
 
-  SteerConfig::Gpio gpioSDA = SteerConfig::Gpio::Default;
-  SteerConfig::Gpio gpioSCL = SteerConfig::Gpio::Default;
+  uint8_t gpioSDA = 21;
+  uint8_t gpioSCL = 22;
   uint32_t i2cBusSpeed = 400000;
 
   bool canBusEnabled = false;
-  SteerConfig::Gpio canBusRx = SteerConfig::Gpio::Esp32Gpio26;
-  SteerConfig::Gpio canBusTx = SteerConfig::Gpio::Esp32Gpio25;
+  uint8_t canBusRx = 33;
+  uint8_t canBusTx = 32;
   enum class CanBusSpeed : uint16_t {
     Speed250kbs = 250,
     Speed500kbs = 500
-  } canBusSpeed = CanBusSpeed::Speed500kbs;
+  } canBusSpeed = CanBusSpeed::Speed250kbs;
 
   uint8_t canBusHitchThreshold = 50;
   uint8_t canBusHitchThresholdHysteresis = 6;
@@ -216,8 +178,7 @@ struct SteerConfig {
   uint16_t canBusRpmThresholdHysteresis = 100;
 
   float maxAutosteerSpeed = 10;
-  SteerConfig::Gpio gpioAlarm = SteerConfig::Gpio::None;
-  SteerConfig::SpeedUnits speedUnits = SteerConfig::SpeedUnits::MilesPerHour;
+  uint8_t gpioAlarm = 4;
 
   uint16_t aogPortSendFrom = 5577;
   uint16_t aogPortListenTo = 8888;
@@ -350,8 +311,6 @@ extern void setResetButtonToRed();
 
 extern void initIdleStats();
 extern void initSensors();
-extern void calculateMountingCorrection();
-extern void initRtkCorrection();
 extern void initCan();
 extern void initAutosteer();
 extern void initWiFi();
