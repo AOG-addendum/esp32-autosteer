@@ -309,6 +309,7 @@ class TCritSect {
 ///////////////////////////////////////////////////////////////////////////
 extern void setResetButtonToRed();
 
+extern void initESPUI();
 extern void initIdleStats();
 extern void initSensors();
 extern void initCan();
