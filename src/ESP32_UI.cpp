@@ -61,7 +61,6 @@ void initESPUI ( void ) {
     labelStatusOutput = ESPUI.addControl( ControlType::Label, "Output:", "No Output configured", ControlColor::Turquoise, tab );
     labelStatusAdc = ESPUI.addControl( ControlType::Label, "ADC:", "No ADC configured", ControlColor::Turquoise, tab );
     labelStatusCan = ESPUI.addControl( ControlType::Label, "CAN:", "No CAN BUS configured", ControlColor::Turquoise, tab );
-    ESPUI.addControl( ControlType::Label, "Compatible with AOG Version:", "5.x.x", ControlColor::Turquoise, tab );
     String buildDate = String(__DATE__);
     buildDate += String(" ");
     buildDate += String(__TIME__);
