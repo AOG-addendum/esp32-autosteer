@@ -1,13 +1,9 @@
 
 
 #include "main.hpp"
-#if defined(ESP32)
 #include "esp_wifi.h"
 #include <WiFi.h>
 #include <ESP32Ping.h>
-#else
-#include <ESP8266WiFi.h>
-#endif
 
 IPAddress softApIP( 192, 168, 1, 1 );
 String apName;
@@ -54,11 +50,7 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
   WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-  #if defined(ESP32)
-    WiFi.setHostname( steerConfig.hostname );
-  #else
-    WiFi.hostname( steerConfig.hostname );
-  #endif
+  WiFi.setHostname( steerConfig.hostname );
 }
 
 void WiFiAPStaConnected(WiFiEvent_t event, WiFiEventInfo_t info){
