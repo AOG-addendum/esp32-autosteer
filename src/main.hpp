@@ -31,9 +31,7 @@
 
 #include <ESPUI.h>
 
-#include <Adafruit_MMA8451.h>
-
-#include <utility/quaternion.h>
+#include <Wire.h>
 
 #include "average.hpp"
 
@@ -283,8 +281,6 @@ extern ESPUIClass ESPUI;
 // extern AsyncUDP udpLocalPort;
 // extern AsyncUDP udpRemotePort;
 extern AsyncUDP udpSendFrom;
-
-extern Adafruit_MMA8451 mma;
 
 ///////////////////////////////////////////////////////////////////////////
 // Helper Classes

@@ -22,8 +22,6 @@
 
 #include <Adafruit_Sensor.h>
 
-#include <Adafruit_FXAS21002C.h>
-
 #include <Adafruit_ADS1015.h>
 
 #include <ESPUI.h>
