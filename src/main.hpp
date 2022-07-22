@@ -60,10 +60,7 @@ struct SteerConfig {
     None                    = 0,
     ADS1115A0Single         = 100,
     ADS1115A1Single         = 101,
-    ADS1115A2Single         = 102,
-    ADS1115A3Single         = 103,
-    ADS1115A0A1Differential = 200,
-    ADS1115A2A3Differential = 202
+    ADS1115A0A1Differential = 200
   };
 
   enum class SpeedUnits : int8_t {
