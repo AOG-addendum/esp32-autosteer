@@ -757,12 +757,24 @@ void initESPUI ( void ) {
     tabConfigurations = tab;
 
   }
+  
+  static String title;
 
+  if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
+    title = "QOG Control :: ";
+  }
+
+  if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
+    title = "AOG Control :: ";
+  }
+
+  title += steerConfig.hostname;
+  ESPUI.begin( title.c_str() );
 
   ESPUI.server->on( "/config.json", HTTP_GET, []( AsyncWebServerRequest * request ) {
     request->send( SPIFFS, "/config.json", "application/json", true );
   } );
-
+  
   // upload a file to /upload-config
   ESPUI.server->on( "/upload-config", HTTP_POST, []( AsyncWebServerRequest * request ) {
     request->send( 200 );
@@ -785,5 +797,4 @@ void initESPUI ( void ) {
       }
     }
   } );
-
 }

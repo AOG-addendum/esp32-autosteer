@@ -116,19 +116,6 @@ void setup( void ) {
 
   initESPUI();
 
-  static String title;
-
-  if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-    title = "QOG Control :: ";
-  }
-
-  if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-    title = "AOG Control :: ";
-  }
-
-  title += steerConfig.hostname;
-  //ESPUI.begin( title.c_str() );
-
   if( steerConfig.enableOTA ) {
     AsyncElegantOTA.begin( ESPUI.server );
   }
