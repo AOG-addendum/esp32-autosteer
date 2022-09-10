@@ -5,3 +5,6 @@
 .gcc-flags.json
 
 .kdev4/
+/.vscode/c_cpp_properties.json
+/.vscode/extensions.json
+/.vscode/launch.json
