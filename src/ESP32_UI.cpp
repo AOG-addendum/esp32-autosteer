@@ -542,22 +542,6 @@ void initESPUI ( void ) {
     }
   }
 
-  // Sensors Tab
-  {
-    uint16_t tab = ESPUI.addControl( ControlType::Tab, "Sensors", "Sensors" );
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "I2C Bus Speed*", String( steerConfig.i2cBusSpeed ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.i2cBusSpeed = control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "10000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "5000000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
-    }
-
-  }
-
   // Safety Tab
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Safety", "Safety" );

@@ -178,8 +178,6 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["wheelangle"]["tierod"]["MinimumAngle"] = config.wheelAngleMinimumAngle;
   j["wheelangle"]["tierod"]["TrackArmLenght"] = config.wheelAngleTrackArmLenght;
 
-  j["i2c"]["speed"] = config.i2cBusSpeed;
-
   j["canBus"]["enabled"] = config.canBusEnabled;
   j["canBus"]["speed"] = int( config.canBusSpeed );
   j["canBus"]["hitchThreshold"] = config.canBusHitchThreshold;
@@ -272,8 +270,6 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.wheelAngleTieRodStroke = j.value( "/wheelangle/tierod/TieRodStroke"_json_pointer, steerConfigDefaults.wheelAngleTieRodStroke );
       config.wheelAngleMinimumAngle = j.value( "/wheelangle/tierod/MinimumAngle"_json_pointer, steerConfigDefaults.wheelAngleMinimumAngle );
       config.wheelAngleTrackArmLenght = j.value( "/wheelangle/tierod/TrackArmLenght"_json_pointer, steerConfigDefaults.wheelAngleTrackArmLenght );
-
-      config.i2cBusSpeed = j.value( "/i2c/speed"_json_pointer, steerConfigDefaults.i2cBusSpeed );
 
       config.canBusEnabled = j.value( "/canBus/enabled"_json_pointer, steerConfigDefaults.canBusEnabled );
       config.canBusSpeed = j.value( "/canBus/speed"_json_pointer, steerConfigDefaults.canBusSpeed );
