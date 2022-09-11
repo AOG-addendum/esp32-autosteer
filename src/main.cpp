@@ -39,6 +39,7 @@
 
 GlobalVars globalVars;
 Diagnostics diagnostics;
+SteerConfig steerConfig, steerConfigDefaults;
 Initialisation initialisation;
 SteerCanData steerCanData = {0};
 

@@ -6,7 +6,6 @@
 #include "main.hpp"
 #include "jsonFunctions.hpp"
 
-SteerConfig steerConfig, steerConfigDefaults;
 
 int8_t ditherAmount = 0;
 uint16_t labelLoad;
