@@ -72,11 +72,11 @@ void ditherWorkerVariHz( void* z ) {
   for( ;; ) {
     if( steerConfig.dither == 0 ){ // prevent division by zero error
       vTaskDelay( pdMS_TO_TICKS( 500 ) );
-      ditherAmount = 0;
+      globalVars.ditherAmount = 0;
     } else {
       vTaskDelay( pdMS_TO_TICKS( 500 / steerConfig.dither ) );
-      ditherAmount += ditherDirection ? -1 : 1 ;
-      if( abs( ditherAmount ) >= steerConfig.dither ){
+      globalVars.ditherAmount += ditherDirection ? -1 : 1 ;
+      if( abs( globalVars.ditherAmount ) >= steerConfig.dither ){
         ditherDirection = !ditherDirection;
       }
     }
@@ -199,7 +199,7 @@ void autosteerWorker100Hz( void* z ) {
           pidOutputTmp = steerConfig.steeringPidMinPwm;
         }
 
-        pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil
+        pidOutputTmp += globalVars.ditherAmount; // only valid for Hydraulic Pwm 2 Coil
 
         switch( initialisation.outputType ) {
           case SteerConfig::OutputType::SteeringMotorIBT2:

@@ -446,7 +446,7 @@ void initESPUI ( void ) {
       uint16_t num = ESPUI.addControl( ControlType::Number, "Dither (Hydraulic Pwm 2 Coil only)", String( steerConfig.dither ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.dither = control->value.toInt();
-        ditherAmount = 0;
+        globalVars.ditherAmount = 0;
       } );
       ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );

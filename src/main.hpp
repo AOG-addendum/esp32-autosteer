@@ -50,6 +50,12 @@ extern uint16_t labelStatusSafety;
 
 extern SemaphoreHandle_t i2cMutex;
 
+struct GlobalVars {
+  int8_t ditherAmount; // variable gets reset upon user changing dither
+  double steerSupplyVoltage;
+  double steerMotorCurrent;
+};
+extern GlobalVars globalVars;
 ///////////////////////////////////////////////////////////////////////////
 // Configuration
 ///////////////////////////////////////////////////////////////////////////

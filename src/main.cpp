@@ -37,6 +37,7 @@
 // global data
 ///////////////////////////////////////////////////////////////////////////
 
+GlobalVars globalVars;
 Initialisation initialisation;
 SteerCanData steerCanData = {0};
 
