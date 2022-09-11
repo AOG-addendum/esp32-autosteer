@@ -66,6 +66,7 @@ volatile uint16_t HZperiod = 0;
 bool disabledBySafety = false;
 bool safetyAlarmLatch = false;
 bool ditherDirection = false;
+bool dtcAutosteerPrevious = false;
 
 void ditherWorkerVariHz( void* z ) {
 
@@ -130,6 +131,24 @@ void autosteerWorker100Hz( void* z ) {
     } else if ( safetyAlarmLatch == false ) {
       disabledBySafety = false; // only proceed from safety disable, AFTER autosteer switch is turned off
     }
+
+    if( dtcAutosteerPrevious == false && steerSetpoints.enabled == true ){
+      if( globalVars.steerSupplyVoltage < 2400 ){
+          diagnostics.steerEnabledWithNoPower += 1;
+
+          Control* labelSteerEngagedFaultsHandle = ESPUI.getControl( labelSteerEngagedFaults );
+          String str;
+          str.reserve( 30 );
+          str = "Number of faults: ";
+          str += ( int8_t ) diagnostics.steerEnabledWithNoPower;
+          str += "\nFault active since startup: Yes";
+          labelSteerEngagedFaultsHandle->value = str;
+          labelSteerEngagedFaultsHandle->color = ControlColor::Alizarin;
+          ESPUI.updateControlAsync( labelSteerEngagedFaultsHandle );
+          saveDiagnostics();
+      }
+    }
+    dtcAutosteerPrevious = steerSetpoints.enabled;
 
     if( steerSetpoints.enabled == true && disabledBySafety == true ) {
       digitalWrite( steerConfig.gpioAlarm, HIGH );
@@ -484,7 +503,8 @@ void autosteerWorker100Hz( void* z ) {
 
         }
       }
-      Control* labelSafetyHandle = ESPUI.getControl( labelStatusSafety );
+      {
+      Control* labelSafetyHandle = ESPUI.getControl( labelSpeedSafety );
       String str;
       str.reserve( 30 );
       str = "Autosteer disabled by safety: ";
@@ -499,6 +519,17 @@ void autosteerWorker100Hz( void* z ) {
       labelSafetyHandle->value = str;
       labelSafetyHandle->color = ControlColor::Emerald;
       ESPUI.updateControlAsync( labelSafetyHandle );
+      }
+      {
+      Control* labelSupplyVoltageHandle = ESPUI.getControl( labelSupplyVoltage );
+      String str;
+      str.reserve( 30 );
+      str = "Autosteer valve supply voltage: ";
+      str += ( double ) globalVars.steerSupplyVoltage ;
+      labelSupplyVoltageHandle->value = str;
+      labelSupplyVoltageHandle->color = ControlColor::Emerald;
+      ESPUI.updateControlAsync( labelSupplyVoltageHandle );
+      }
 
     }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );

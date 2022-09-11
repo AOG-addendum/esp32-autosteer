@@ -38,6 +38,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 GlobalVars globalVars;
+Diagnostics diagnostics;
 Initialisation initialisation;
 SteerCanData steerCanData = {0};
 
@@ -74,6 +75,7 @@ void setup( void ) {
   }
 
   loadSavedConfig();
+  loadSavedDiagnostics();
 
   Serial.updateBaudRate( steerConfig.baudrate );
 
@@ -116,6 +118,17 @@ void setup( void ) {
   */
 
   initESPUI();
+
+  {
+  Control* labelSteerEngagedFaultsHandle = ESPUI.getControl( labelSteerEngagedFaults );
+  String str;
+  str.reserve( 30 );
+  str = "Number of faults: ";
+  str += ( uint8_t ) diagnostics.steerEnabledWithNoPower;
+  str += "\nFault active since startup: No";
+  labelSteerEngagedFaultsHandle->value = str;
+  ESPUI.updateControlAsync( labelSteerEngagedFaultsHandle );
+  }
 
   if( steerConfig.enableOTA ) {
     AsyncElegantOTA.begin( ESPUI.server );

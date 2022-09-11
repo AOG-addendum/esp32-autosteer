@@ -11,6 +11,9 @@ SteerConfig steerConfig, steerConfigDefaults;
 int8_t ditherAmount = 0;
 uint16_t labelLoad;
 uint16_t labelWheelAngle;
+uint16_t labelSpeedSafety;
+uint16_t labelSupplyVoltage;
+uint16_t labelSteerEngagedFaults;
 uint16_t buttonReset;
 
 uint16_t labelWheelAngleDisplacement;
@@ -19,7 +22,6 @@ uint16_t labelStatusOutput;
 uint16_t labelStatusAdc;
 uint16_t labelStatusCan;
 uint16_t labelBuildDate;
-uint16_t labelStatusSafety;
 
 void setResetButtonToRed() {
   ESPUI.getControl( buttonReset )->color = ControlColor::Alizarin;
@@ -54,6 +56,15 @@ void initESPUI ( void ) {
 
   uint16_t tabConfigurations;
 
+  // Diagnostics Tab
+  {
+    uint16_t tab = ESPUI.addControl( ControlType::Tab, "Diagnostics", "Diagnostics" );
+
+    labelSpeedSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Emerald, tab );
+    labelSupplyVoltage = ESPUI.addControl( ControlType::Label, "Steer valve supply voltage:", "0.00", ControlColor::Emerald, tab );
+    labelSteerEngagedFaults = ESPUI.addControl( ControlType::Label, "Steering engaged with no power:", "Not loaded", ControlColor::Emerald, tab );
+  }
+ 
   // Status Tab
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Status", "Status" );
@@ -65,7 +76,6 @@ void initESPUI ( void ) {
     buildDate += String(" ");
     buildDate += String(__TIME__);
     labelBuildDate = ESPUI.addControl( ControlType::Label, "Build date :", buildDate, ControlColor::Turquoise, tab );
-    labelStatusSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Turquoise, tab );
   }
 
   // Network Tab

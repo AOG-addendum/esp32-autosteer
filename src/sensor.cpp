@@ -67,6 +67,11 @@ void sensorWorker100HzPoller( void* z ) {
 
   for( ;; ) {
 
+    if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
+      globalVars.steerSupplyVoltage = ads.readADC_SingleEnded( 3 );
+      xSemaphoreGive( i2cMutex );
+    }
+
     if( steerConfig.wheelAngleInput != SteerConfig::AnalogIn::None ) {
       float wheelAngleTmp = 0;
 

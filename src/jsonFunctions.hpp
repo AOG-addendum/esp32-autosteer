@@ -31,11 +31,17 @@ using json = nlohmann::json;
 
 #pragma once
 
+extern void loadSavedDiagnostics();
+extern void saveDiagnostics();
+
 extern void loadSavedConfig();
 extern void saveConfig();
 
 extern json loadJsonFromFile( const char* fileName );
 extern void saveJsonToFile( const json& json, const char* fileName );
+
+extern void parseJsonToDiagnostics( json& json, Diagnostics& diagnostics );
+extern json parseDiagnosticsToJson( const Diagnostics& diagnostics );
 
 extern void parseJsonToSteerConfig( json& json, SteerConfig& config );
 extern json parseSteerConfigToJson( const SteerConfig& config );

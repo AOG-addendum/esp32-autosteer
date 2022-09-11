@@ -42,11 +42,13 @@ extern JsonQueueSelector jsonQueueSelector;
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
+extern uint16_t labelSpeedSafety;
+extern uint16_t labelSupplyVoltage;
+extern uint16_t labelSteerEngagedFaults;
 
 extern uint16_t labelStatusOutput;
 extern uint16_t labelStatusAdc;
 extern uint16_t labelStatusCan;
-extern uint16_t labelStatusSafety;
 
 extern SemaphoreHandle_t i2cMutex;
 
@@ -56,6 +58,11 @@ struct GlobalVars {
   double steerMotorCurrent;
 };
 extern GlobalVars globalVars;
+
+struct Diagnostics {
+  int8_t steerEnabledWithNoPower;
+};
+extern Diagnostics diagnostics;
 ///////////////////////////////////////////////////////////////////////////
 // Configuration
 ///////////////////////////////////////////////////////////////////////////

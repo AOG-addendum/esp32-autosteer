@@ -29,6 +29,20 @@
 #include "main.hpp"
 #include "jsonFunctions.hpp"
 
+void loadSavedDiagnostics() {
+  {
+    auto j = loadJsonFromFile( "/diagnostics.json" );
+    parseJsonToDiagnostics( j, diagnostics );
+  }
+}
+
+void saveDiagnostics() {
+  {
+    const auto j = parseDiagnosticsToJson( diagnostics );
+    saveJsonToFile( j, "/diagnostics.json" );
+  }
+}
+
 void loadSavedConfig() {
   {
     auto j = loadJsonFromFile( "/config.json" );
@@ -91,6 +105,31 @@ void saveJsonToFile( const json& json, const char* fileName ) {
   }
 
   file.close();
+}
+
+json parseDiagnosticsToJson( const Diagnostics& diagnostics ) {
+  json j;
+
+  j["steerEnabledWithNoPower"] = diagnostics.steerEnabledWithNoPower;
+
+  return j;
+
+}
+
+void parseJsonToDiagnostics( json& j, Diagnostics& diagnostics ) {
+  if( j.is_object() ) {
+    try {
+      diagnostics.steerEnabledWithNoPower = j.value( "/steerEnabledWithNoPower"_json_pointer, 0 );
+
+    } catch( json::exception& e ) {
+      // output exception information
+      Serial.print( "message: " );
+      Serial.println( e.what() );
+      Serial.print( "exception id: " );
+      Serial.println( e.id );
+      Serial.flush();
+    }
+  }
 }
 
 json parseSteerConfigToJson( const SteerConfig& config ) {
