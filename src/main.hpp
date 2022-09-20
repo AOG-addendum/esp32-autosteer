@@ -57,7 +57,11 @@ extern uint16_t labelStatusCan;
 extern SemaphoreHandle_t i2cMutex;
 
 struct Diagnostics {
+  double steerSupplyVoltageMin;
+  double steerSupplyVoltageMax;
   int8_t steerEnabledWithNoPower;
+  int8_t fuse1Shorted;
+  int8_t fuse2Shorted;
 };
 extern Diagnostics diagnostics;
 ///////////////////////////////////////////////////////////////////////////
@@ -318,3 +322,4 @@ extern void initSensors();
 extern void initCan();
 extern void initAutosteer();
 extern void initWiFi();
+extern void initDiagnostics();

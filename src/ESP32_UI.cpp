@@ -62,6 +62,16 @@ void initESPUI ( void ) {
     labelSpeedSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Emerald, tab );
     labelSupplyVoltage = ESPUI.addControl( ControlType::Label, "Steer valve supply voltage:", "0.00", ControlColor::Emerald, tab );
     labelSteerEngagedFaults = ESPUI.addControl( ControlType::Label, "Steering engaged with no power:", "Not loaded", ControlColor::Emerald, tab );
+    ESPUI.addControl( ControlType::Button, "Diagnostics:", "Reset all to zero", ControlColor::Emerald, tab, []( Control * control, int id ) {
+      if( id == B_UP ) {
+        diagnostics.steerSupplyVoltageMax = steerSupplyVoltage;
+        diagnostics.steerSupplyVoltageMin = steerSupplyVoltage;
+        diagnostics.steerEnabledWithNoPower = 0;
+        diagnostics.fuse1Shorted = 0;
+        diagnostics.fuse2Shorted = 0;
+        saveDiagnostics();
+      }
+    } );
   }
  
   // Status Tab

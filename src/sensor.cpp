@@ -159,41 +159,6 @@ void sensorWorker100HzPoller( void* z ) {
       }
     }
 
-    {
-      static uint8_t loopCounter = 0;
-
-      if( loopCounter++ > 99 ) {
-        loopCounter = 0;
-        {
-          Control* handle = ESPUI.getControl( labelWheelAngle );
-          String str;
-          str.reserve( 30 );
-
-          if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
-            str += ( float )steerSetpoints.actualSteerAngle;
-            str += "°, Raw ";
-            str += ( float )steerSetpoints.wheelAngleRaw;
-            str += "°, Displacement ";
-            str += ( float )steerSetpoints.wheelAngleCurrentDisplacement;
-            str += "mm";
-          } else {
-            str += "A/D count: ";
-            str += ( int )steerSetpoints.wheelAngleCounts;
-            str += ", Raw: ";
-            str += ( float )steerSetpoints.wheelAngleRaw;
-            str += "°\nActual: ";
-            str += ( float )steerSetpoints.actualSteerAngle;
-            str += "°, SetPoint: ";
-            str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°";
-          }
-
-          handle->value = str;
-          ESPUI.updateControlAsync( handle );
-        }
-      }
-    }
-
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }

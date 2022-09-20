@@ -110,7 +110,11 @@ void saveJsonToFile( const json& json, const char* fileName ) {
 json parseDiagnosticsToJson( const Diagnostics& diagnostics ) {
   json j;
 
+  j["steerSupplyVoltageMax"] = diagnostics.steerSupplyVoltageMax;
+  j["steerSupplyVoltageMin"] = diagnostics.steerSupplyVoltageMin;
   j["steerEnabledWithNoPower"] = diagnostics.steerEnabledWithNoPower;
+  j["fuse1Shorted"] = diagnostics.fuse1Shorted;
+  j["fuse2Shorted"] = diagnostics.fuse2Shorted;
 
   return j;
 
@@ -119,7 +123,11 @@ json parseDiagnosticsToJson( const Diagnostics& diagnostics ) {
 void parseJsonToDiagnostics( json& j, Diagnostics& diagnostics ) {
   if( j.is_object() ) {
     try {
+      diagnostics.steerSupplyVoltageMax = j.value( "/steerSupplyVoltageMax"_json_pointer, 0 );
+      diagnostics.steerSupplyVoltageMin = j.value( "/steerSupplyVoltageMin"_json_pointer, 0 );
       diagnostics.steerEnabledWithNoPower = j.value( "/steerEnabledWithNoPower"_json_pointer, 0 );
+      diagnostics.fuse1Shorted = j.value( "/fuse1Shorted"_json_pointer, 0 );
+      diagnostics.fuse2Shorted = j.value( "/fuse2Shorted"_json_pointer, 0 );
 
     } catch( json::exception& e ) {
       // output exception information

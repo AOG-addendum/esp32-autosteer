@@ -180,6 +180,9 @@ void autosteerWorker100Hz( void* z ) {
       digitalWrite( steerConfig.gpioSteerLED, LOW );
     } else {
 
+      diagnostics.steerSupplyVoltageMax = max( steerSupplyVoltage, diagnostics.steerSupplyVoltageMax );
+      diagnostics.steerSupplyVoltageMin = min( steerSupplyVoltage, diagnostics.steerSupplyVoltageMin );
+
       pid.setGains( steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
 
       if( pid.getIntegral() > 0 && pid.getIntegral() > steerConfig.steeringPidKiMax ){
@@ -493,33 +496,6 @@ void autosteerWorker100Hz( void* z ) {
             break;
 
         }
-      }
-      {
-      Control* labelSafetyHandle = ESPUI.getControl( labelSpeedSafety );
-      String str;
-      str.reserve( 30 );
-      str = "Autosteer disabled by safety: ";
-      str += ( bool )disabledBySafety ? "Yes" : "No" ;
-      str += ", speed: ";
-      str += ( float )steerSetpoints.speed;
-      if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
-        str += " MPH";
-      } else {
-        str += " KPH";
-      }
-      labelSafetyHandle->value = str;
-      labelSafetyHandle->color = ControlColor::Emerald;
-      ESPUI.updateControlAsync( labelSafetyHandle );
-      }
-      {
-      Control* labelSupplyVoltageHandle = ESPUI.getControl( labelSupplyVoltage );
-      String str;
-      str.reserve( 30 );
-      str = "Autosteer valve supply voltage: ";
-      str += ( double ) globalVars.steerSupplyVoltage ;
-      labelSupplyVoltageHandle->value = str;
-      labelSupplyVoltageHandle->color = ControlColor::Emerald;
-      ESPUI.updateControlAsync( labelSupplyVoltageHandle );
       }
 
     }

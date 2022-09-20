@@ -141,6 +141,8 @@ void setup( void ) {
   initCan();
 
   initAutosteer();
+
+  initDiagnostics();
 }
 
 void loop( void ) {
