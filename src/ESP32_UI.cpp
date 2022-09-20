@@ -12,6 +12,7 @@ uint16_t labelLoad;
 uint16_t labelWheelAngle;
 uint16_t labelSpeedSafety;
 uint16_t labelSupplyVoltage;
+uint16_t labelSteerMotorCurrent;
 uint16_t labelSteerEngagedFaults;
 uint16_t buttonReset;
 
@@ -60,7 +61,8 @@ void initESPUI ( void ) {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Diagnostics", "Diagnostics" );
 
     labelSpeedSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Emerald, tab );
-    labelSupplyVoltage = ESPUI.addControl( ControlType::Label, "Steer valve supply voltage:", "0.00", ControlColor::Emerald, tab );
+    labelSupplyVoltage = ESPUI.addControl( ControlType::Label, "Steer valve supply voltage:", "Not loaded", ControlColor::Emerald, tab );
+    labelSteerMotorCurrent = ESPUI.addControl( ControlType::Label, "Steer motor current:", "Not loaded", ControlColor::Emerald, tab );
     labelSteerEngagedFaults = ESPUI.addControl( ControlType::Label, "Steering engaged with no power:", "Not loaded", ControlColor::Emerald, tab );
     ESPUI.addControl( ControlType::Button, "Diagnostics:", "Reset all to zero", ControlColor::Emerald, tab, []( Control * control, int id ) {
       if( id == B_UP ) {
@@ -571,6 +573,24 @@ void initESPUI ( void ) {
       } );
       ESPUI.addControl( ControlType::Option, "MPH", "0", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "KPH", "1", ControlColor::Alizarin, sel );
+    }
+    {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Steer Shunt Volts / Amp", String( steerConfig.steeringShuntVoltsPerAmp ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.steeringShuntVoltsPerAmp = control->value.toFloat();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0.1", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "5.0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
+    }
+    {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Max Steer Motor Current", String( steerConfig.maxSteerCurrent ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.maxSteerCurrent = control->value.toFloat();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0.1", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "5.0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
     }
   }
 

@@ -48,6 +48,7 @@ extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
 extern uint16_t labelSpeedSafety;
 extern uint16_t labelSupplyVoltage;
+extern uint16_t labelSteerMotorCurrent;
 extern uint16_t labelSteerEngagedFaults;
 
 extern uint16_t labelStatusOutput;
@@ -143,6 +144,8 @@ struct SteerConfig {
   uint8_t steeringWheelEncoder = 23;
   uint16_t steeringWheelFramePulses = 3;
   uint16_t steeringWheelFrameMillis = 1000;
+  double steeringShuntVoltsPerAmp = 1.0;
+  double maxSteerCurrent = 5.00;
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;
   bool steerSwitchIsMomentary = false;

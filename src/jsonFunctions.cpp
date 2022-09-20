@@ -195,6 +195,8 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
 
   j["safety"]["maxAutosteerSpeed"] = config.maxAutosteerSpeed;
   j["safety"]["speedUnits"] = config.speedUnits;
+  j["safety"]["steeringShuntVoltsPerAmp"] = config.steeringShuntVoltsPerAmp;
+  j["safety"]["maxSteerCurrent"] = config.maxSteerCurrent;
 
   j["connection"]["mode"] = int( config.mode );
   j["connection"]["baudrate"] = config.baudrate;
@@ -288,6 +290,8 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
 
       config.maxAutosteerSpeed = j.value( "/safety/maxAutosteerSpeed"_json_pointer, steerConfigDefaults.maxAutosteerSpeed );
       config.speedUnits = j.value( "/safety/speedUnits"_json_pointer, steerConfigDefaults.speedUnits );
+      config.steeringShuntVoltsPerAmp = j.value( "/safety/steeringShuntVoltsPerAmp"_json_pointer, steerConfigDefaults.steeringShuntVoltsPerAmp );
+      config.maxSteerCurrent = j.value( "/safety/maxSteerCurrent"_json_pointer, steerConfigDefaults.maxSteerCurrent );
 
       config.baudrate = j.value( "/connection/baudrate"_json_pointer, steerConfigDefaults.baudrate );
       config.enableOTA = j.value( "/connection/enableOTA"_json_pointer, steerConfigDefaults.enableOTA );
