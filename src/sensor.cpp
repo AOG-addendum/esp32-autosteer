@@ -35,6 +35,8 @@
 Adafruit_ADS1115 ads = Adafruit_ADS1115( 0x48 );
 
 volatile uint16_t samplesPerSecond;
+double steerSupplyVoltage;
+double steerMotorCurrent;
 
 // http://www.schwietering.com/jayduino/filtuino/index.php?characteristic=bu&passmode=lp&order=2&usesr=usesr&sr=100&frequencyLow=5&noteLow=&noteHigh=&pw=pw&calctype=float&run=Send
 //Low pass butterworth filter order=2 alpha1=0.05
@@ -68,7 +70,8 @@ void sensorWorker100HzPoller( void* z ) {
   for( ;; ) {
 
     if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
-      globalVars.steerSupplyVoltage = ads.readADC_SingleEnded( 3 );
+      steerMotorCurrent = ads.readADC_SingleEnded( 2 );
+      steerSupplyVoltage = ads.readADC_SingleEnded( 3 );
       xSemaphoreGive( i2cMutex );
     }
 
@@ -138,11 +141,9 @@ void sensorWorker100HzPoller( void* z ) {
 
         wheelAngleTmp -= steerConfig.wheelAngleOffset;
 
-        if (wheelAngleTmp > 0 && steerConfig.ackermannAboveZero == true) {
-          wheelAngleTmp = ( wheelAngleTmp * steerConfig.ackermann) / 100;
-        }
-        else if (wheelAngleTmp < 0 && steerConfig.ackermannAboveZero == false){
-          wheelAngleTmp = ( wheelAngleTmp * steerConfig.ackermann) / 100;
+        if (( wheelAngleTmp > 0 && steerConfig.ackermannAboveZero == true ) || 
+            ( wheelAngleTmp < 0 && steerConfig.ackermannAboveZero == false )) {
+          wheelAngleTmp = ( wheelAngleTmp * steerConfig.ackermann ) / 100;
         }
 
         wheelAngleTmp = wheelAngleSensorFilter.step( wheelAngleTmp );

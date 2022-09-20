@@ -73,11 +73,11 @@ void ditherWorkerVariHz( void* z ) {
   for( ;; ) {
     if( steerConfig.dither == 0 ){ // prevent division by zero error
       vTaskDelay( pdMS_TO_TICKS( 500 ) );
-      globalVars.ditherAmount = 0;
+      ditherAmount = 0;
     } else {
       vTaskDelay( pdMS_TO_TICKS( 500 / steerConfig.dither ) );
-      globalVars.ditherAmount += ditherDirection ? -1 : 1 ;
-      if( abs( globalVars.ditherAmount ) >= steerConfig.dither ){
+      ditherAmount += ditherDirection ? -1 : 1 ;
+      if( abs( ditherAmount ) >= steerConfig.dither ){
         ditherDirection = !ditherDirection;
       }
     }
@@ -132,8 +132,8 @@ void autosteerWorker100Hz( void* z ) {
       disabledBySafety = false; // only proceed from safety disable, AFTER autosteer switch is turned off
     }
 
-    if( dtcAutosteerPrevious == false && steerSetpoints.enabled == true ){
-      if( globalVars.steerSupplyVoltage < 2400 ){
+    if( steerSetpoints.enabled == true ){
+      if(  dtcAutosteerPrevious == false && steerSupplyVoltage < 14500 ){  // 10.8 volts
           diagnostics.steerEnabledWithNoPower += 1;
 
           Control* labelSteerEngagedFaultsHandle = ESPUI.getControl( labelSteerEngagedFaults );
@@ -199,12 +199,6 @@ void autosteerWorker100Hz( void* z ) {
       // the values are given by pointers, so the AutoPID gets them automaticaly
       pid.run();
 
-//         Serial.print( "actualSteerAngle: " );
-//         Serial.print( steerSetpoints.actualSteerAngle );
-//         Serial.print( ", requestedSteerAngle: " );
-//         Serial.print( steerSetpoints.requestedSteerAngle );
-//         Serial.print( "pidOutput: " );
-//         Serial.println( pidOutput );
 
       if( pidOutput ) {
 
@@ -218,7 +212,7 @@ void autosteerWorker100Hz( void* z ) {
           pidOutputTmp = steerConfig.steeringPidMinPwm;
         }
 
-        pidOutputTmp += globalVars.ditherAmount; // only valid for Hydraulic Pwm 2 Coil
+        pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil
 
         switch( initialisation.outputType ) {
           case SteerConfig::OutputType::SteeringMotorIBT2:
@@ -278,9 +272,6 @@ void autosteerWorker100Hz( void* z ) {
         }
       }
 
-    if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-
-    }
 
     static uint8_t loopCounter = 0;
 
