@@ -63,10 +63,10 @@ volatile time_t steeringWheelActivityMillis = millis();
 volatile uint16_t steeringPulseCount = 0;
 volatile uint16_t HZperiod = 0;
 
-bool disabledBySafety = false;
 bool safetyAlarmLatch = false;
 bool ditherDirection = false;
 bool dtcAutosteerPrevious = false;
+bool disabledBySpeedSafety = false;
 
 void ditherWorkerVariHz( void* z ) {
 
@@ -125,11 +125,11 @@ void autosteerWorker100Hz( void* z ) {
     }
 
     if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
-      disabledBySafety = true;
+      disabledBySpeedSafety = true;
       steerState = false;
       safetyAlarmLatch = true;
     } else if ( safetyAlarmLatch == false ) {
-      disabledBySafety = false; // only proceed from safety disable, AFTER autosteer switch is turned off
+      disabledBySpeedSafety = false; // only proceed from safety disable, AFTER autosteer switch is turned off
     }
 
     if( steerSetpoints.enabled == true ){
@@ -150,18 +150,18 @@ void autosteerWorker100Hz( void* z ) {
     }
     dtcAutosteerPrevious = steerSetpoints.enabled;
 
-    if( steerSetpoints.enabled == true && disabledBySafety == true ) {
+    if( steerSetpoints.enabled == true && disabledBySpeedSafety == true ) {
       digitalWrite( steerConfig.gpioAlarm, HIGH );
-    } else if ( steerSetpoints.enabled == false && disabledBySafety == false ) {
+    } else if ( steerSetpoints.enabled == false && disabledBySpeedSafety == false ) {
       digitalWrite( steerConfig.gpioAlarm, LOW ); // turn off alarm after safety AND autosteer are off
     }
 
     // check for timeout, data from AgOpenGPS, and safety disable
     if( steerSetpoints.lastPacketReceived < timeoutPoint ||
         steerSetpoints.enabled == false ||
-        disabledBySafety == true
-      ) {
-
+        disabledBySpeedSafety == true )
+      {
+      
       switch( initialisation.outputType ) {
         case SteerConfig::OutputType::HydraulicDanfoss: {
           ledcWrite( 0, 128 );

@@ -42,6 +42,7 @@ extern JsonQueueSelector jsonQueueSelector;
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern double steerSupplyVoltage;
 extern double steerMotorCurrent;
+extern bool disabledBySpeedSafety;
 
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
