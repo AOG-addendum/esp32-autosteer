@@ -4,9 +4,6 @@
 [submodule "lib/Adafruit_BNO055"]
 	path = lib/Adafruit_BNO055
 	url = https://github.com/eringerli/Adafruit_BNO055.git
-[submodule "lib/Adafruit_MMA8451_Library"]
-	path = lib/Adafruit_MMA8451_Library
-	url = https://github.com/eringerli/Adafruit_MMA8451_Library.git
 [submodule "lib/AutoPID"]
 	path = lib/AutoPID
 	url = https://github.com/eringerli/AutoPID.git
