@@ -13,9 +13,6 @@
 [submodule "lib/ESPUI"]
 	path = lib/ESPUI
 	url = https://github.com/eringerli/ESPUI.git
-[submodule "lib/MicroNMEA"]
-	path = lib/MicroNMEA
-	url = https://github.com/eringerli/MicroNMEA.git
 [submodule "tools/EspArduinoExceptionDecoder"]
 	path = tools/EspArduinoExceptionDecoder
 	url = https://github.com/me21/EspArduinoExceptionDecoder.git
