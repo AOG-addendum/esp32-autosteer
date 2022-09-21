@@ -281,133 +281,130 @@ void autosteerWorker100Hz( void* z ) {
     if( ++loopCounter >= 10 ) {
       loopCounter = 0;
 
-      if( initialisation.outputType != SteerConfig::OutputType::None ) {
-        uint8_t data[14] = {0};
+      uint8_t data[14] = {0};
 
-        if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-          data[0] = 0x80; // AOG specific
-          data[1] = 0x81; // AOG specific
-          data[2] = 0x7F; // autosteer module to AOG
-          data[3] = 0xFD; // autosteer module to AOG
-          data[4] = 8;    // length of data
+      if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
+        data[0] = 0x80; // AOG specific
+        data[1] = 0x81; // AOG specific
+        data[2] = 0x7F; // autosteer module to AOG
+        data[3] = 0xFD; // autosteer module to AOG
+        data[4] = 8;    // length of data
 
-          {
-            int16_t steerAngle = steerSetpoints.actualSteerAngle * 100 ;
-            data[5] = ( uint16_t )steerAngle;
-            data[6] = ( uint16_t )steerAngle >> 8;
-          }
-        }
-
-        // read inputs
         {
-          if( steerConfig.workswitchType != SteerConfig::WorkswitchType::None ) {
-            uint16_t value = 0;
-            uint16_t threshold = 0;
-            uint16_t hysteresis = 0;
+          int16_t steerAngle = steerSetpoints.actualSteerAngle * 100 ;
+          data[5] = ( uint16_t )steerAngle;
+          data[6] = ( uint16_t )steerAngle >> 8;
+        }
+      }
 
-            switch( steerConfig.workswitchType ) {
-              case SteerConfig::WorkswitchType::Gpio:
-                value =  digitalRead( ( uint8_t )steerConfig.gpioWorkswitch ) ? 1 : 0;
-                threshold = 1;
-                hysteresis = 0;
-                break;
+      // read inputs
+      {
+        if( steerConfig.workswitchType != SteerConfig::WorkswitchType::None ) {
+          uint16_t value = 0;
+          uint16_t threshold = 0;
+          uint16_t hysteresis = 0;
 
-              case SteerConfig::WorkswitchType::RearHitchPosition:
-                value = steerCanData.rearHitchPosition;
-                threshold = steerConfig.canBusHitchThreshold;
-                hysteresis = steerConfig.canBusHitchThresholdHysteresis;
-                break;
+          switch( steerConfig.workswitchType ) {
+            case SteerConfig::WorkswitchType::Gpio:
+              value =  digitalRead( ( uint8_t )steerConfig.gpioWorkswitch ) ? 1 : 0;
+              threshold = 1;
+              hysteresis = 0;
+              break;
 
-              case SteerConfig::WorkswitchType::FrontHitchPosition:
-                value = steerCanData.frontHitchPosition;
-                threshold = steerConfig.canBusHitchThreshold;
-                hysteresis = steerConfig.canBusHitchThresholdHysteresis;
-                break;
+            case SteerConfig::WorkswitchType::RearHitchPosition:
+              value = steerCanData.rearHitchPosition;
+              threshold = steerConfig.canBusHitchThreshold;
+              hysteresis = steerConfig.canBusHitchThresholdHysteresis;
+              break;
 
-              case SteerConfig::WorkswitchType::RearPtoRpm:
-                value = steerCanData.rearPtoRpm;
-                threshold = steerConfig.canBusRpmThreshold;
-                hysteresis = steerConfig.canBusRpmThresholdHysteresis;
-                break;
+            case SteerConfig::WorkswitchType::FrontHitchPosition:
+              value = steerCanData.frontHitchPosition;
+              threshold = steerConfig.canBusHitchThreshold;
+              hysteresis = steerConfig.canBusHitchThresholdHysteresis;
+              break;
 
-              case SteerConfig::WorkswitchType::FrontPtoRpm:
-                value = steerCanData.frontPtoRpm;
-                threshold = steerConfig.canBusRpmThreshold;
-                hysteresis = steerConfig.canBusRpmThresholdHysteresis;
-                break;
+            case SteerConfig::WorkswitchType::RearPtoRpm:
+              value = steerCanData.rearPtoRpm;
+              threshold = steerConfig.canBusRpmThreshold;
+              hysteresis = steerConfig.canBusRpmThresholdHysteresis;
+              break;
 
-              case SteerConfig::WorkswitchType::MotorRpm:
-                value = steerCanData.motorRpm;
-                threshold = steerConfig.canBusRpmThreshold;
-                hysteresis = steerConfig.canBusRpmThresholdHysteresis;
-                break;
+            case SteerConfig::WorkswitchType::FrontPtoRpm:
+              value = steerCanData.frontPtoRpm;
+              threshold = steerConfig.canBusRpmThreshold;
+              hysteresis = steerConfig.canBusRpmThresholdHysteresis;
+              break;
 
-              default:
-                break;
-            }
+            case SteerConfig::WorkswitchType::MotorRpm:
+              value = steerCanData.motorRpm;
+              threshold = steerConfig.canBusRpmThreshold;
+              hysteresis = steerConfig.canBusRpmThresholdHysteresis;
+              break;
 
-            static bool workswitchState = false;
-
-            if( value >= threshold ) {
-              workswitchState = true;
-            }
-
-            if( value < ( threshold - hysteresis ) ) {
-              workswitchState = false;
-            }
-
-            if( steerConfig.workswitchActiveLow ) {
-              workswitchState = ! workswitchState;
-            }
-
-            if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-              sendStateTransmission( steerConfig.qogChannelIdWorkswitch, workswitchState );
-            }
-
-            if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-              data[10] |= workswitchState ? 1 : 0;
-            }
-            digitalWrite( steerConfig.gpioWorkLED, workswitchState);
+            default:
+              break;
           }
 
-            if( steerChangeProcessed == false && ( millis() - steerChangeMillis ) > 200 ) {
-              if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow) {
-                steerChangeProcessed = true;
-                steerState = ! steerState;
-                if( steerState == false ) {
-                  safetyAlarmLatch = false;
-                }
-              }
-            }
+          static bool workswitchState = false;
 
-            if( millis() - steeringWheelActivityMillis < steerConfig.steeringWheelFrameMillis ) {
-              if( ( steeringPulseCount / 2 ) > steerConfig.steeringWheelFramePulses ) { // divide by two to compensate for LOW and HIGH
-                steerState = false;
-                steeringPulseCount = 0;
-              }
-            } else { steeringPulseCount = 0; }
+          if( value >= threshold ) {
+            workswitchState = true;
+          }
 
-            if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-              sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerState );
-            }
+          if( value < ( threshold - hysteresis ) ) {
+            workswitchState = false;
+          }
 
-            if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-              data[11] |= steerState ? 0 : 2;
-            }
+          if( steerConfig.workswitchActiveLow ) {
+            workswitchState = ! workswitchState;
+          }
+
+          if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
+            sendStateTransmission( steerConfig.qogChannelIdWorkswitch, workswitchState );
+          }
+
+          if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
+            data[10] |= workswitchState ? 1 : 0;
+          }
+          digitalWrite( steerConfig.gpioWorkLED, workswitchState);
         }
+
+          if( steerChangeProcessed == false && ( millis() - steerChangeMillis ) > 200 ) {
+            if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow) {
+              steerChangeProcessed = true;
+              steerState = ! steerState;
+              if( steerState == false ) {
+                safetyAlarmLatch = false;
+              }
+            }
+          }
+
+          if( millis() - steeringWheelActivityMillis < steerConfig.steeringWheelFrameMillis ) {
+            if( ( steeringPulseCount / 2 ) > steerConfig.steeringWheelFramePulses ) { // divide by two to compensate for LOW and HIGH
+              steerState = false;
+              steeringPulseCount = 0;
+            }
+          } else { steeringPulseCount = 0; }
+
+          if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
+            sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerState );
+          }
+
+          if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
+            data[11] |= steerState ? 0 : 2;
+          }
+      }
         //data[12] = 0; // PWM ?
-		//add the checksum
-		int CRCtoAOG = 0;
-		for (byte i = 2; i < sizeof(data) - 1; i++)
-		{
-			CRCtoAOG = (CRCtoAOG + data[i]);
-		}
-		data[sizeof(data) - 1] = CRCtoAOG;
+      //add the checksum
+      int CRCtoAOG = 0;
+      for (byte i = 2; i < sizeof(data) - 1; i++)
+      {
+        CRCtoAOG = (CRCtoAOG + data[i]);
+      }
+      data[sizeof(data) - 1] = CRCtoAOG;
 
-        if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-          udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
-        }
-
+      if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
+        udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
       }
 
       {
