@@ -25,6 +25,7 @@ void diagnosticWorker10Hz( void* z ) {
         str += " KPH";
       }
       labelSpeedSafetyHandle->value = str;
+      labelSpeedSafetyHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
       ESPUI.updateControlAsync( labelSpeedSafetyHandle );
     }
     {
