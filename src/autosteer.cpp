@@ -166,17 +166,18 @@ void autosteerWorker100Hz( void* z ) {
         case SteerConfig::OutputType::HydraulicDanfoss: {
           ledcWrite( 0, 128 );
           ledcWrite( 1, 0 );
+          ledcWrite( 2, 0 );
         }
         break;
 
         default: {
           ledcWrite( 0, 0 );
           ledcWrite( 1, 0 );
+          ledcWrite( 2, 0 );
         }
         break;
       }
 
-      digitalWrite( steerConfig.gpioEn, LOW );
       digitalWrite( steerConfig.gpioSteerLED, LOW );
     } else {
 
@@ -220,14 +221,14 @@ void autosteerWorker100Hz( void* z ) {
         switch( initialisation.outputType ) {
           case SteerConfig::OutputType::SteeringMotorIBT2:
           case SteerConfig::OutputType::HydraulicPwm2Coil: {
+            ledcWrite( 0, 0 );
             if( pidOutputTmp >= 0 ) {
-              ledcWrite( 0, pidOutputTmp );
-              ledcWrite( 1, 0 );
+              ledcWrite( 1, pidOutputTmp );
+              ledcWrite( 2, 0 );
             }
-
             if( pidOutputTmp < 0 ) {
-              ledcWrite( 0, 0 );
-              ledcWrite( 1, -pidOutputTmp );
+              ledcWrite( 1, 0 );
+              ledcWrite( 2, -pidOutputTmp );
             }
           }
           break;
@@ -242,11 +243,12 @@ void autosteerWorker100Hz( void* z ) {
 
             ledcWrite( 0, pidOutputTmp );
 
-            digitalWrite( steerConfig.gpioEn, HIGH );
+            ledcWrite( 2, 255 );
           }
           break;
 
           case SteerConfig::OutputType::HydraulicDanfoss: {
+            ledcWrite( 2, 255 );
 
             // go from 25% on: max left, 50% on: center, 75% on: right max
             if( pidOutputTmp >  250 ) {
@@ -267,11 +269,11 @@ void autosteerWorker100Hz( void* z ) {
             break;
         }
 
-        digitalWrite( steerConfig.gpioEn, HIGH );
         digitalWrite( steerConfig.gpioSteerLED, HIGH );
       } else {
           ledcWrite( 0, 0 );
           ledcWrite( 1, 0 );
+          ledcWrite( 2, 0 );
         }
       }
 
@@ -664,9 +666,10 @@ void initAutosteer() {
     ledcAttachPin( steerConfig.gpioDir, 1 );
     ledcWrite( 1, 0 );
 
-
     pinMode( steerConfig.gpioEn, OUTPUT );
-    digitalWrite( steerConfig.gpioEn, LOW );
+    ledcSetup( 2, steerConfig.pwmFrequency, 8 );
+    ledcAttachPin( steerConfig.gpioEn, 2 );
+    ledcWrite( 2, 0 );
 
     pinMode( steerConfig.gpioSteerLED, OUTPUT );
     digitalWrite( steerConfig.gpioSteerLED, LOW );
