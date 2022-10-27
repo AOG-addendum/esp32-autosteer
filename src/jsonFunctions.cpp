@@ -151,6 +151,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["output"]["type"] = int( config.outputType );
   j["output"]["pwmFrequency"] = config.pwmFrequency;
   j["output"]["minPWM"] = config.steeringPidMinPwm;
+  j["output"]["maxPWM"] = config.steeringPidMaxPwm;
   j["output"]["invertOutput"] = config.invertOutput;
   j["output"]["dither"] = config.dither;
 
@@ -247,6 +248,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.outputType = j.value( "/output/type"_json_pointer, steerConfigDefaults.outputType );
       config.pwmFrequency = j.value( "/output/pwmFrequency"_json_pointer, steerConfigDefaults.pwmFrequency );
       config.steeringPidMinPwm = j.value( "/output/minPWM"_json_pointer, steerConfigDefaults.steeringPidMinPwm );
+      config.steeringPidMaxPwm = j.value( "/output/maxPWM"_json_pointer, steerConfigDefaults.steeringPidMaxPwm );
       config.invertOutput = j.value( "/output/invertOutput"_json_pointer, steerConfigDefaults.invertOutput );
       config.dither = j.value( "/output/dither"_json_pointer, steerConfigDefaults.dither );
 

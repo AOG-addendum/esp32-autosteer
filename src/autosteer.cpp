@@ -44,6 +44,7 @@ AsyncUDP udpLocalPort;
 AsyncUDP udpRemotePort;
 
 double pidOutput = 0;
+double pidOutputTmp = 0;
 AutoPID pid(
         &( steerSetpoints.actualSteerAngle ),
         &( steerSetpoints.requestedSteerAngle ),
@@ -206,14 +207,14 @@ void autosteerWorker100Hz( void* z ) {
 
       if( pidOutput ) {
 
-        double pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
+        pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
 
-        if( pidOutputTmp < 0 && pidOutputTmp > -steerConfig.steeringPidMinPwm ) {
-          pidOutputTmp = -steerConfig.steeringPidMinPwm;
+        if( pidOutputTmp < 0 ) {
+          constrain(pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm);
         }
 
-        if( pidOutputTmp > 0 && pidOutputTmp < steerConfig.steeringPidMinPwm ) {
-          pidOutputTmp = steerConfig.steeringPidMinPwm;
+        if( pidOutputTmp > 0 ) {
+          constrain(pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm);
         }
 
         pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil
@@ -250,17 +251,8 @@ void autosteerWorker100Hz( void* z ) {
           case SteerConfig::OutputType::HydraulicDanfoss: {
             ledcWrite( 2, 255 );
 
-            // go from 25% on: max left, 50% on: center, 75% on: right max
-            if( pidOutputTmp >  250 ) {
-              pidOutputTmp =  250;
-            }
-
-            if( pidOutputTmp < -250 ) {
-              pidOutputTmp = -250;
-            }
-
-            pidOutputTmp /= 4;
-            pidOutputTmp += 128;
+            pidOutputTmp /= 2;
+            pidOutputTmp += 127.5;
             ledcWrite( 0, pidOutputTmp );
           }
           break;
@@ -421,6 +413,8 @@ void autosteerWorker100Hz( void* z ) {
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+            str += ", output: ";
+            str += ( float )pidOutputTmp ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -437,6 +431,8 @@ void autosteerWorker100Hz( void* z ) {
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+            str += ", output: ";
+            str += ( float )pidOutputTmp ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -453,6 +449,8 @@ void autosteerWorker100Hz( void* z ) {
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+            str += ", output: ";
+            str += ( float )pidOutputTmp ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -469,6 +467,8 @@ void autosteerWorker100Hz( void* z ) {
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+            str += ", output: ";
+            str += ( float )pidOutputTmp ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
@@ -485,6 +485,8 @@ void autosteerWorker100Hz( void* z ) {
             str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
             str += ", enabled: ";
             str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+            str += ", output: ";
+            str += ( float )pidOutputTmp ;
             labelStatusOutputHandle->value = str;
             labelStatusOutputHandle->color = ControlColor::Emerald;
             ESPUI.updateControlAsync( labelStatusOutputHandle );
