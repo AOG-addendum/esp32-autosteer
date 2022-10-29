@@ -210,11 +210,13 @@ void autosteerWorker100Hz( void* z ) {
         pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
 
         if( pidOutputTmp < 0 ) {
-          constrain(pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm);
+          pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, 0, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
+          pidOutputTmp = constrain( pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
         }
 
         if( pidOutputTmp > 0 ) {
-          constrain(pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm);
+          pidOutputTmp = map( pidOutputTmp, 0, steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
+          pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
         }
 
         pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil
@@ -250,9 +252,8 @@ void autosteerWorker100Hz( void* z ) {
 
           case SteerConfig::OutputType::HydraulicDanfoss: {
             ledcWrite( 2, 255 );
-
-            pidOutputTmp /= 2;
-            pidOutputTmp += 127.5;
+            uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm;
+            pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMaxPwm, lowRange, steerConfig.steeringPidMaxPwm );
             ledcWrite( 0, pidOutputTmp );
           }
           break;
