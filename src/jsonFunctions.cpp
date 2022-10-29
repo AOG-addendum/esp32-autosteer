@@ -181,7 +181,6 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["wheelangle"]["ackermann"] = config.ackermann;
   j["wheelangle"]["ackermannAboveZero"] = config.ackermannAboveZero;
 
-  j["wheelangle"]["tierod"]["offset"] = int( config.wheelAngleInput );
   j["wheelangle"]["tierod"]["FirstArmLenght"] = config.wheelAngleFirstArmLenght;
   j["wheelangle"]["tierod"]["SecondArmLenght"] = config.wheelAngleSecondArmLenght;
   j["wheelangle"]["tierod"]["TieRodStroke"] = config.wheelAngleTieRodStroke;
