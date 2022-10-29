@@ -72,6 +72,16 @@ void initESPUI ( void ) {
         diagnostics.fuse1Shorted = 0;
         diagnostics.fuse2Shorted = 0;
         saveDiagnostics();
+
+        Control* labelSteerEngagedFaultsHandle = ESPUI.getControl( labelSteerEngagedFaults );
+        String str;
+        str.reserve( 30 );
+        str = "Number of faults: ";
+        str += ( int8_t ) diagnostics.steerEnabledWithNoPower;
+        str += "\nFault active since startup: No";
+        labelSteerEngagedFaultsHandle->value = str;
+        labelSteerEngagedFaultsHandle->color = ControlColor::Emerald;
+        ESPUI.updateControlAsync( labelSteerEngagedFaultsHandle );
       }
     } );
   }
