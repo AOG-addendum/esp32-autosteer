@@ -164,12 +164,13 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["PID"]["bangOff"] = config.steeringPidBangOff;
 
   j["workswitch"]["workswitchType"] = int( config.workswitchType );
-  j["workswitch"]["steeringWheelEncoder"] = int( config.steeringWheelEncoder );
-  j["workswitch"]["steeringWheelFramePulses"] = int( config.steeringWheelFramePulses );
-  j["workswitch"]["steeringWheelFrameMillis"] = int( config.steeringWheelFrameMillis );
   j["workswitch"]["workswitchActiveLow"] = config.workswitchActiveLow;
   j["workswitch"]["steerswitchActiveLow"] = config.steerswitchActiveLow;
   j["workswitch"]["steerSwitchIsMomentary"] = config.steerSwitchIsMomentary;
+  j["workswitch"]["disengageSwitchType"] = int( config.disengageSwitchType );
+  j["workswitch"]["hydraulicSwitchActiveLow"] = config.hydraulicSwitchActiveLow;
+  j["workswitch"]["steeringWheelFramePulses"] = config.steeringWheelFramePulses;
+  j["workswitch"]["steeringWheelFrameMillis"] = config.steeringWheelFrameMillis;
 
   j["wheelangle"]["input"] = config.wheelAngleInput;
   j["wheelangle"]["sensorType"] = int( config.wheelAngleSensorType );
@@ -261,12 +262,13 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.steeringPidBangOff = j.value( "/PID/bangOff"_json_pointer, steerConfigDefaults.steeringPidBangOff );
 
       config.workswitchType = j.value( "/workswitch/workswitchType"_json_pointer, steerConfigDefaults.workswitchType );
-      config.steeringWheelEncoder = j.value( "/workswitch/steeringWheelEncoder"_json_pointer, steerConfigDefaults.steeringWheelEncoder );
-      config.steeringWheelFramePulses = j.value( "/workswitch/steeringWheelFramePulses"_json_pointer, steerConfigDefaults.steeringWheelFramePulses );
-      config.steeringWheelFrameMillis = j.value( "/workswitch/steeringWheelFrameMillis"_json_pointer, steerConfigDefaults.steeringWheelFrameMillis );
       config.workswitchActiveLow = j.value( "/workswitch/workswitchActiveLow"_json_pointer, steerConfigDefaults.workswitchActiveLow );
       config.steerswitchActiveLow = j.value( "/workswitch/steerswitchActiveLow"_json_pointer, steerConfigDefaults.steerswitchActiveLow );
       config.steerSwitchIsMomentary = j.value( "/workswitch/steerSwitchIsMomentary"_json_pointer, steerConfigDefaults.steerSwitchIsMomentary );
+      config.disengageSwitchType = j.value( "/workswitch/disengageSwitchType"_json_pointer, steerConfigDefaults.disengageSwitchType );
+      config.hydraulicSwitchActiveLow = j.value( "/workswitch/hydraulicSwitchActiveLow"_json_pointer, steerConfigDefaults.hydraulicSwitchActiveLow );
+      config.steeringWheelFramePulses = j.value( "/workswitch/steeringWheelFramePulses"_json_pointer, steerConfigDefaults.steeringWheelFramePulses );
+      config.steeringWheelFrameMillis = j.value( "/workswitch/steeringWheelFrameMillis"_json_pointer, steerConfigDefaults.steeringWheelFrameMillis );
 
       config.wheelAngleInput = j.value( "/wheelangle/input"_json_pointer, steerConfigDefaults.wheelAngleInput );
       config.wheelAngleSensorType = j.value( "/wheelangle/sensorType"_json_pointer, steerConfigDefaults.wheelAngleSensorType );

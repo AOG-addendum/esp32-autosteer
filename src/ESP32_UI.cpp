@@ -278,23 +278,42 @@ void initESPUI ( void ) {
     }
 
     {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.steeringWheelFramePulses ), ControlColor::Peterriver, tab,
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Disengage Switch Type*", String( ( int )steerConfig.disengageSwitchType ), ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
-        steerConfig.steeringWheelFramePulses = control->value.toInt();
+        steerConfig.disengageSwitchType = ( SteerConfig::DisengageSwitchType )control->value.toInt();
+        setResetButtonToRed();
       } );
-      ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
-  }
+      ESPUI.addControl( ControlType::Option, "Encoder on steering shaft", "0", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "Pressure switch in hydraulics", "1", ControlColor::Alizarin, sel );
+    }
 
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.steeringWheelFrameMillis ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.steeringWheelFrameMillis = control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
+    if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
+      {
+        ESPUI.addControl( ControlType::Switcher, "Hydraulic Switch Active Low", steerConfig.hydraulicSwitchActiveLow ? "1" : "0", ControlColor::Wetasphalt, tab,
+        []( Control * control, int id ) {
+          steerConfig.hydraulicSwitchActiveLow = control->value.toInt() == 1;
+        } );
+      }
+    } else {
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.steeringWheelFramePulses ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.steeringWheelFramePulses = control->value.toInt();
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
+      }
+
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.steeringWheelFrameMillis ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.steeringWheelFrameMillis = control->value.toInt();
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
+      }
     }
   }
 

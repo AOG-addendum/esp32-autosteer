@@ -88,6 +88,11 @@ struct SteerConfig {
     AgOpenGps = 1
   } mode = Mode::AgOpenGps;
 
+  enum class DisengageSwitchType : uint8_t {
+    Encoder = 0,
+    Hydraulic = 1
+  } disengageSwitchType = DisengageSwitchType::Encoder;
+
   char ssid[24] = "NetzRosegghof3";
   char password[24] = "gghof080";
   char hostname[24] = "ESP32-QOG";
@@ -142,7 +147,7 @@ struct SteerConfig {
   uint8_t gpioWorkLED = 14;
   uint8_t gpioSteerswitch = 15;
   uint8_t gpioSteerLED = 12;
-  uint8_t steeringWheelEncoder = 23;
+  uint8_t disengageGPIO = 23;
   uint16_t steeringWheelFramePulses = 3;
   uint16_t steeringWheelFrameMillis = 1000;
   double steeringShuntVoltsPerAmp = 1.0;
@@ -150,6 +155,7 @@ struct SteerConfig {
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;
   bool steerSwitchIsMomentary = false;
+  bool hydraulicSwitchActiveLow = true;
 
   enum class WheelAngleSensorType : uint8_t {
     WheelAngle = 0,

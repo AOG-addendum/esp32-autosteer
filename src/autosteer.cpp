@@ -373,8 +373,13 @@ void autosteerWorker100Hz( void* z ) {
             }
           }
 
-          if( millis() - steeringWheelActivityMillis < steerConfig.steeringWheelFrameMillis ) {
-            if( ( steeringPulseCount / 2 ) > steerConfig.steeringWheelFramePulses ) { // divide by two to compensate for LOW and HIGH
+          if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
+            if( digitalRead( steerConfig.disengageGPIO ) != steerConfig.hydraulicSwitchActiveLow ){
+              steerState = false;
+            }
+          }
+          else if( millis() - steeringWheelActivityMillis < steerConfig.steeringWheelFrameMillis ) {
+            if( ( steeringPulseCount / 2 ) >= steerConfig.steeringWheelFramePulses ) { // divide by two to compensate for LOW and HIGH
               steerState = false;
               steeringPulseCount = 0;
             }
@@ -525,7 +530,7 @@ void IRAM_ATTR steerswitchMaintainedIsr() {
 void IRAM_ATTR steeringWheelIsr() {
     // interrupt service routine for the steering wheel
     // due to a problem in ESP32, we have to actually check for a change in the input state
-    steeringWheelState = digitalRead( ( uint8_t ) steerConfig.steeringWheelEncoder );
+    steeringWheelState = digitalRead( ( uint8_t ) steerConfig.disengageGPIO );
     if( steeringWheelPrevState != steeringWheelState ){
       steeringWheelPrevState = steeringWheelState;
       if( steeringPulseCount == 0 ){
@@ -723,8 +728,10 @@ void initAutosteer() {
       attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
   }
 
-  pinMode( steerConfig.steeringWheelEncoder, INPUT_PULLUP );
-  attachInterrupt( steerConfig.steeringWheelEncoder, steeringWheelIsr, CHANGE);
+  pinMode( steerConfig.disengageGPIO, INPUT_PULLUP );
+  if ( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
+    attachInterrupt( steerConfig.disengageGPIO, steeringWheelIsr, CHANGE);
+  }
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
   if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ) {
