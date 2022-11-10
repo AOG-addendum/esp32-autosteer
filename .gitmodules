@@ -4,3 +4,9 @@
 [submodule "tools/EspArduinoExceptionDecoder"]
 	path = tools/EspArduinoExceptionDecoder
 	url = https://github.com/me21/EspArduinoExceptionDecoder.git
+[submodule "lib/AutoPID"]
+	path = lib/AutoPID
+	url = https://github.com/AOG-addendum/AutoPID.git
+[submodule "lib/ESPUI"]
+	path = lib/ESPUI
+	url = https://github.com/AOG-addendum/ESPUI.git
