@@ -64,10 +64,10 @@ void idleStatsWorker( void* z ) {
     heap_caps_get_info( &heapInfo, MALLOC_CAP_8BIT );
 
     str = "Core0: ";
-    str += 1000 - idleCtrCore0;
+    str += ( 1000 - idleCtrCore0 ) / 10;
     str += "‰<br/>";
     str += "Core1: ";
-    str += 1000 - idleCtrCore1;
+    str += ( 1000 - idleCtrCore1 ) / 10;
     str += "‰<br/>Uptime: ";
     str += millis() / 1000;
     str += "s<br/>Heap free: ";
