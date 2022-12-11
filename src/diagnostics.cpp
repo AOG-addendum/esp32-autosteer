@@ -44,8 +44,8 @@ void diagnosticWorker10Hz( void* z ) {
       str += " volts max while steering";
       labelSupplyVoltageHandle->value = str;
       ESPUI.updateControlAsync( labelSupplyVoltageHandle );
-      }
-      {
+    }
+    {
       Control* labelSteerMotorCurrentHandle = ESPUI.getControl( labelSteerMotorCurrent );
       String str;
       str.reserve( 30 );
