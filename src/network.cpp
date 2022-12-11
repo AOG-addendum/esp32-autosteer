@@ -9,54 +9,58 @@ IPAddress softApIP( 192, 168, 1, 1 );
 String apName;
 bool WiFiWasConnected = false;
 
-void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
+void WiFiStationGotIP( WiFiEvent_t event, WiFiEventInfo_t info ){
     IPAddress myIP = WiFi.localIP();
     if( myIP[3] != 77 ){
-        myIP[3] = 77;
-        if( Ping.ping(myIP, 3) ){
-          Serial.println("Found a steer module on this network, disconnecting...");
-          WiFi.disconnect(true);
-          delay(100);
-          Serial.println("Falling back to access point only");
+        IPAddress pingIP = myIP;
+        pingIP[3] = 77;
+        if( Ping.ping( pingIP, 2 )){
+          Serial.println( "Found a steer module on this network, disconnecting..." );
+          WiFi.disconnect( true );
+          delay( 100 );
+          Serial.println( "Falling back to access point only" );
           WiFi.mode( WIFI_MODE_AP );
           return;
         }
+        delay( 10 );
         IPAddress gwIP = WiFi.gatewayIP();
-        if (!WiFi.config(myIP, gwIP, IPAddress( 255, 255, 255, 0 ), gwIP)) {
-          Serial.println("STA Failed to configure");
+        delay( 10 );
+        myIP[3] = 77;
+        if( !WiFi.config( myIP, gwIP, IPAddress( 255, 255, 255, 0 ), gwIP )){
+          Serial.println( "STA Failed to configure" );
         }
-        Serial.println("Switching off AP, station only");
-        WiFi.softAPdisconnect (true);
+        Serial.println( "Switching off AP, station only" );
+        WiFi.softAPdisconnect( true );
         WiFi.mode( WIFI_MODE_STA );
     }
     digitalWrite( steerConfig.apModePin, HIGH );
     WiFiWasConnected = true;
 }
 
-void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
+void WiFiStationDisconnected( WiFiEvent_t event, WiFiEventInfo_t info ){
     digitalWrite( steerConfig.apModePin, LOW );
     if( WiFiWasConnected == true ){
-      WiFi.disconnect(true);
-      if( !WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE) ) {
-        Serial.println("STA Failed to unset configuration");
+      WiFi.disconnect( true );
+      if( !WiFi.config( INADDR_NONE, INADDR_NONE, INADDR_NONE )){
+        Serial.println( "STA Failed to unset configuration" );
       }
       delay( 25 );
       WiFi.begin( steerConfig.ssid, steerConfig.password );
-      Serial.println("reconnecting");
+      Serial.println( "reconnecting" );
     } else {
       WiFi.reconnect();
     }
 }
 
-void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
-  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+void WiFiStationConnected( WiFiEvent_t event, WiFiEventInfo_t info ){
+  WiFi.config( INADDR_NONE, INADDR_NONE, INADDR_NONE );
   WiFi.setHostname( steerConfig.hostname );
 }
 
-void WiFiAPStaConnected(WiFiEvent_t event, WiFiEventInfo_t info){
-    Serial.println("Switching off station mode, AP only");
-    WiFi.disconnect(true);
-    delay(100);
+void WiFiAPStaConnected( WiFiEvent_t event, WiFiEventInfo_t info ){
+    Serial.println( "Switching off station mode, AP only" );
+    WiFi.disconnect( true );
+    delay( 100 );
     WiFi.mode( WIFI_MODE_AP );
 }
 
@@ -70,7 +74,7 @@ void initWiFi( void ){
   WiFi.onEvent( WiFiAPStaConnected, ARDUINO_EVENT_WIFI_AP_STACONNECTED );
   // try to connect to existing network
   WiFi.begin( steerConfig.ssid, steerConfig.password );
-  WiFi.setAutoReconnect (false);
+  WiFi.setAutoReconnect( false );
   Serial.print( "\n\nTry to connect to existing network \"" );
   Serial.print( steerConfig.ssid );
   Serial.print( "\" with password \"" );
@@ -101,11 +105,11 @@ void initWiFi( void ){
       delay( 25 );
       WiFi.softAP( apName.c_str() );
       WiFi.begin( steerConfig.ssid, steerConfig.password );
-      while (!SYSTEM_EVENT_AP_START) { // wait until AP has started
-          delay(100);
-          Serial.print(".");
+      while( !SYSTEM_EVENT_AP_START ){ // wait until AP has started
+          delay( 100 );
+          Serial.print( "." );
       }
-      WiFi.softAPConfig( softApIP, softApIP, IPAddress( 255, 255, 255, 0 ) );
+      WiFi.softAPConfig( softApIP, softApIP, IPAddress( 255, 255, 255, 0 ));
       delay( 25 );
     }
 }
