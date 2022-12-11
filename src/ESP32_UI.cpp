@@ -10,7 +10,7 @@
 int8_t ditherAmount = 0;
 uint16_t labelLoad;
 uint16_t labelWheelAngle;
-uint16_t labelSpeedSafety;
+uint16_t labelSpeedDisableAutosteer;
 uint16_t labelSupplyVoltage;
 uint16_t labelSteerMotorCurrent;
 uint16_t labelSteerEngagedFaults;
@@ -60,7 +60,7 @@ void initESPUI ( void ) {
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Diagnostics", "Diagnostics" );
 
-    labelSpeedSafety = ESPUI.addControl( ControlType::Label, "Speed Safety:", "Not started", ControlColor::Emerald, tab );
+    labelSpeedDisableAutosteer = ESPUI.addControl( ControlType::Label, "Speed disable autosteer:", "Not started", ControlColor::Emerald, tab );
     labelSupplyVoltage = ESPUI.addControl( ControlType::Label, "Steer valve supply voltage:", "Not loaded", ControlColor::Emerald, tab );
     labelSteerMotorCurrent = ESPUI.addControl( ControlType::Label, "Steer motor current:", "Not loaded", ControlColor::Emerald, tab );
     labelSteerEngagedFaults = ESPUI.addControl( ControlType::Label, "Steering engaged with no power:", "Not loaded", ControlColor::Emerald, tab );

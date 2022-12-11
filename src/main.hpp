@@ -46,7 +46,7 @@ extern bool disabledBySpeedSafety;
 
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
-extern uint16_t labelSpeedSafety;
+extern uint16_t labelSpeedDisableAutosteer;
 extern uint16_t labelSupplyVoltage;
 extern uint16_t labelSteerMotorCurrent;
 extern uint16_t labelSteerEngagedFaults;

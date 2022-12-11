@@ -12,21 +12,23 @@ void diagnosticWorker10Hz( void* z ) {
   for( ;; ) {
 
     {
-      Control* labelSpeedSafetyHandle = ESPUI.getControl( labelSpeedSafety );
+      Control* labelSpeedDisableAutosteerHandle = ESPUI.getControl( labelSpeedDisableAutosteer );
       String str;
       str.reserve( 30 );
-      str = "Autosteer disabled by safety: ";
-      str += ( bool )disabledBySpeedSafety ? "Yes" : "No" ;
-      str += ", speed: ";
+      str = "Speed: ";
       str += ( float )steerSetpoints.speed;
       if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
         str += " MPH";
       } else {
         str += " KPH";
       }
-      labelSpeedSafetyHandle->value = str;
-      labelSpeedSafetyHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
-      ESPUI.updateControlAsync( labelSpeedSafetyHandle );
+      str += "\nDisabled by max speed: ";
+      str += ( bool )disabledBySpeedSafety ? "Yes" : "No" ;
+      str += "\nDisabled by min speed: ";
+      str += ( bool )steerSetpoints.speed < steerConfig.minAutosteerSpeed ? "Yes" : "No" ;
+      labelSpeedDisableAutosteerHandle->value = str;
+      labelSpeedDisableAutosteerHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
+      ESPUI.updateControlAsync( labelSpeedDisableAutosteerHandle );
     }
     {
       Control* labelSupplyVoltageHandle = ESPUI.getControl( labelSupplyVoltage );
