@@ -50,6 +50,7 @@ extern uint16_t labelSpeedDisableAutosteer;
 extern uint16_t labelSupplyVoltage;
 extern uint16_t labelSteerMotorCurrent;
 extern uint16_t labelSteerEngagedFaults;
+extern uint16_t labelSwitchStates;
 
 extern uint16_t labelStatusOutput;
 extern uint16_t labelStatusAdc;

@@ -80,6 +80,19 @@ void diagnosticWorker10Hz( void* z ) {
       handle->value = str;
       ESPUI.updateControlAsync( handle );
     }
+    {
+      Control* labelSwitchStatesHandle = ESPUI.getControl( labelSwitchStates );
+      String str;
+      str.reserve( 30 );
+      str = "Autosteer switch: ";
+      str += ( bool ) digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ? "Off" : "On" ;
+      str += "\nWork switch: ";
+      str += ( bool ) digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ? "Off" : "On" ;
+      str += "\nDisengage switch: ";
+      str += ( bool ) digitalRead( steerConfig.gpioDisengage ) == steerConfig.workswitchActiveLow ? "Off" : "On" ;
+      labelSwitchStatesHandle->value = str;
+      ESPUI.updateControlAsync( labelSwitchStatesHandle );
+    }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }

@@ -14,6 +14,7 @@ uint16_t labelSpeedDisableAutosteer;
 uint16_t labelSupplyVoltage;
 uint16_t labelSteerMotorCurrent;
 uint16_t labelSteerEngagedFaults;
+uint16_t labelSwitchStates;
 uint16_t buttonReset;
 
 uint16_t labelWheelAngleDisplacement;
@@ -64,6 +65,7 @@ void initESPUI ( void ) {
     labelSupplyVoltage = ESPUI.addControl( ControlType::Label, "Steer valve supply voltage:", "Not loaded", ControlColor::Emerald, tab );
     labelSteerMotorCurrent = ESPUI.addControl( ControlType::Label, "Steer motor current:", "Not loaded", ControlColor::Emerald, tab );
     labelSteerEngagedFaults = ESPUI.addControl( ControlType::Label, "Steering engaged with no power:", "Not loaded", ControlColor::Emerald, tab );
+    labelSwitchStates = ESPUI.addControl( ControlType::Label, "Switch states:", "Not loaded", ControlColor::Emerald, tab );
     ESPUI.addControl( ControlType::Button, "Diagnostics:", "Reset all to zero", ControlColor::Emerald, tab, []( Control * control, int id ) {
       if( id == B_UP ) {
         diagnostics.steerSupplyVoltageMax = steerSupplyVoltage;
