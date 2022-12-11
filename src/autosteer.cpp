@@ -376,7 +376,7 @@ void autosteerWorker100Hz( void* z ) {
           }
 
           if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
-            if( digitalRead( steerConfig.disengageGPIO ) != steerConfig.hydraulicSwitchActiveLow ){
+            if( digitalRead( steerConfig.gpioDisengage ) != steerConfig.hydraulicSwitchActiveLow ){
               steerState = false;
             }
           }
@@ -532,7 +532,7 @@ void IRAM_ATTR steerswitchMaintainedIsr() {
 void IRAM_ATTR steeringWheelIsr() {
     // interrupt service routine for the steering wheel
     // due to a problem in ESP32, we have to actually check for a change in the input state
-    steeringWheelState = digitalRead( ( uint8_t ) steerConfig.disengageGPIO );
+    steeringWheelState = digitalRead( ( uint8_t ) steerConfig.gpioDisengage );
     if( steeringWheelPrevState != steeringWheelState ){
       steeringWheelPrevState = steeringWheelState;
       if( steeringPulseCount == 0 ){
@@ -730,9 +730,9 @@ void initAutosteer() {
       attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
   }
 
-  pinMode( steerConfig.disengageGPIO, INPUT_PULLUP );
+  pinMode( steerConfig.gpioDisengage, INPUT_PULLUP );
   if ( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
-    attachInterrupt( steerConfig.disengageGPIO, steeringWheelIsr, CHANGE);
+    attachInterrupt( steerConfig.gpioDisengage, steeringWheelIsr, CHANGE);
   }
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
