@@ -170,8 +170,8 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["workswitch"]["steerSwitchIsMomentary"] = config.steerSwitchIsMomentary;
   j["workswitch"]["disengageSwitchType"] = int( config.disengageSwitchType );
   j["workswitch"]["hydraulicSwitchActiveLow"] = config.hydraulicSwitchActiveLow;
-  j["workswitch"]["steeringWheelFramePulses"] = config.steeringWheelFramePulses;
-  j["workswitch"]["steeringWheelFrameMillis"] = config.steeringWheelFrameMillis;
+  j["workswitch"]["disengageFramePulses"] = config.disengageFramePulses;
+  j["workswitch"]["disengageFrameMillis"] = config.disengageFrameMillis;
 
   j["wheelangle"]["input"] = config.wheelAngleInput;
   j["wheelangle"]["sensorType"] = int( config.wheelAngleSensorType );
@@ -268,8 +268,8 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.steerSwitchIsMomentary = j.value( "/workswitch/steerSwitchIsMomentary"_json_pointer, steerConfigDefaults.steerSwitchIsMomentary );
       config.disengageSwitchType = j.value( "/workswitch/disengageSwitchType"_json_pointer, steerConfigDefaults.disengageSwitchType );
       config.hydraulicSwitchActiveLow = j.value( "/workswitch/hydraulicSwitchActiveLow"_json_pointer, steerConfigDefaults.hydraulicSwitchActiveLow );
-      config.steeringWheelFramePulses = j.value( "/workswitch/steeringWheelFramePulses"_json_pointer, steerConfigDefaults.steeringWheelFramePulses );
-      config.steeringWheelFrameMillis = j.value( "/workswitch/steeringWheelFrameMillis"_json_pointer, steerConfigDefaults.steeringWheelFrameMillis );
+      config.disengageFramePulses = j.value( "/workswitch/disengageFramePulses"_json_pointer, steerConfigDefaults.disengageFramePulses );
+      config.disengageFrameMillis = j.value( "/workswitch/disengageFrameMillis"_json_pointer, steerConfigDefaults.disengageFrameMillis );
 
       config.wheelAngleInput = j.value( "/wheelangle/input"_json_pointer, steerConfigDefaults.wheelAngleInput );
       config.wheelAngleSensorType = j.value( "/wheelangle/sensorType"_json_pointer, steerConfigDefaults.wheelAngleSensorType );

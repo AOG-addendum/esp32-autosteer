@@ -55,12 +55,12 @@ AutoPID pid(
 JsonQueueSelector jsonQueueSelector;
 
 constexpr time_t Timeout = 1000;
-volatile bool steeringWheelState;
-volatile bool steeringWheelPrevState;
+volatile bool disengageState;
+volatile bool disengagePrevState;
 volatile bool steerState = false;
 volatile bool steerChangeProcessed = true;
 volatile time_t steerChangeMillis = millis();
-volatile time_t steeringWheelActivityMillis = millis();
+volatile time_t disengageActivityMillis = millis();
 volatile uint16_t steeringPulseCount = 0;
 volatile uint16_t HZperiod = 0;
 
@@ -380,8 +380,8 @@ void autosteerWorker100Hz( void* z ) {
               steerState = false;
             }
           }
-          else if( millis() - steeringWheelActivityMillis < steerConfig.steeringWheelFrameMillis ) {
-            if( ( steeringPulseCount / 2 ) >= steerConfig.steeringWheelFramePulses ) { // divide by two to compensate for LOW and HIGH
+          else if( millis() - disengageActivityMillis < steerConfig.disengageFrameMillis ) {
+            if( ( steeringPulseCount / 2 ) >= steerConfig.disengageFramePulses ) { // divide by two to compensate for LOW and HIGH
               steerState = false;
               steeringPulseCount = 0;
             }
@@ -529,14 +529,14 @@ void IRAM_ATTR steerswitchMaintainedIsr() {
     }
 }
 
-void IRAM_ATTR steeringWheelIsr() {
+void IRAM_ATTR disengageIsr() {
     // interrupt service routine for the steering wheel
     // due to a problem in ESP32, we have to actually check for a change in the input state
-    steeringWheelState = digitalRead( ( uint8_t ) steerConfig.gpioDisengage );
-    if( steeringWheelPrevState != steeringWheelState ){
-      steeringWheelPrevState = steeringWheelState;
+    disengageState = digitalRead( ( uint8_t ) steerConfig.gpioDisengage );
+    if( disengagePrevState != disengageState ){
+      disengagePrevState = disengageState;
       if( steeringPulseCount == 0 ){
-        steeringWheelActivityMillis = millis();
+        disengageActivityMillis = millis();
       }
       steeringPulseCount += 1;
     }
@@ -732,7 +732,7 @@ void initAutosteer() {
 
   pinMode( steerConfig.gpioDisengage, INPUT_PULLUP );
   if ( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
-    attachInterrupt( steerConfig.gpioDisengage, steeringWheelIsr, CHANGE);
+    attachInterrupt( steerConfig.gpioDisengage, disengageIsr, CHANGE);
   }
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );

@@ -150,8 +150,8 @@ struct SteerConfig {
   uint8_t gpioSteerswitch = 15;
   uint8_t gpioSteerLED = 12;
   uint8_t gpioDisengage = 23;
-  uint16_t steeringWheelFramePulses = 3;
-  uint16_t steeringWheelFrameMillis = 1000;
+  uint16_t disengageFramePulses = 3;
+  uint16_t disengageFrameMillis = 1000;
   double steeringShuntVoltsPerAmp = 1.0;
   double maxSteerCurrent = 5.00;
   bool workswitchActiveLow = true;

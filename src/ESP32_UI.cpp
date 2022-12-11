@@ -308,9 +308,9 @@ void initESPUI ( void ) {
       }
     } else {
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.steeringWheelFramePulses ), ControlColor::Peterriver, tab,
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.disengageFramePulses ), ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
-          steerConfig.steeringWheelFramePulses = control->value.toInt();
+          steerConfig.disengageFramePulses = control->value.toInt();
         } );
         ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
@@ -318,9 +318,9 @@ void initESPUI ( void ) {
       }
 
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.steeringWheelFrameMillis ), ControlColor::Peterriver, tab,
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.disengageFrameMillis ), ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
-          steerConfig.steeringWheelFrameMillis = control->value.toInt();
+          steerConfig.disengageFrameMillis = control->value.toInt();
         } );
         ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
