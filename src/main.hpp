@@ -117,6 +117,7 @@ struct SteerConfig {
 
   double pwmFrequency = 1000;
   bool invertOutput = false;
+  float minAutosteerSpeed = 0.1;
   uint8_t gpioPwm = 27;
   uint8_t gpioDir = 26;
   uint8_t gpioEn = 25;

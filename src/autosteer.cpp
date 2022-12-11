@@ -157,10 +157,11 @@ void autosteerWorker100Hz( void* z ) {
       digitalWrite( steerConfig.gpioAlarm, LOW ); // turn off alarm after safety AND autosteer are off
     }
 
-    // check for timeout, data from AgOpenGPS, and safety disable
+    // check for timeout, data from AgOpenGPS, safety disable, and mininum autosteer speed
     if( steerSetpoints.lastPacketReceived < timeoutPoint ||
         steerSetpoints.enabled == false ||
-        disabledBySpeedSafety == true )
+        disabledBySpeedSafety == true ||
+        steerSetpoints.speed < steerConfig.minAutosteerSpeed )
       {
       
       switch( initialisation.outputType ) {

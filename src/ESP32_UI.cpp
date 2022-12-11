@@ -493,6 +493,16 @@ void initESPUI ( void ) {
     }
 
     {
+      uint16_t num = ESPUI.addControl( ControlType::Number, "Min autosteer speed", String( steerConfig.minAutosteerSpeed ), ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.minAutosteerSpeed = control->value.toFloat();
+      } );
+      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "2", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
+    }
+
+    {
       uint16_t num = ESPUI.addControl( ControlType::Number, "Dither (Hydraulic Pwm 2 Coil only)", String( steerConfig.dither ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.dither = control->value.toInt();
