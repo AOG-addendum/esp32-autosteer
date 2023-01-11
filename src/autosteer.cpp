@@ -263,12 +263,8 @@ void autosteerWorker100Hz( void* z ) {
             break;
         }
 
-        digitalWrite( steerConfig.gpioSteerLED, HIGH );
-      } else {
-          ledcWrite( 0, 0 );
-          ledcWrite( 1, 0 );
-          ledcWrite( 2, 0 );
         }
+        digitalWrite( steerConfig.gpioSteerLED, HIGH );
       }
 
 
