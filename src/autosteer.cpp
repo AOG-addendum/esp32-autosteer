@@ -161,8 +161,7 @@ void autosteerWorker100Hz( void* z ) {
     if( steerSetpoints.lastPacketReceived < timeoutPoint ||
         steerSetpoints.enabled == false ||
         disabledBySpeedSafety == true ||
-        steerSetpoints.speed < steerConfig.minAutosteerSpeed )
-      {
+        steerSetpoints.speed < steerConfig.minAutosteerSpeed ) {
       
       switch( initialisation.outputType ) {
         case SteerConfig::OutputType::HydraulicDanfoss: {
@@ -204,8 +203,6 @@ void autosteerWorker100Hz( void* z ) {
       // here comes the magic: executing the PID loop
       // the values are given by pointers, so the AutoPID gets them automaticaly
       pid.run();
-
-
       if( pidOutput ) {
 
         pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
@@ -246,7 +243,6 @@ void autosteerWorker100Hz( void* z ) {
             }
 
             ledcWrite( 0, pidOutputTmp );
-
             ledcWrite( 2, 255 );
           }
           break;
@@ -263,10 +259,9 @@ void autosteerWorker100Hz( void* z ) {
             break;
         }
 
-        }
-        digitalWrite( steerConfig.gpioSteerLED, HIGH );
       }
-
+      digitalWrite( steerConfig.gpioSteerLED, HIGH );
+    }
 
     static uint8_t loopCounter = 0;
 
