@@ -69,19 +69,14 @@ bool ditherDirection = false;
 bool dtcAutosteerPrevious = false;
 bool disabledBySpeedSafety = false;
 
-void ditherWorkerVariHz( void* z ) {
+void ditherWorkerHalfHZ( void* z ) {
 
   for( ;; ) {
-    if( steerConfig.dither == 0 ){ // prevent division by zero error
-      vTaskDelay( pdMS_TO_TICKS( 500 ) );
-      ditherAmount = 0;
-    } else {
-      vTaskDelay( pdMS_TO_TICKS( 500 / steerConfig.dither ) );
-      ditherAmount += ditherDirection ? -1 : 1 ;
-      if( abs( ditherAmount ) >= steerConfig.dither ){
-        ditherDirection = !ditherDirection;
-      }
+    ditherAmount += ditherDirection ? -1 : 1 ;
+    if( abs( ditherAmount ) >= steerConfig.dither ){
+      ditherDirection = !ditherDirection;
     }
+    vTaskDelay( pdMS_TO_TICKS( 500 ) );
   }
   vTaskDelete( NULL );
 }
@@ -217,7 +212,7 @@ void autosteerWorker100Hz( void* z ) {
           pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
         }
 
-        pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil
+        pidOutputTmp -= ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't increase PWM output above 255
 
         switch( initialisation.outputType ) {
           case SteerConfig::OutputType::SteeringMotorIBT2:
@@ -728,6 +723,6 @@ void initAutosteer() {
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
   if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ) {
-    xTaskCreate( ditherWorkerVariHz, "ditherWorker", 1024, NULL, 1, NULL );
+    xTaskCreate( ditherWorkerHalfHZ, "ditherWorkerHalfHZ", 1024, NULL, 1, NULL );
   }
 }
