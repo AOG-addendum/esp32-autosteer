@@ -62,7 +62,6 @@ volatile bool steerChangeProcessed = true;
 volatile time_t steerChangeMillis = millis();
 volatile time_t disengageActivityMillis = millis();
 volatile uint16_t steeringPulseCount = 0;
-volatile uint16_t HZperiod = 0;
 
 bool safetyAlarmLatch = false;
 bool ditherDirection = false;
