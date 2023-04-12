@@ -468,6 +468,7 @@ void initESPUI ( void ) {
       uint16_t sel = ESPUI.addControl( ControlType::Select, "Output Type*", String( ( int )steerConfig.outputType ), ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
         steerConfig.outputType = ( SteerConfig::OutputType )control->value.toInt();
+        steerConfig.steeringPidMaxPwm = 191;
         setResetButtonToRed();
       } );
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
@@ -598,6 +599,9 @@ void initESPUI ( void ) {
         steerConfig.steeringPidMaxPwm = control->value.toInt();
         if ( steerConfig.steeringPidMaxPwm > 255 ){
           steerConfig.steeringPidMaxPwm = 255;
+        }
+        if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss && steerConfig.steeringPidMaxPwm > 191 ){
+          steerConfig.steeringPidMaxPwm = 191;
         }
       } );
       ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
