@@ -94,8 +94,8 @@ struct SteerConfig {
     Hydraulic = 1
   } disengageSwitchType = DisengageSwitchType::Encoder;
 
-  char ssid[24] = "NetzRosegghof3";
-  char password[24] = "gghof080";
+  char ssid[24] = "AOG hub";
+  char password[24] = "password";
   char hostname[24] = "ESP32-QOG";
   uint8_t apModePin = 13;
 
