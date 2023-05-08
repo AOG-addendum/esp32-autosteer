@@ -160,9 +160,6 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["PID"]["I"] = config.steeringPidKi;
   j["PID"]["IMax"] = config.steeringPidKiMax;
   j["PID"]["D"] = config.steeringPidKd;
-  j["PID"]["autoBangOnFactor"] = config.steeringPidAutoBangOnFactor;
-  j["PID"]["bangOn"] = config.steeringPidBangOn;
-  j["PID"]["bangOff"] = config.steeringPidBangOff;
 
   j["workswitch"]["workswitchType"] = int( config.workswitchType );
   j["workswitch"]["workswitchActiveLow"] = config.workswitchActiveLow;
@@ -258,9 +255,6 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.steeringPidKi = j.value( "/PID/I"_json_pointer, steerConfigDefaults.steeringPidKi );
       config.steeringPidKiMax = j.value( "/PID/IMax"_json_pointer, steerConfigDefaults.steeringPidKiMax );
       config.steeringPidKd = j.value( "/PID/D"_json_pointer, steerConfigDefaults.steeringPidKd );
-      config.steeringPidAutoBangOnFactor = j.value( "/PID/autoBangOnFactor"_json_pointer, steerConfigDefaults.steeringPidAutoBangOnFactor );
-      config.steeringPidBangOn = j.value( "/PID/bangOn"_json_pointer, steerConfigDefaults.steeringPidBangOn );
-      config.steeringPidBangOff = j.value( "/PID/bangOff"_json_pointer, steerConfigDefaults.steeringPidBangOff );
 
       config.workswitchType = j.value( "/workswitch/workswitchType"_json_pointer, steerConfigDefaults.workswitchType );
       config.workswitchActiveLow = j.value( "/workswitch/workswitchActiveLow"_json_pointer, steerConfigDefaults.workswitchActiveLow );

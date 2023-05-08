@@ -128,9 +128,6 @@ struct SteerConfig {
   double steeringPidKi = 0.5;
   double steeringPidKiMax = 128;
   double steeringPidKd = 1;
-  double steeringPidAutoBangOnFactor = 2;
-  double steeringPidBangOn = 40;
-  double steeringPidBangOff = 0.1;
   uint8_t steeringPidMinPwm = 20;
   uint8_t steeringPidMaxPwm = 255;
 

@@ -188,12 +188,6 @@ void autosteerWorker100Hz( void* z ) {
         pid.setIntegral(-steerConfig.steeringPidKiMax);
       }
 
-      if( steerConfig.steeringPidAutoBangOnFactor ) {
-        pid.setBangBang( ( ( double )0xFF / steerSettings.Kp ) * steerConfig.steeringPidAutoBangOnFactor, steerConfig.steeringPidBangOff );
-      } else {
-        pid.setBangBang( steerConfig.steeringPidBangOn, steerConfig.steeringPidBangOff );
-      }
-
       // here comes the magic: executing the PID loop
       // the values are given by pointers, so the AutoPID gets them automaticaly
       pid.run();
