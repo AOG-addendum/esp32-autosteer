@@ -191,62 +191,59 @@ void autosteerWorker100Hz( void* z ) {
       // here comes the magic: executing the PID loop
       // the values are given by pointers, so the AutoPID gets them automaticaly
       pid.run();
-      if( pidOutput ) {
 
-        pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
+      pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
 
-        if( pidOutputTmp < 0 ) {
-          pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, 0, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
-          pidOutputTmp = constrain( pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
-        }
+      if( pidOutputTmp < 0 ) {
+        pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, 0, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
+        pidOutputTmp = constrain( pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
+      }
 
-        if( pidOutputTmp > 0 ) {
-          pidOutputTmp = map( pidOutputTmp, 0, steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
-          pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
-        }
+      if( pidOutputTmp > 0 ) {
+        pidOutputTmp = map( pidOutputTmp, 0, steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
+        pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
+      }
 
-        pidOutputTmp -= ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't increase PWM output above 255
+      pidOutputTmp -= ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't increase PWM output above 255
 
-        switch( initialisation.outputType ) {
-          case SteerConfig::OutputType::SteeringMotorIBT2:
-          case SteerConfig::OutputType::HydraulicPwm2Coil: {
-            ledcWrite( 0, 0 );
-            if( pidOutputTmp >= 0 ) {
-              ledcWrite( 1, pidOutputTmp );
-              ledcWrite( 2, 0 );
-            }
-            if( pidOutputTmp < 0 ) {
-              ledcWrite( 1, 0 );
-              ledcWrite( 2, -pidOutputTmp );
-            }
+      switch( initialisation.outputType ) {
+        case SteerConfig::OutputType::SteeringMotorIBT2:
+        case SteerConfig::OutputType::HydraulicPwm2Coil: {
+          ledcWrite( 0, 0 );
+          if( pidOutputTmp >= 0 ) {
+            ledcWrite( 1, pidOutputTmp );
+            ledcWrite( 2, 0 );
           }
-          break;
-
-          case SteerConfig::OutputType::SteeringMotorCytron: {
-            if( pidOutputTmp >= 0 ) {
-              ledcWrite( 1, 255 );
-            } else {
-              ledcWrite( 0, 255 );
-              pidOutputTmp = -pidOutputTmp;
-            }
-
-            ledcWrite( 0, pidOutputTmp );
-            ledcWrite( 2, 255 );
+          if( pidOutputTmp < 0 ) {
+            ledcWrite( 1, 0 );
+            ledcWrite( 2, -pidOutputTmp );
           }
-          break;
-
-          case SteerConfig::OutputType::HydraulicDanfoss: {
-            ledcWrite( 2, 255 );
-            uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm;
-            pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMaxPwm, lowRange, steerConfig.steeringPidMaxPwm );
-            ledcWrite( 0, pidOutputTmp );
-          }
-          break;
-
-          default:
-            break;
         }
+        break;
 
+        case SteerConfig::OutputType::SteeringMotorCytron: {
+          if( pidOutputTmp >= 0 ) {
+            ledcWrite( 1, 255 );
+          } else {
+            ledcWrite( 0, 255 );
+            pidOutputTmp = -pidOutputTmp;
+          }
+
+          ledcWrite( 0, pidOutputTmp );
+          ledcWrite( 2, 255 );
+        }
+        break;
+
+        case SteerConfig::OutputType::HydraulicDanfoss: {
+          ledcWrite( 2, 255 );
+          uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm;
+          pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMaxPwm, lowRange, steerConfig.steeringPidMaxPwm );
+          ledcWrite( 0, pidOutputTmp );
+        }
+        break;
+
+        default:
+          break;
       }
       digitalWrite( steerConfig.gpioSteerLED, HIGH );
     }
