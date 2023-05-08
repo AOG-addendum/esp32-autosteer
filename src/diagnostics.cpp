@@ -85,11 +85,17 @@ void diagnosticWorker10Hz( void* z ) {
       String str;
       str.reserve( 30 );
       str = "Autosteer switch: ";
-      str += ( bool ) digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ? "Off" : "On" ;
+      str += ( bool )( digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ) ? "Off" : "On" ;
       str += "\nWork switch: ";
-      str += ( bool ) digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ? "Off" : "On" ;
-      str += "\nDisengage switch: ";
-      str += ( bool ) digitalRead( steerConfig.gpioDisengage ) == steerConfig.workswitchActiveLow ? "Off" : "On" ;
+      str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
+      if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
+        str += "\nDisengage on steering wheel: ";
+        str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "Off" : "On" ;
+      }
+      else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
+        str += "\nHydraulic disengage switch: ";
+        str += ( bool )( digitalRead( steerConfig.gpioDisengage ) == steerConfig.hydraulicSwitchActiveLow ) ? "Off" : "On" ;
+      }
       labelSwitchStatesHandle->value = str;
       ESPUI.updateControlAsync( labelSwitchStatesHandle );
     }
