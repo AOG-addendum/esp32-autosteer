@@ -160,6 +160,15 @@ struct SteerConfig {
     WheelAngle = 0,
     TieRodDisplacement
   } wheelAngleSensorType = WheelAngleSensorType::WheelAngle;
+  
+  enum class ADSGain : uint16_t {
+    GAIN_TWOTHIRDS = 0,
+    GAIN_ONE = 512,
+    GAIN_TWO = 1024,
+    GAIN_FOUR = 1536,
+    GAIN_EIGHT = 2048,
+    GAIN_SIXTEEN = 2560
+  } adsGain = ADSGain::GAIN_TWOTHIRDS;
 
   SteerConfig::AnalogIn wheelAngleInput = SteerConfig::AnalogIn::None;
 

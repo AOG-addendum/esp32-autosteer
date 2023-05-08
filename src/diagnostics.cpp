@@ -99,6 +99,38 @@ void diagnosticWorker10Hz( void* z ) {
       labelSwitchStatesHandle->value = str;
       ESPUI.updateControlAsync( labelSwitchStatesHandle );
     }
+    {
+      Control* handle = ESPUI.getControl( labelStatusAdc );
+      String str;
+      str.reserve( 30 );
+      str = "ADS1115 initialized, ";
+      if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
+        str += " 6.144 volts max,\n";
+        str += ( float )( steerSetpoints.wheelAngleCounts / 65536 ) * 6.144;
+        str += " volts from WAS, no divider";
+      }
+      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
+        str += " 4.096 volts max,\n";
+        str += ( steerSetpoints.wheelAngleCounts / 65536 ) * ( 4.096 * 0.629 ); // Sensor - 3.3K - ADS - 5.6K - Gnd
+        str += " volts from WAS, 3.3k-5.6k divider";
+      }
+      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWO ){
+        str += " 2.048 volts max";
+      }
+      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_FOUR ){
+        str += " 1.024 volts max";
+      }
+      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_EIGHT ){
+        str += " 0.512 volts max";
+      }
+      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_SIXTEEN ){
+        str += " 0.256 volts max";
+      }
+      handle->value = str;
+      handle->color = ControlColor::Emerald;
+      initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
+      ESPUI.updateControlAsync( handle );
+    }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }

@@ -167,7 +167,8 @@ void initSensors() {
 
   // initialise ads1115 everytime, even if not available (no answer in the init -> just sending)
   {
-    ads.setGain( GAIN_TWOTHIRDS );   // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+    ads.setGain( (adsGain_t)steerConfig.adsGain );
+    // ads.setGain(GAIN_TWOTHIRDS);   // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)  
     // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
     // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
     // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
@@ -178,7 +179,28 @@ void initSensors() {
     ads.setSPS( ADS1115_DR_860SPS );
 
     Control* handle = ESPUI.getControl( labelStatusAdc );
-    handle->value = "ADC1115 initialized";
+    String str;
+    str.reserve( 30 );
+    str = "ADS1115 initialized,";
+    if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
+      str += " max voltage = 6.144";
+    }
+    else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
+      str += " max voltage = 4.096";
+    }
+    else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWO ){
+      str += " max voltage = 2.048";
+    }
+    else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_FOUR ){
+      str += " max voltage = 1.024";
+    }
+    else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_EIGHT ){
+      str += " max voltage = 0.512";
+    }
+    else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_SIXTEEN ){
+      str += " max voltage = 0.256";
+    }
+    handle->value = str;
     handle->color = ControlColor::Emerald;
     initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
     ESPUI.updateControlAsync( handle );

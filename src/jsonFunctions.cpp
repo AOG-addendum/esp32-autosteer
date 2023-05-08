@@ -178,6 +178,7 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["wheelangle"]["offset"] = config.wheelAngleOffset;
   j["wheelangle"]["ackermann"] = config.ackermann;
   j["wheelangle"]["ackermannAboveZero"] = config.ackermannAboveZero;
+  j["wheelangle"]["adsGain"] = config.adsGain;
 
   j["wheelangle"]["tierod"]["FirstArmLenght"] = config.wheelAngleFirstArmLenght;
   j["wheelangle"]["tierod"]["SecondArmLenght"] = config.wheelAngleSecondArmLenght;
@@ -273,6 +274,7 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.wheelAngleOffset = j.value( "/wheelangle/offset"_json_pointer, steerConfigDefaults.wheelAngleOffset );
       config.ackermann = j.value( "/wheelangle/ackermann"_json_pointer, steerConfigDefaults.ackermann );
       config.ackermannAboveZero = j.value( "/wheelangle/ackermannAboveZero"_json_pointer, steerConfigDefaults.ackermannAboveZero );
+      config.adsGain = j.value( "/wheelangle/adsGain"_json_pointer, steerConfigDefaults.adsGain );
 
       config.wheelAngleFirstArmLenght = j.value( "/wheelangle/tierod/FirstArmLenght"_json_pointer, steerConfigDefaults.wheelAngleFirstArmLenght );
       config.wheelAngleSecondArmLenght = j.value( "/wheelangle/tierod/SecondArmLenght"_json_pointer, steerConfigDefaults.wheelAngleSecondArmLenght );
