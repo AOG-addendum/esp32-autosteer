@@ -123,7 +123,6 @@ struct SteerConfig {
   uint8_t gpioDir = 26;
   uint8_t gpioEn = 25;
 
-  bool allowPidOverwrite = false;
   double steeringPidKp = 20;
   double steeringPidKi = 0.5;
   double steeringPidKiMax = 128;
