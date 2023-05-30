@@ -9,4 +9,4 @@
 	url = https://github.com/AOG-addendum/AutoPID.git
 [submodule "lib/ESPUI"]
 	path = lib/ESPUI
-	url = https://github.com/AOG-addendum/ESPUI.git
+	url = https://github.com/AOG-addendum/ESPUI_s00500
