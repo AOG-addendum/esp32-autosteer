@@ -34,14 +34,24 @@ void diagnosticWorker1Hz( void* z ) {
       str.reserve( 30 );
       str = ( uint16_t ) steerSupplyVoltage ;
       str += " counts; ";
-      str += ( double ) ( ( double ) steerSupplyVoltage * 0.003 * 0.248 ); // 3 mv per bit; 10k/3.3k = 0.248
-      str += " volts\n";
-      str += ( double ) ( ( double ) diagnostics.steerSupplyVoltageMin * 0.003 * 0.248 );
-      str += " volts min while steering\n";
-      str += ( double ) ( ( double ) diagnostics.steerSupplyVoltageMax  * 0.003 * 0.248 );
-      str += " volts max while steering";
-      labelSupplyVoltageHandle->value = str;
-      ESPUI.updateControlAsync( labelSupplyVoltageHandle );
+      if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
+        str += ( double ) ( ( double ) ( steerSupplyVoltage * 3.03 ) * 0.0001875 ); // .1875 mv per bit; 10k/3.3k = 3.03
+        str += " volts\n";
+        str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMin * 3.03 ) * 0.0001875 );
+        str += " volts min while steering\n";
+        str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMax * 3.03 ) * 0.0001875 );
+        str += " volts max while steering";
+      } else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
+        str += ( double ) ( ( double ) ( steerSupplyVoltage * 4.545 ) * 0.000125 ); // .125 mv per bit; 10k/2.2k = 4.545
+        str += " volts\n";
+        str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMin * 4.545 ) * 0.000125 );
+        str += " volts min while steering\n";
+        str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMax * 4.545 ) * 0.000125 );
+        str += " volts max while steering";
+      } else {
+        str += "N/A";
+      }
+      ESPUI.updateLabel( labelSupplyVoltage, str );
     }
     {
       String str;
@@ -60,7 +70,7 @@ void diagnosticWorker1Hz( void* z ) {
         str += ( float )steerSetpoints.wheelAngleRaw;
         str += "°, Displacement ";
         str += ( float )steerSetpoints.wheelAngleCurrentDisplacement;
-        str += "mm";
+        str += "mm\n";
       } else {
         str += "A/D count: ";
         str += ( int )steerSetpoints.wheelAngleCounts;
@@ -70,8 +80,17 @@ void diagnosticWorker1Hz( void* z ) {
         str += ( float )steerSetpoints.actualSteerAngle;
         str += "°, SetPoint: ";
         str += ( float )steerSetpoints.requestedSteerAngle;
-        str += "°";
+        str += "°\n";
       }
+      if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
+        str += ( float )( steerSetpoints.wheelAngleCounts * 0.0001875 );
+        str += " volts from WAS";
+      }
+      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
+        str += ( float )( steerSetpoints.wheelAngleCounts * 1.589 * 0.000125 ); // Sensor - 3.3K - ADS - 5.6K - Gnd
+        str += " volts from WAS";
+      }
+      ESPUI.updateLabel( labelWheelAngle, str );
     }
     {
       String str;
@@ -91,35 +110,96 @@ void diagnosticWorker1Hz( void* z ) {
       ESPUI.updateLabel( labelSwitchStates, str );
     }
     {
-      String str;
-      str.reserve( 30 );
-      str = "ADS1115 initialized, ";
-      if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
-        str += " 6.144 volts max,\n";
-        str += ( float )( steerSetpoints.wheelAngleCounts / 65536 ) * 6.144;
-        str += " volts from WAS, no divider";
-      }
-      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
-        str += " 4.096 volts max,\n";
-        str += ( steerSetpoints.wheelAngleCounts / 65536 ) * ( 4.096 * 0.629 ); // Sensor - 3.3K - ADS - 5.6K - Gnd
-        str += " volts from WAS, 3.3k-5.6k divider";
-      }
-      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWO ){
-        str += " 2.048 volts max";
-      }
-      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_FOUR ){
-        str += " 1.024 volts max";
-      }
-      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_EIGHT ){
-        str += " 0.512 volts max";
-      }
-      else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_SIXTEEN ){
-        str += " 0.256 volts max";
-      }
-      handle->value = str;
-      handle->color = ControlColor::Emerald;
-      initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
-      ESPUI.updateControlAsync( handle );
+      switch( steerConfig.outputType ) {
+        case SteerConfig::OutputType::SteeringMotorIBT2: {
+          Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+          String str;
+          str.reserve( 30 );
+          str = "IBT2 Motor, SetPoint: ";
+          str += ( float )steerSetpoints.requestedSteerAngle;
+          str += "°,\ntimeout: ";
+          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ", enabled: ";
+          str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+          str += ", output: ";
+          str += ( float )pidOutputTmp ;
+          labelStatusOutputHandle->color = ControlColor::Emerald;
+          ESPUI.updateLabel( labelStatusOutput, str );
+        }
+        break;
+
+        case SteerConfig::OutputType::SteeringMotorCytron: {
+          Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+          String str;
+          str.reserve( 30 );
+          str = "Cytron Motor, SetPoint: ";
+          str += ( float )steerSetpoints.requestedSteerAngle;
+          str += "°\ntimeout: ";
+          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ", enabled: ";
+          str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+          str += ", output: ";
+          str += ( float )pidOutputTmp;
+          labelStatusOutputHandle->color = ControlColor::Emerald;
+          ESPUI.updateLabel( labelStatusOutput, str );
+        }
+        break;
+
+        case SteerConfig::OutputType::HydraulicPwm2Coil: {
+          Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+          String str;
+          str.reserve( 30 );
+          str = "IBT2 Hydraulic PWM 2 Coil, SetPoint: ";
+          str += ( float )steerSetpoints.requestedSteerAngle;
+          str += "°,\ntimeout: ";
+          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ", enabled: ";
+          str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+          str += ", output: ";
+          str += ( float )pidOutputTmp ;
+          labelStatusOutputHandle->color = ControlColor::Emerald;
+          ESPUI.updateLabel( labelStatusOutput, str );
+        }
+        break;
+
+        case SteerConfig::OutputType::HydraulicDanfoss: {
+          Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+          String str;
+          str.reserve( 30 );
+          str = "IBT2 Hydraulic Danfoss, SetPoint: ";
+          str += ( float )steerSetpoints.requestedSteerAngle;
+          str += "°,\ntimeout: ";
+          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ", enabled: ";
+          str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+          str += ", output: ";
+          str += ( float )pidOutputTmp ;
+          labelStatusOutputHandle->color = ControlColor::Emerald;
+          ESPUI.updateLabel( labelStatusOutput, str );
+        }
+        break;
+
+        case SteerConfig::OutputType::HydraulicBangBang: {
+          Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
+          String str;
+          str.reserve( 30 );
+          str = "IBT2 Hydraulic Bang Bang, SetPoint: ";
+          str += ( float )steerSetpoints.requestedSteerAngle;
+          str += "°,\ntimeout: ";
+          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ", enabled: ";
+          str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
+          str += ", output: ";
+          str += ( float )pidOutputTmp ;
+          labelStatusOutputHandle->color = ControlColor::Emerald;
+          ESPUI.updateLabel( labelStatusOutput, str );
+        }
+        break;
+
+        default:
+          break;
+
+        }
     }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }

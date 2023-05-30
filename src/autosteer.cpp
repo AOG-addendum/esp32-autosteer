@@ -55,6 +55,7 @@ AutoPID pid(
 JsonQueueSelector jsonQueueSelector;
 
 constexpr time_t Timeout = 1000;
+time_t timeoutPoint;
 volatile bool disengageState;
 volatile bool disengagePrevState;
 volatile bool steerState = false;
@@ -91,7 +92,7 @@ void autosteerWorker100Hz( void* z ) {
   jsonQueueSelector.addQueue( steerConfig.qogChannelIdSetpointSteerAngle, queue );
 
   for( ;; ) {
-    time_t timeoutPoint = millis() - Timeout;
+    timeoutPoint = millis() - Timeout;
 
     if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
       while( uxQueueMessagesWaiting( queue ) ) {
@@ -381,104 +382,6 @@ void autosteerWorker100Hz( void* z ) {
 
       if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
         udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
-      }
-
-      {
-        switch( steerConfig.outputType ) {
-          case SteerConfig::OutputType::SteeringMotorIBT2: {
-            Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-            String str;
-            str.reserve( 30 );
-            str = "IBT2 Motor, SetPoint: ";
-            str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°,\ntimeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
-            str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
-            str += ", output: ";
-            str += ( float )pidOutputTmp ;
-            labelStatusOutputHandle->value = str;
-            labelStatusOutputHandle->color = ControlColor::Emerald;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-          break;
-
-          case SteerConfig::OutputType::SteeringMotorCytron: {
-            Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-            String str;
-            str.reserve( 30 );
-            str = "Cytron Motor, SetPoint: ";
-            str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°\ntimeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
-            str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
-            str += ", output: ";
-            str += ( float )pidOutputTmp ;
-            labelStatusOutputHandle->value = str;
-            labelStatusOutputHandle->color = ControlColor::Emerald;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-          break;
-
-          case SteerConfig::OutputType::HydraulicPwm2Coil: {
-            Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-            String str;
-            str.reserve( 30 );
-            str = "IBT2 Hydraulic PWM 2 Coil, SetPoint: ";
-            str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°,\ntimeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
-            str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
-            str += ", output: ";
-            str += ( float )pidOutputTmp ;
-            labelStatusOutputHandle->value = str;
-            labelStatusOutputHandle->color = ControlColor::Emerald;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-          break;
-
-          case SteerConfig::OutputType::HydraulicDanfoss: {
-            Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-            String str;
-            str.reserve( 30 );
-            str = "IBT2 Hydraulic Danfoss, SetPoint: ";
-            str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°,\ntimeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
-            str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
-            str += ", output: ";
-            str += ( float )pidOutputTmp ;
-            labelStatusOutputHandle->value = str;
-            labelStatusOutputHandle->color = ControlColor::Emerald;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-          break;
-
-          case SteerConfig::OutputType::HydraulicBangBang: {
-            Control* labelStatusOutputHandle = ESPUI.getControl( labelStatusOutput );
-            String str;
-            str.reserve( 30 );
-            str = "IBT2 Hydraulic Bang Bang, SetPoint: ";
-            str += ( float )steerSetpoints.requestedSteerAngle;
-            str += "°,\ntimeout: ";
-            str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
-            str += ", enabled: ";
-            str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
-            str += ", output: ";
-            str += ( float )pidOutputTmp ;
-            labelStatusOutputHandle->value = str;
-            labelStatusOutputHandle->color = ControlColor::Emerald;
-            ESPUI.updateControlAsync( labelStatusOutputHandle );
-          }
-          break;
-
-          default:
-            break;
-
-        }
       }
 
     }

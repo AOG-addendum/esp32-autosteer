@@ -59,6 +59,9 @@ extern uint16_t labelStatusCan;
 
 extern SemaphoreHandle_t i2cMutex;
 
+extern time_t timeoutPoint;
+extern double pidOutputTmp;
+
 struct Diagnostics {
   double steerSupplyVoltageMin;
   double steerSupplyVoltageMax;
