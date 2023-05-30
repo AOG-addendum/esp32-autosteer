@@ -181,27 +181,44 @@ void initSensors() {
     Control* handle = ESPUI.getControl( labelStatusAdc );
     String str;
     str.reserve( 30 );
-    str = "ADS1115 initialized,";
+    str = "ADS1115 initialized\n";
+
+    handle->color = ControlColor::Emerald;
+    if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::None ){
+      str += "no input selected\n";
+      handle->color = ControlColor::Alizarin;
+    }
+    else if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::ADS1115A0Single ){
+      str += "A0 single input selected\n";
+    }
+    else if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::ADS1115A1Single ){
+      str += "A1 single input selected\n";
+    }
+    else if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::ADS1115A0A1Differential ){
+      str += "A0/A1 differential input selected\n";
+    }
+
     if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
-      str += " max voltage = 6.144";
+      str += " max voltage: 6.144\n5v WAS directly connected";
     }
     else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
-      str += " max voltage = 4.096";
+      str += " max voltage: 4.096\n5v WAS-3.3k-ADS-5.6k-Gnd divider";
     }
     else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWO ){
-      str += " max voltage = 2.048";
+      str += " max voltage: 2.048\nWAS not defined";
     }
     else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_FOUR ){
-      str += " max voltage = 1.024";
+      str += " max voltage: 1.024\nWAS not defined";
     }
     else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_EIGHT ){
-      str += " max voltage = 0.512";
+      str += " max voltage: 0.512\nWAS not defined";
     }
     else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_SIXTEEN ){
-      str += " max voltage = 0.256";
+      str += " max voltage: 0.256\nWAS not defined";
+    } else {
+      str += "voltage range not defined";
+      handle->color = ControlColor::Alizarin;
     }
-    handle->value = str;
-    handle->color = ControlColor::Emerald;
     initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
     ESPUI.updateControlAsync( handle );
   }
