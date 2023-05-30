@@ -23,6 +23,11 @@ uint16_t labelStatusOutput;
 uint16_t labelStatusAdc;
 uint16_t labelStatusCan;
 uint16_t labelBuildDate;
+uint16_t manualValveSwitcher;
+uint16_t manualValvePWMWidget;
+
+void manualValveCallback(Control *sender, int type);
+void manualValvePWMCallback(Control *sender, int type);
 
 void setResetButtonToRed() {
   ESPUI.getControl( buttonReset )->color = ControlColor::Alizarin;
@@ -529,6 +534,19 @@ void initESPUI ( void ) {
       ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
       ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
     }
+
+    manualValveSwitcher = ESPUI.addControl( Switcher, "Manual valve control", "", Peterriver, tab, manualValveCallback );
+    {
+      if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss ){
+          steerConfig.manualPWM = 128;
+        } else {
+          steerConfig.manualPWM = 0;
+        }
+      manualValvePWMWidget = ESPUI.addControl( Number, "Manual PWM", String( steerConfig.manualPWM ), Peterriver, tab, manualValvePWMCallback );
+      ESPUI.addControl( ControlType::Min, "Min", "-255", ControlColor::Peterriver, manualValvePWMWidget );
+      ESPUI.addControl( ControlType::Max, "Max", "255", ControlColor::Peterriver, manualValvePWMWidget );
+      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, manualValvePWMWidget );
+    }
   }
 
   // Steering PID Tab
@@ -589,6 +607,11 @@ void initESPUI ( void ) {
         }
         if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss && steerConfig.steeringPidMaxPwm > 191 ){
           steerConfig.steeringPidMaxPwm = 191;
+          ESPUI.updateText( id, ( String )steerConfig.steeringPidMaxPwm );
+        }
+        else if ( steerConfig.steeringPidMaxPwm > 255 ){
+          steerConfig.steeringPidMaxPwm = 255;
+          ESPUI.updateText( id, ( String )steerConfig.steeringPidMaxPwm );
         }
       } );
       ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
@@ -864,4 +887,20 @@ void initESPUI ( void ) {
       }
     }
   } );
+}
+
+void manualValveCallback(Control *sender, int type) {
+  steerConfig.manualSteerState = sender->value.toInt() == 1;
+  if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss ){
+    steerConfig.manualPWM = 128;
+  } else {
+    steerConfig.manualPWM = 0;
+  }
+  if( steerConfig.manualSteerState == true ){
+    ESPUI.updateNumber( manualValvePWMWidget, steerConfig.manualPWM );
+  }
+}
+
+void manualValvePWMCallback(Control *sender, int type) {
+  steerConfig.manualPWM = sender->value.toInt();
 }

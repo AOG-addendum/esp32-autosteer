@@ -56,6 +56,8 @@ extern uint16_t labelSwitchStates;
 extern uint16_t labelStatusOutput;
 extern uint16_t labelStatusAdc;
 extern uint16_t labelStatusCan;
+extern uint16_t manualValveSwitcher;
+extern uint16_t manualValvePWMWidget;
 
 extern SemaphoreHandle_t i2cMutex;
 
@@ -123,6 +125,8 @@ struct SteerConfig {
   double pwmFrequency = 1000;
   bool invertOutput = false;
   float minAutosteerSpeed = 0.1;
+  bool manualSteerState = false;
+  int manualPWM = 0;
   uint8_t gpioPwm = 27;
   uint8_t gpioDir = 26;
   uint8_t gpioEn = 25;

@@ -151,8 +151,66 @@ void autosteerWorker100Hz( void* z ) {
       digitalWrite( steerConfig.gpioAlarm, LOW ); // turn off alarm after safety AND autosteer are off
     }
 
+    if( steerConfig.manualSteerState == true ){
+      if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss ){
+        uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm; 
+        if( steerConfig.manualPWM > steerConfig.steeringPidMaxPwm ){
+          steerConfig.manualPWM = steerConfig.steeringPidMaxPwm;
+          ESPUI.updateNumber( manualValvePWMWidget, steerConfig.manualPWM );
+        } else if( steerConfig.manualPWM < lowRange ){
+          steerConfig.manualPWM = lowRange;
+          ESPUI.updateNumber( manualValvePWMWidget, steerConfig.manualPWM );
+        }
+      } else {
+        if( steerConfig.manualPWM > 255 ){
+          steerConfig.manualPWM = 255;
+          ESPUI.updateNumber( manualValvePWMWidget, steerConfig.manualPWM);
+        } else if( steerConfig.manualPWM < -255 ){
+          steerConfig.manualPWM = -255;
+          ESPUI.updateNumber( manualValvePWMWidget, steerConfig.manualPWM );
+        }
+      }
+      switch( initialisation.outputType ) {
+        case SteerConfig::OutputType::SteeringMotorIBT2:
+        case SteerConfig::OutputType::HydraulicPwm2Coil: {
+          ledcWrite( 0, 0 );
+          if( steerConfig.manualPWM >= 0 ) {
+            ledcWrite( 1, steerConfig.manualPWM );
+            ledcWrite( 2, 0 );
+          }
+          if( steerConfig.manualPWM < 0 ) {
+            ledcWrite( 1, 0 );
+            ledcWrite( 2, -steerConfig.manualPWM );
+          }
+        }
+        break;
+
+        case SteerConfig::OutputType::SteeringMotorCytron: {
+          if( steerConfig.manualPWM >= 0 ) {
+            ledcWrite( 1, 255 );
+          } else {
+            ledcWrite( 0, 255 );
+            steerConfig.manualPWM = -steerConfig.manualPWM;
+          }
+          ledcWrite( 0, steerConfig.manualPWM );
+          ledcWrite( 2, 255 );
+        }
+        break;
+
+        case SteerConfig::OutputType::HydraulicDanfoss: {
+          ledcWrite( 0, steerConfig.manualPWM );
+          ledcWrite( 1, 0 );
+          ledcWrite( 2, 255 );
+        }
+        break;
+
+        default:
+          break;
+
+      }
+    }
     // check for timeout, data from AgOpenGPS, safety disable, and mininum autosteer speed
-    if( steerSetpoints.lastPacketReceived < timeoutPoint ||
+    else if( steerSetpoints.lastPacketReceived < timeoutPoint ||
         steerSetpoints.enabled == false ||
         disabledBySpeedSafety == true ||
         steerSetpoints.speed < steerConfig.minAutosteerSpeed ) {
@@ -244,6 +302,7 @@ void autosteerWorker100Hz( void* z ) {
 
         default:
           break;
+
       }
       digitalWrite( steerConfig.gpioSteerLED, HIGH );
     }
@@ -362,6 +421,11 @@ void autosteerWorker100Hz( void* z ) {
               steeringPulseCount = 0;
             }
           } else { steeringPulseCount = 0; }
+
+          if(( steerState == false || steerSetpoints.enabled == false ) && steerConfig.manualSteerState == true ){
+            steerConfig.manualSteerState = false;
+            ESPUI.updateSwitcher( manualValveSwitcher, false );
+          }
 
           if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
             sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerState );
