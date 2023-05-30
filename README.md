@@ -4,25 +4,28 @@ Software to control the tractor from AgOpenGPS.
 # Updates/changes from [eringerli](https://github.com/eringerli/esp32-aog) codebase
 ## Note some docs in the Readme are no longer correct, it is being worked on.
 
-* All GPIOs are hardcoded because the WebUI was overloaded from all the features being added.
+* All GPIOs are hardcoded because the WebUI was overloaded from all the features being added
 * A configurable speed safety will disengage autosteer when traveling too fast
 * Added Ackerman, selectable if wheel with WAS is on the inside track or outside track when the wheel angle is above zero
-* Faults will be recorded if autosteer is engaged without steering valve power
 * A steering wheel input GPIO will disengage autosteer if steering wheel is turned, you can set trigger time window and total triggers
-* The ESP32 will create a Wifi hotspot and try to connect to the main Wifi. If main Wifi is found, ESP32 hotspot will discontinue. If ESP32 hotspot is connected to, main Wifi will no longer try to connect.
-* ESP32 hotspot will be called Steer Module XXXXXX. with the MAC address of the ESP32 appended to avoid confusion between multiple ESP32s.
+* The ESP32 will create a Wifi hotspot and try to connect to the main Wifi. If main Wifi is found, ESP32 hotspot will discontinue. If ESP32 hotspot is connected to, main Wifi will no longer try to connect
+* ESP32 hotspot will be called Steer Module XXXXXX. with the MAC address of the ESP32 appended to avoid confusion between multiple ESP32s
 * Only one ESP32 can connect to the same Wifi. The ESP32 pings any existing device at 192.168.xxx.77 and disconnects if a device is already on the network. This way AOG does not receive conflicting info from 2 different machine modules. Yes, this actually happens!!!
 * If the Wifi name is shorter than the default, it will work as expected.
-* Valves with 2 coils have option of using dither.
+* Valves with 2 coils have option of using dither
+* The voltage reference can be set for 3.3V applications, or lower
+* Faults will be recorded if autosteer is engaged without steering valve power, or fuse is blown, or WAS is shorted
+* Steering valve diagnostics are shown in WebUI
+* The ADS1115 A2 and A3 input are repurposed for steering valve voltage and motor current
 
 # Features
-* complete rewrite of the software for the physical part of AgOpenGPS. Uses a multi-threaded aproach with clear ownership of data and almost no public accessible variables. Tries to use other libraries as much as possible and is clearly structured with meaningful names.
-* Cool and confortable WebUI, automatically creates a hotspot on first start, the Wifi to connect to can be configured in the WebUI
-* Everything is configured from the WebUI, no conditional compiling and changing of the source code needed. Sane defaults are used: everything has to be activated to work, like PWM-drivers or IMUs
-* Settings are stored into flash on user request. New features normaly require an apply&reboot cycle to activate, the WebUI clearly shows this.
+* complete rewrite of the software for the physical part of AgOpenGPS. Uses a multi-threaded aproach. Tries to use other libraries as much as possible and is clearly structured with meaningful names
+* Cool and comfortable WebUI, automatically creates a hotspot on first start, the Wifi to connect to can be configured in the WebUI
+* Everything is configured from the WebUI. Sane defaults are used: everything has to be activated to work, like PWM-drivers or IMUs
+* Settings are stored into flash on user request. New features normally require an apply&reboot cycle to activate, the WebUI clearly shows this.
 * Status and values like uptime, processor load, and wheel angle are actualised in realtime in the WebUI
 * CAN-bus/J1939-connection possible, so the workswitch can be configured to react on PTO or motor RPMs or hitch positions
-* The wheel angle sensor can be configured as an input of the ESP32 or via ADS1115 to enable differential measurement (recomended)
+* The wheel angle sensor can be configured via ADS1115 to enable single or differential measurement
 * A new mode for the wheel angle sensor is introduced, to calculate out the unlinearities if connected with two arms to the tie rod
 * A complete new PID-controller is implemented
 * All analog measurements are digitaly low-pass filtered (2. order butterworth or similar), this removes a lot of noise.
@@ -80,22 +83,16 @@ TL;DR: If you want to do your own development, you have to install [platformio](
 Read this file through, before starting to half-ass it. It is not so hard to get a working system, just give it enough time and install it in this order.
 Some packets take a real long time to install with no visible progress. Just wait until finished.
 
-Atom.io does no longer work with PlatformIO (or vice versa). This code base now works with Visual Studio, but there is some setup, and it is not documented. When I have figured it all out, I will update the docs here.
+Atom.io does no longer work with PlatformIO as described previously. This code base now works with Visual Studio.
 
-### Install Prerequisites (out of date)
-1. install atom: https://atom.io/
-1. inside atom:
-   1. click on "install a package"
-   1. search for "platformio-ide" and install it
-   1. install clang as desribed on the website
+### Install Prerequisites (updated for VS Code)
+1. install VS Code: https://code.visualstudio.com/
+1. inside VSCode:
+   1. click on File>Preferences>Extensions
+   1. search for "PlatformIO IDE" and install it
    1. it's taking forever, so please be patient
    1. restart as asked
-   1. open the platformio home tab (if not opened automaticaly, use the menu)
-      1. go to "Platforms" (left side tile)
-      1. choose the "Embedded" tab
-      1. install the "Esspressiv 32" platform
 1. install git: https://git-scm.com/downloads
-   1. use the defaults in the setup, define atom as the default editor
 1. install all needed drivers for your platform. This is usually done by installing the CP210x-driver, but consult the documentation of the manufacturer of your esp32.
 
 ### Downloading the repository
@@ -104,12 +101,13 @@ Atom.io does no longer work with PlatformIO (or vice versa). This code base now 
 1. enter `git clone --recursive https://github.com/eringerli/esp32-aog.git`
 
 ### Compiling
-1. open the created folder above from the platformio home
-1. click build (the tile with the tick), the missing dependencies should be installed automaticaly
+1. right click the created folder and open with VS Code
+1. wait for PlatformIO to finish loading tasks (status is shown along the bottom)
+1. click build (the button with the tick along the bottom), the missing dependencies should be installed automatically
 
 ### Upload to the ESP32
 1. connect the ESP32 over USB
-1. click on upload (the tile with the arrow)
+1. click on upload (the button with the arrow)
 
 Alternatively you can use the OTA-update in the WebUI: go to the last tab and upload a new image.
 
