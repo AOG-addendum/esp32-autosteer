@@ -697,13 +697,15 @@ void initAutosteer() {
   pinMode( steerConfig.gpioWorkswitch, INPUT_PULLUP );
   pinMode( steerConfig.gpioWorkLED, OUTPUT );
 
-  // use interrupt callbacks to simpify steer state tracking,
-  // whichever callback happens last (steering wheel or steer switch) gets priority
-  pinMode( steerConfig.gpioSteerswitch, INPUT_PULLUP );
-  if( steerConfig.steerSwitchIsMomentary ){
+  if( steerConfig.workswitchType == SteerConfig::WorkswitchType::Gpio ) {
+    // use interrupt callbacks to simplify steer state tracking,
+    // whichever callback happens last (steering wheel or steer switch) gets priority
+    pinMode( steerConfig.gpioSteerswitch, INPUT_PULLUP );
+    if( steerConfig.steerSwitchIsMomentary ){
       attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMomentaryIsr, CHANGE);
-  } else {
+    } else {
       attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
+    }
   }
 
   pinMode( steerConfig.gpioDisengage, INPUT_PULLUP );
