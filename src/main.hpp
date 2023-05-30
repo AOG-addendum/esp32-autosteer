@@ -24,6 +24,7 @@
 
 #include <WiFi.h>
 #include <WiFiMulti.h>
+#include "SPIFFS.h"
 
 #include <HTTPClient.h>
 
@@ -303,8 +304,6 @@ extern SteerCanData steerCanData;
 ///////////////////////////////////////////////////////////////////////////
 // external Libraries
 ///////////////////////////////////////////////////////////////////////////
-
-extern ESPUIClass ESPUI;
 
 // extern AsyncUDP udpLocalPort;
 // extern AsyncUDP udpRemotePort;

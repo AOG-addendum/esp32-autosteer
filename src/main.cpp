@@ -51,7 +51,6 @@ IPAddress apIP( 192, 168, 1, 1 );
 ///////////////////////////////////////////////////////////////////////////
 // external Libraries
 ///////////////////////////////////////////////////////////////////////////
-ESPUIClass ESPUI( Verbosity::Quiet );
 DNSServer dnsServer;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -120,14 +119,12 @@ void setup( void ) {
   initESPUI();
 
   {
-  Control* labelSteerEngagedFaultsHandle = ESPUI.getControl( labelSteerEngagedFaults );
   String str;
   str.reserve( 30 );
   str = "Number of faults: ";
   str += ( uint8_t ) diagnostics.steerEnabledWithNoPower;
   str += "\nFault active since startup: No";
-  labelSteerEngagedFaultsHandle->value = str;
-  ESPUI.updateControlAsync( labelSteerEngagedFaultsHandle );
+  ESPUI.updateLabel( labelSteerEngagedFaults, str );
   }
 
   if( steerConfig.enableOTA ) {

@@ -86,12 +86,11 @@ void idleStatsWorker( void* z ) {
 
     Control* labelLoadHandle = ESPUI.getControl( labelLoad );
     labelLoadHandle->value = str;
-    ESPUI.updateControlAsync( labelLoadHandle );
+    ESPUI.updateLabel( labelLoad, str );
 
     idleCtrCore0 = 0;
     idleCtrCore1 = 0;
 
-    ESPUI.updateControlAsyncTransmit();
 
 //   heap_caps_print_heap_info(MALLOC_CAP_8BIT);
 

@@ -128,7 +128,6 @@ void canWorker10Hz( void* z ) {
 
       if( loopTimeToWaitTo < millis() ) {
 
-        Control* handle = ESPUI.getControl( labelStatusCan );
         String str;
         str.reserve( 200 );
 
@@ -146,8 +145,7 @@ void canWorker10Hz( void* z ) {
         str += String( steerCanData.rearPtoRpm );
         str += "</td></tr></table>";
 
-        handle->value = str;
-        ESPUI.updateControlAsync( handle );
+        ESPUI.updateLabel( labelStatusCan, str );
 
         loopTimeToWaitTo = millis() + xFrequency;
       }

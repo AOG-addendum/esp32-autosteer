@@ -26,7 +26,7 @@ uint16_t labelBuildDate;
 
 void setResetButtonToRed() {
   ESPUI.getControl( buttonReset )->color = ControlColor::Alizarin;
-  ESPUI.updateControlAsync( buttonReset );
+  ESPUI.updateControl( buttonReset );
 }
 
 void addAnalogInputADS1115( uint16_t parent ) {
@@ -83,7 +83,7 @@ void initESPUI ( void ) {
         str += "\nFault active since startup: No";
         labelSteerEngagedFaultsHandle->value = str;
         labelSteerEngagedFaultsHandle->color = ControlColor::Emerald;
-        ESPUI.updateControlAsync( labelSteerEngagedFaultsHandle );
+        ESPUI.updateControl( labelSteerEngagedFaultsHandle );
       }
     } );
   }

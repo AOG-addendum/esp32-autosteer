@@ -5,9 +5,9 @@
 #include "main.hpp"
 #include "jsonFunctions.hpp"
 
-void diagnosticWorker10Hz( void* z ) {
+void diagnosticWorker1Hz( void* z ) {
   vTaskDelay( 2000 );
-  constexpr TickType_t xFrequency = 100;
+  constexpr TickType_t xFrequency = 1000;
   TickType_t xLastWakeTime = xTaskGetTickCount();
   for( ;; ) {
 
@@ -26,12 +26,10 @@ void diagnosticWorker10Hz( void* z ) {
       str += ( bool )disabledBySpeedSafety ? "Yes" : "No" ;
       str += "\nDisabled by min speed: ";
       str += ( bool )steerSetpoints.speed < steerConfig.minAutosteerSpeed ? "Yes" : "No" ;
-      labelSpeedDisableAutosteerHandle->value = str;
       labelSpeedDisableAutosteerHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
-      ESPUI.updateControlAsync( labelSpeedDisableAutosteerHandle );
+      ESPUI.updateLabel( labelSpeedDisableAutosteer, str );
     }
     {
-      Control* labelSupplyVoltageHandle = ESPUI.getControl( labelSupplyVoltage );
       String str;
       str.reserve( 30 );
       str = ( uint16_t ) steerSupplyVoltage ;
@@ -46,17 +44,14 @@ void diagnosticWorker10Hz( void* z ) {
       ESPUI.updateControlAsync( labelSupplyVoltageHandle );
     }
     {
-      Control* labelSteerMotorCurrentHandle = ESPUI.getControl( labelSteerMotorCurrent );
       String str;
       str.reserve( 30 );
       str = "Current: ";
       str += ( double ) steerMotorCurrent ;
       str += "\nOverlimit: N/A";
-      labelSteerMotorCurrentHandle->value = str;
-      ESPUI.updateControlAsync( labelSteerMotorCurrentHandle );
+      ESPUI.updateLabel( labelSteerMotorCurrent, str );
     }
     {
-      Control* handle = ESPUI.getControl( labelWheelAngle );
       String str;
       str.reserve( 30 );
       if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
@@ -77,11 +72,8 @@ void diagnosticWorker10Hz( void* z ) {
         str += ( float )steerSetpoints.requestedSteerAngle;
         str += "°";
       }
-      handle->value = str;
-      ESPUI.updateControlAsync( handle );
     }
     {
-      Control* labelSwitchStatesHandle = ESPUI.getControl( labelSwitchStates );
       String str;
       str.reserve( 30 );
       str = "Autosteer switch: ";
@@ -96,11 +88,9 @@ void diagnosticWorker10Hz( void* z ) {
         str += "\nHydraulic disengage switch: ";
         str += ( bool )( digitalRead( steerConfig.gpioDisengage ) == steerConfig.hydraulicSwitchActiveLow ) ? "Off" : "On" ;
       }
-      labelSwitchStatesHandle->value = str;
-      ESPUI.updateControlAsync( labelSwitchStatesHandle );
+      ESPUI.updateLabel( labelSwitchStates, str );
     }
     {
-      Control* handle = ESPUI.getControl( labelStatusAdc );
       String str;
       str.reserve( 30 );
       str = "ADS1115 initialized, ";
@@ -136,5 +126,5 @@ void diagnosticWorker10Hz( void* z ) {
 }
 
 void initDiagnostics() {
-  xTaskCreate( diagnosticWorker10Hz, "diagnosticWorker", 3096, NULL, 3, NULL );
+  xTaskCreate( diagnosticWorker1Hz, "diagnosticWorker", 3096, NULL, 3, NULL );
 }

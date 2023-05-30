@@ -137,9 +137,8 @@ void autosteerWorker100Hz( void* z ) {
           str = "Number of faults: ";
           str += ( int8_t ) diagnostics.steerEnabledWithNoPower;
           str += "\nFault active since startup: Yes";
-          labelSteerEngagedFaultsHandle->value = str;
           labelSteerEngagedFaultsHandle->color = ControlColor::Alizarin;
-          ESPUI.updateControlAsync( labelSteerEngagedFaultsHandle );
+          ESPUI.updateLabel( labelSteerEngagedFaults, str );
           saveDiagnostics();
       }
     }

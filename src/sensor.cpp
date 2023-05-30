@@ -220,7 +220,7 @@ void initSensors() {
       handle->color = ControlColor::Alizarin;
     }
     initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
-    ESPUI.updateControlAsync( handle );
+    ESPUI.updateLabel( labelStatusAdc, str );
   }
 
   xTaskCreate( sensorWorker100HzPoller, "sensorWorker100HzPoller", 4096, NULL, 6, NULL );
