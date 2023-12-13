@@ -68,6 +68,8 @@ bool safetyAlarmLatch = false;
 bool ditherDirection = false;
 bool dtcAutosteerPrevious = false;
 bool disabledBySpeedSafety = false;
+bool disabledBySteeringWheel = false;
+bool disengagedBySteeringWheel = false;
 
 void ditherWorkerHalfHZ( void* z ) {
 

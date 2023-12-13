@@ -44,10 +44,11 @@ extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern double steerSupplyVoltage;
 extern double steerMotorCurrent;
 extern bool disabledBySpeedSafety;
+extern bool disengagedBySteeringWheel;
 
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
-extern uint16_t labelSpeedDisableAutosteer;
+extern uint16_t labelSafetyDisableAutosteer;
 extern uint16_t labelSupplyVoltage;
 extern uint16_t labelSteerMotorCurrent;
 extern uint16_t labelSteerEngagedFaults;

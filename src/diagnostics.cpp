@@ -12,7 +12,7 @@ void diagnosticWorker1Hz( void* z ) {
   for( ;; ) {
 
     {
-      Control* labelSpeedDisableAutosteerHandle = ESPUI.getControl( labelSpeedDisableAutosteer );
+      Control* labelSafetyDisableAutosteerHandle = ESPUI.getControl( labelSafetyDisableAutosteer );
       String str;
       str.reserve( 30 );
       str = "Speed: ";
@@ -26,8 +26,10 @@ void diagnosticWorker1Hz( void* z ) {
       str += ( bool )disabledBySpeedSafety ? "Yes" : "No" ;
       str += "\nDisabled by min speed: ";
       str += ( bool )steerSetpoints.speed < steerConfig.minAutosteerSpeed ? "Yes" : "No" ;
-      labelSpeedDisableAutosteerHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
-      ESPUI.updateLabel( labelSpeedDisableAutosteer, str );
+      str += "\nDisabled by steering wheel: ";
+      str += ( bool )disengagedBySteeringWheel ? "Yes" : "No" ;
+      labelSafetyDisableAutosteerHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
+      ESPUI.updateLabel( labelSafetyDisableAutosteer, str );
     }
     {
       String str;
