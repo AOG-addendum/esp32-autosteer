@@ -149,13 +149,6 @@ void sensorWorker100HzPoller( void* z ) {
         wheelAngleTmp = wheelAngleSensorFilter.step( wheelAngleTmp );
         steerSetpoints.actualSteerAngle = wheelAngleTmp;
 
-        if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-          static uint8_t loopCounter = 0;
-
-          if( ++loopCounter >= 10 ) {
-            sendNumberTransmission( steerConfig.qogChannelIdWheelAngle, wheelAngleTmp );
-          }
-        }
       }
     }
 

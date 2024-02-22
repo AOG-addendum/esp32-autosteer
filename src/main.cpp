@@ -78,13 +78,7 @@ void setup( void ) {
 
   Serial.updateBaudRate( steerConfig.baudrate );
 
-  if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-    Serial.println( "Welcome to esp32-aog.\nThe selected mode is QtOpenGuidance.\nTo configure, please open the webui." );
-  }
-
-  if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-    Serial.println( "Welcome to esp32-aog.\nThe selected mode is AgOpenGps.\nTo configure, please open the webui." );
-  }
+  Serial.println( "Welcome to esp32-aog.\nThe selected mode is AgOpenGps.\nTo configure, please open the webui." );
 
   pinMode( steerConfig.apModePin, OUTPUT );
   digitalWrite( steerConfig.apModePin, LOW );
