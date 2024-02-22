@@ -41,6 +41,7 @@ extern double steerSupplyVoltage;
 extern double steerMotorCurrent;
 extern bool disabledBySpeedSafety;
 extern bool disengagedBySteeringWheel;
+extern volatile uint16_t dutyCycle;
 
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
@@ -89,7 +90,8 @@ struct SteerConfig {
 
   enum class DisengageSwitchType : uint8_t {
     Encoder = 0,
-    Hydraulic = 1
+    Hydraulic = 1,
+    JDVariableDuty = 2
   } disengageSwitchType = DisengageSwitchType::Encoder;
 
   char ssid[24] = "AOG hub";
@@ -148,6 +150,7 @@ struct SteerConfig {
   uint8_t gpioDisengage = 23;
   uint16_t disengageFramePulses = 3;
   uint16_t disengageFrameMillis = 1000;
+  uint16_t JDVariableDutyChange = 5;
   double steeringShuntVoltsPerAmp = 1.0;
   double maxSteerCurrent = 5.00;
   bool workswitchActiveLow = true;

@@ -306,6 +306,15 @@ void initESPUI ( void ) {
         ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "JD PWM sensor duty cycle change", String( steerConfig.JDVariableDutyChange ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.JDVariableDutyChange = control->value.toInt();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        }
       }
     }
   }

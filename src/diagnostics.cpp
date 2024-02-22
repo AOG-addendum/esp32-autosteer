@@ -101,13 +101,23 @@ void diagnosticWorker1Hz( void* z ) {
       str += ( bool )( digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ) ? "Off" : "On" ;
       str += "\nWork switch: ";
       str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
-      if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
-        str += "\nDisengage on steering wheel: ";
-        str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "Off" : "On" ;
-      }
-      else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
-        str += "\nHydraulic disengage switch: ";
-        str += ( bool )( digitalRead( steerConfig.gpioDisengage ) == steerConfig.hydraulicSwitchActiveLow ) ? "Off" : "On" ;
+      switch( steerConfig.disengageSwitchType ) {
+        case SteerConfig::DisengageSwitchType::Encoder: {
+          str += "\nDisengage on steering wheel: ";
+          str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "Off" : "On" ;
+        }
+        break;
+
+        case SteerConfig::DisengageSwitchType::Hydraulic: {
+          str += "\nHydraulic disengage switch: ";
+          str += ( bool )( digitalRead( steerConfig.gpioDisengage ) == steerConfig.hydraulicSwitchActiveLow ) ? "Off" : "On" ;
+        }
+        break;
+
+        case SteerConfig::DisengageSwitchType::JDVariableDuty: {
+          str += "\nDeere variable duty encoder: ";
+          str += ( uint16_t )( dutyCycle );
+        }
       }
       ESPUI.updateLabel( labelSwitchStates, str );
     }
