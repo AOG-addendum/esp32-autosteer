@@ -48,15 +48,27 @@ SemaphoreHandle_t i2cMutex;
 const byte DNS_PORT = 53;
 IPAddress apIP( 192, 168, 1, 1 );
 
+double pidOutput = 0;
+double pidOutputTmp = 0;
+AutoPID pid(
+        &( steerSetpoints.actualSteerAngle ),
+        &( steerSetpoints.requestedSteerAngle ),
+        &( pidOutput ),
+        -255, 255,
+        steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
+
+bool safetyAlarmLatch = false;
+bool disabledBySpeedSafety = false;
+bool disengagedBySteeringWheel = false;
+bool steerState = false;
+
 ///////////////////////////////////////////////////////////////////////////
 // external Libraries
 ///////////////////////////////////////////////////////////////////////////
 DNSServer dnsServer;
-
-///////////////////////////////////////////////////////////////////////////
-// helper functions
-///////////////////////////////////////////////////////////////////////////
-
+AsyncUDP udpLocalPort;
+AsyncUDP udpRemotePort;
+AsyncUDP udpSendFrom;
 
 ///////////////////////////////////////////////////////////////////////////
 // Application
@@ -131,7 +143,11 @@ void setup( void ) {
 
   initCan();
 
-  initAutosteer();
+  if ( steerConfig.canbusTractorType == SteerConfig::CanBusTractorType::None ){
+    initAutosteer();
+  } else {
+    initCanbusAutosteer();
+  }
 
   initDiagnostics();
 }

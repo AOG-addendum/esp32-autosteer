@@ -32,6 +32,10 @@
 
 #include <ESPUI.h>
 
+#include <ESP32CAN.h>
+
+#include <AutoPID.h>
+
 #include <Wire.h>
 
 #include "average.hpp"
@@ -39,8 +43,10 @@
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern double steerSupplyVoltage;
 extern double steerMotorCurrent;
+extern bool safetyAlarmLatch;
 extern bool disabledBySpeedSafety;
 extern bool disengagedBySteeringWheel;
+extern bool steerState;
 extern uint16_t dutyCycle;
 
 extern uint16_t labelLoad;
@@ -61,6 +67,10 @@ extern SemaphoreHandle_t i2cMutex;
 
 extern time_t timeoutPoint;
 extern double pidOutputTmp;
+extern double pidOutput;
+extern AutoPID pid;
+
+extern CAN_device_t CAN_cfg;
 
 struct Diagnostics {
   double steerSupplyVoltageMin;
@@ -201,6 +211,15 @@ struct SteerConfig {
     Speed500kbs = 500
   } canBusSpeed = CanBusSpeed::Speed250kbs;
 
+  enum class CanBusTractorType : uint16_t {
+    None = 0,
+    Claas = 1,
+    ValtraMasseyChallenger = 2,
+    CaseNewHolland = 3,
+    Fendt = 4,
+    JCB = 5
+  } canbusTractorType = CanBusTractorType::None;
+
   uint8_t canBusHitchThreshold = 50;
   uint8_t canBusHitchThresholdHysteresis = 6;
 
@@ -290,8 +309,8 @@ extern SteerCanData steerCanData;
 // external Libraries
 ///////////////////////////////////////////////////////////////////////////
 
-// extern AsyncUDP udpLocalPort;
-// extern AsyncUDP udpRemotePort;
+extern AsyncUDP udpLocalPort;
+extern AsyncUDP udpRemotePort;
 extern AsyncUDP udpSendFrom;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -322,5 +341,6 @@ extern void initIdleStats();
 extern void initSensors();
 extern void initCan();
 extern void initAutosteer();
+extern void initCanbusAutosteer();
 extern void initWiFi();
 extern void initDiagnostics();

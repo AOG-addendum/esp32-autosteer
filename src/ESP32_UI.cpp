@@ -187,13 +187,28 @@ void initESPUI ( void ) {
       ESPUI.addControl( ControlType::Option, "250kB/s", "250", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "500kB/s", "500", ControlColor::Alizarin, sel );
     }
+
+    {
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "CanBus Tractor Type for Autosteer*", String( ( int )steerConfig.canbusTractorType ), ControlColor::Wetasphalt, tab,
+      []( Control * control, int id ) {
+        steerConfig.canbusTractorType = ( SteerConfig::CanBusTractorType )control->value.toInt();
+        steerConfig.canBusEnabled = 1;
+        steerConfig.wheelAngleInput = SteerConfig::AnalogIn::None;
+        steerConfig.outputType = SteerConfig::OutputType::None;
+        setResetButtonToRed();
+      } );
+      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "Valtra/Massey/Challenger", "1", ControlColor::Alizarin, sel );
+    }
   }
 
   // Switches/Buttons Tab
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Work- and Steerswitch", "Work- and Steerswitch" );
 
-    uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Type*", String( ( int )steerConfig.workswitchType ), ControlColor::Wetasphalt, tab,
+    if( steerConfig.canBusEnabled ) {
+
+      uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Type*", String( ( int )steerConfig.workswitchType ), ControlColor::Wetasphalt, tab,
       []( Control * control, int id ) {
         steerConfig.workswitchType = ( SteerConfig::WorkswitchType )control->value.toInt();
         setResetButtonToRed();
@@ -201,7 +216,6 @@ void initESPUI ( void ) {
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Gpio", "1", ControlColor::Alizarin, sel );
 
-    if( steerConfig.canBusEnabled ) {
       {
         ESPUI.addControl( ControlType::Option, "Rear Hitch Position (from Can Bus)", "2", ControlColor::Alizarin, sel );
         ESPUI.addControl( ControlType::Option, "Front Hitch Position (from Can Bus)", "3", ControlColor::Alizarin, sel );
@@ -248,64 +262,69 @@ void initESPUI ( void ) {
       }
     }
 
+    if ( steerConfig.canbusTractorType == SteerConfig::CanBusTractorType::None )
     {
-      ESPUI.addControl( ControlType::Switcher, "Workswitch Active Low", steerConfig.workswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.workswitchActiveLow = control->value.toInt() == 1;
-      } );
-    }
-
-    {
-      ESPUI.addControl( ControlType::Switcher, "Autosteer Switch Active Low", steerConfig.steerswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.steerswitchActiveLow = control->value.toInt() == 1;
-      } );
-    }
-
-    {
-      ESPUI.addControl( ControlType::Switcher, "Autosteer Switch is Momentary*", steerConfig.steerSwitchIsMomentary ? "1" : "0", ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.steerSwitchIsMomentary = control->value.toInt() == 1;
-        setResetButtonToRed();
-      } );
-    }
-
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Disengage Switch Type*", String( ( int )steerConfig.disengageSwitchType ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.disengageSwitchType = ( SteerConfig::DisengageSwitchType )control->value.toInt();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Option, "Encoder on steering shaft", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Pressure switch in hydraulics", "1", ControlColor::Alizarin, sel );
-    }
-
-    if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
       {
-        ESPUI.addControl( ControlType::Switcher, "Hydraulic Switch Active Low", steerConfig.hydraulicSwitchActiveLow ? "1" : "0", ControlColor::Wetasphalt, tab,
+        ESPUI.addControl( ControlType::Switcher, "Workswitch Active Low", steerConfig.workswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
-          steerConfig.hydraulicSwitchActiveLow = control->value.toInt() == 1;
+          steerConfig.workswitchActiveLow = control->value.toInt() == 1;
         } );
       }
-    } else {
+
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.disengageFramePulses ), ControlColor::Peterriver, tab,
+        ESPUI.addControl( ControlType::Switcher, "Autosteer Switch Active Low", steerConfig.steerswitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
-          steerConfig.disengageFramePulses = control->value.toInt();
+          steerConfig.steerswitchActiveLow = control->value.toInt() == 1;
         } );
-        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
       }
 
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.disengageFrameMillis ), ControlColor::Peterriver, tab,
+        ESPUI.addControl( ControlType::Switcher, "Autosteer Switch is Momentary*", steerConfig.steerSwitchIsMomentary ? "1" : "0", ControlColor::Wetasphalt, tab,
         []( Control * control, int id ) {
-          steerConfig.disengageFrameMillis = control->value.toInt();
+          steerConfig.steerSwitchIsMomentary = control->value.toInt() == 1;
+          setResetButtonToRed();
         } );
-        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
+      }
+
+      {
+        uint16_t sel = ESPUI.addControl( ControlType::Select, "Disengage Switch Type*", String( ( int )steerConfig.disengageSwitchType ), ControlColor::Wetasphalt, tab,
+        []( Control * control, int id ) {
+          steerConfig.disengageSwitchType = ( SteerConfig::DisengageSwitchType )control->value.toInt();
+          setResetButtonToRed();
+        } );
+        ESPUI.addControl( ControlType::Option, "Encoder on steering shaft", "0", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Pressure switch in hydraulics", "1", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "JD variable duty PWM sensor", "2", ControlColor::Alizarin, sel );
+      }
+
+      if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
+        {
+          ESPUI.addControl( ControlType::Switcher, "Hydraulic Switch Active Low", steerConfig.hydraulicSwitchActiveLow ? "1" : "0", ControlColor::Wetasphalt, tab,
+          []( Control * control, int id ) {
+            steerConfig.hydraulicSwitchActiveLow = control->value.toInt() == 1;
+          } );
+        }
+      } else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.disengageFramePulses ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.disengageFramePulses = control->value.toInt();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
+        }
+
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.disengageFrameMillis ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.disengageFrameMillis = control->value.toInt();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
+        }
+      } else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::JDVariableDuty ){
         {
           uint16_t num = ESPUI.addControl( ControlType::Number, "JD PWM sensor duty cycle change", String( steerConfig.JDVariableDutyChange ), ControlColor::Peterriver, tab,
           []( Control * control, int id ) {
@@ -321,216 +340,223 @@ void initESPUI ( void ) {
 
   // Wheel Angle Sensor Tab
   {
-    uint16_t tab = ESPUI.addControl( ControlType::Tab, "Wheel Angle Sensor", "Wheel Angle Sensor" );
-
+    if ( steerConfig.canbusTractorType == SteerConfig::CanBusTractorType::None )
     {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Wheel Angle Sensor*", String( ( int )steerConfig.wheelAngleInput ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.wheelAngleInput = ( SteerConfig::AnalogIn )control->value.toInt();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
-      addAnalogInputADS1115( sel );
-    }
 
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Wheel Angle Sensor Type*", String( ( int )steerConfig.wheelAngleSensorType ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.wheelAngleSensorType = ( SteerConfig::WheelAngleSensorType )control->value.toInt();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Option, "Direct Wheel Angle", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Two Arms connected to tie rod", "1", ControlColor::Alizarin, sel );
-    }
+      uint16_t tab = ESPUI.addControl( ControlType::Tab, "Wheel Angle Sensor", "Wheel Angle Sensor" );
 
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Sensor Center", String( steerConfig.wheelAnglePositionZero ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.wheelAnglePositionZero = control->value.toInt();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "26000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-    }
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Counts per Degree", String( steerConfig.wheelAngleCountsPerDegree ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.wheelAngleCountsPerDegree = control->value.toFloat();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "250", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
-    }
-
-    ESPUI.addControl( ControlType::Switcher, "Invert Wheel Angle Sensor", steerConfig.invertWheelAngleSensor ? "1" : "0", ControlColor::Peterriver, tab,
-    []( Control * control, int id ) {
-      steerConfig.invertWheelAngleSensor = control->value.toInt() == 1;
-    } );
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Offset", String( steerConfig.wheelAngleOffset ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.wheelAngleOffset = control->value.toFloat();
-      } );
-      ESPUI.addControl( ControlType::Min, "Roll Min", "-80", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Roll Max", "80", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Roll Step", "0.1", ControlColor::Peterriver, num );
-    }
-
-    if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "1. Arm connect to sensor (mm)", String( steerConfig.wheelAngleFirstArmLenght ), ControlColor::Peterriver, tab,
+        uint16_t sel = ESPUI.addControl( ControlType::Select, "Wheel Angle Sensor*", String( ( int )steerConfig.wheelAngleInput ), ControlColor::Wetasphalt, tab,
         []( Control * control, int id ) {
-          steerConfig.wheelAngleFirstArmLenght = control->value.toFloat();
+          steerConfig.wheelAngleInput = ( SteerConfig::AnalogIn )control->value.toInt();
+          setResetButtonToRed();
+        } );
+        ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+        addAnalogInputADS1115( sel );
+      }
+
+      {
+        uint16_t sel = ESPUI.addControl( ControlType::Select, "Wheel Angle Sensor Type*", String( ( int )steerConfig.wheelAngleSensorType ), ControlColor::Wetasphalt, tab,
+        []( Control * control, int id ) {
+          steerConfig.wheelAngleSensorType = ( SteerConfig::WheelAngleSensorType )control->value.toInt();
+          setResetButtonToRed();
+        } );
+        ESPUI.addControl( ControlType::Option, "Direct Wheel Angle", "0", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Two Arms connected to tie rod", "1", ControlColor::Alizarin, sel );
+      }
+
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Sensor Center", String( steerConfig.wheelAnglePositionZero ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.wheelAnglePositionZero = control->value.toInt();
         } );
         ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "26000", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
       }
 
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "2. Arm connect to tie rod (mm)", String( steerConfig.wheelAngleSecondArmLenght ), ControlColor::Peterriver, tab,
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Counts per Degree", String( steerConfig.wheelAngleCountsPerDegree ), ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
-          steerConfig.wheelAngleSecondArmLenght = control->value.toFloat();
+          steerConfig.wheelAngleCountsPerDegree = control->value.toFloat();
         } );
         ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "250", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
+      }
+
+      ESPUI.addControl( ControlType::Switcher, "Invert Wheel Angle Sensor", steerConfig.invertWheelAngleSensor ? "1" : "0", ControlColor::Peterriver, tab,
+      []( Control * control, int id ) {
+        steerConfig.invertWheelAngleSensor = control->value.toInt() == 1;
+      } );
+
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Wheel Angle Offset", String( steerConfig.wheelAngleOffset ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.wheelAngleOffset = control->value.toFloat();
+        } );
+        ESPUI.addControl( ControlType::Min, "Roll Min", "-80", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Roll Max", "80", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Roll Step", "0.1", ControlColor::Peterriver, num );
+      }
+
+      if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "1. Arm connect to sensor (mm)", String( steerConfig.wheelAngleFirstArmLenght ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.wheelAngleFirstArmLenght = control->value.toFloat();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        }
+
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "2. Arm connect to tie rod (mm)", String( steerConfig.wheelAngleSecondArmLenght ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.wheelAngleSecondArmLenght = control->value.toFloat();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        }
+
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Tie rod stroke (mm)", String( steerConfig.wheelAngleTieRodStroke ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.wheelAngleTieRodStroke = control->value.toFloat();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        }
+
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Minimum Angle of wheel angle sensor", String( steerConfig.wheelAngleMinimumAngle ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.wheelAngleMinimumAngle = control->value.toFloat();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "180", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        }
+
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Lenght of Track Arm (mm)", String( steerConfig.wheelAngleTrackArmLenght ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.wheelAngleTrackArmLenght = control->value.toFloat();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        }
+      }
+
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Ackermann (%)", String( steerConfig.ackermann ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.ackermann = control->value.toFloat();
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "200", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
       }
 
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Tie rod stroke (mm)", String( steerConfig.wheelAngleTieRodStroke ), ControlColor::Peterriver, tab,
+        uint16_t sel = ESPUI.addControl( ControlType::Select, "Ackermann - Wheel with WAS has smaller radius", String( ( int )steerConfig.ackermannAboveZero ), ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
-          steerConfig.wheelAngleTieRodStroke = control->value.toFloat();
+          steerConfig.ackermannAboveZero = control->value.toInt() == 1;
         } );
-        ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Option, "when Actual degrees are below zero", "0", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "when Actual degrees are above zero", "1", ControlColor::Alizarin, sel );
       }
 
       {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Minimum Angle of wheel angle sensor", String( steerConfig.wheelAngleMinimumAngle ), ControlColor::Peterriver, tab,
+        uint16_t sel = ESPUI.addControl( ControlType::Select, "WAS Voltage (ADS1115 Gain)*", String( ( int )steerConfig.adsGain ), ControlColor::Wetasphalt, tab,
         []( Control * control, int id ) {
-          steerConfig.wheelAngleMinimumAngle = control->value.toFloat();
+          steerConfig.adsGain = ( SteerConfig::ADSGain )control->value.toInt();
+          setResetButtonToRed();
         } );
-        ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "180", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Option, "6.144V (2/3x gain)", "0", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "4.096V (1x gain)", "512", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "2.048V (2x gain)", "1024", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "1.024V (4x gain)", "1536", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "0.512V (8x gain)", "2048", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "0.256V (16x gain)", "2560", ControlColor::Alizarin, sel );
       }
-
-      {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Lenght of Track Arm (mm)", String( steerConfig.wheelAngleTrackArmLenght ), ControlColor::Peterriver, tab,
-        []( Control * control, int id ) {
-          steerConfig.wheelAngleTrackArmLenght = control->value.toFloat();
-        } );
-        ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "500", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-      }
-    }
-
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Ackermann (%)", String( steerConfig.ackermann ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.ackermann = control->value.toFloat();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "200", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-    }
-
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Ackermann - Wheel with WAS has smaller radius", String( ( int )steerConfig.ackermannAboveZero ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.ackermannAboveZero = control->value.toInt() == 1;
-      } );
-      ESPUI.addControl( ControlType::Option, "when Actual degrees are below zero", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "when Actual degrees are above zero", "1", ControlColor::Alizarin, sel );
-    }
-
-    {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "WAS Voltage (ADS1115 Gain)*", String( ( int )steerConfig.adsGain ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.adsGain = ( SteerConfig::ADSGain )control->value.toInt();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Option, "6.144V (2/3x gain)", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "4.096V (1x gain)", "512", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "2.048V (2x gain)", "1024", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "1.024V (4x gain)", "1536", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "0.512V (8x gain)", "2048", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "0.256V (16x gain)", "2560", ControlColor::Alizarin, sel );
     }
   }
 
   // Steering Tab
   {
-    uint16_t tab = ESPUI.addControl( ControlType::Tab, "Steering", "Steering" );
-
+    if ( steerConfig.canbusTractorType == SteerConfig::CanBusTractorType::None )
     {
-      uint16_t sel = ESPUI.addControl( ControlType::Select, "Output Type*", String( ( int )steerConfig.outputType ), ControlColor::Wetasphalt, tab,
+      uint16_t tab = ESPUI.addControl( ControlType::Tab, "Steering", "Steering" );
+
+      {
+        uint16_t sel = ESPUI.addControl( ControlType::Select, "Output Type*", String( ( int )steerConfig.outputType ), ControlColor::Wetasphalt, tab,
+        []( Control * control, int id ) {
+          steerConfig.outputType = ( SteerConfig::OutputType )control->value.toInt();
+          steerConfig.steeringPidMaxPwm = 191;
+          setResetButtonToRed();
+        } );
+        ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Motor: Cytron MD30C", "1", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Motor: IBT 2", "2", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + PWM 2-Coil Valve", "3", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + Danfoss Valve PVE A/H/M", "4", ControlColor::Alizarin, sel );
+        ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + Bang Bang Valve", "5", ControlColor::Alizarin, sel );
+      }
+
+      ESPUI.addControl( ControlType::Switcher, "Invert Output", steerConfig.invertOutput ? "1" : "0", ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
-        steerConfig.outputType = ( SteerConfig::OutputType )control->value.toInt();
-        steerConfig.steeringPidMaxPwm = 191;
-        setResetButtonToRed();
+        steerConfig.invertOutput = control->value.toInt() == 1;
       } );
-      ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Motor: Cytron MD30C", "1", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Motor: IBT 2", "2", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + PWM 2-Coil Valve", "3", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + Danfoss Valve PVE A/H/M", "4", ControlColor::Alizarin, sel );
-      ESPUI.addControl( ControlType::Option, "Hydraulic: IBT 2 + Bang Bang Valve", "5", ControlColor::Alizarin, sel );
-    }
 
-    ESPUI.addControl( ControlType::Switcher, "Invert Output", steerConfig.invertOutput ? "1" : "0", ControlColor::Peterriver, tab,
-    []( Control * control, int id ) {
-      steerConfig.invertOutput = control->value.toInt() == 1;
-    } );
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "PWM Frequency*", String( steerConfig.pwmFrequency, 2 ), ControlColor::Wetasphalt, tab,
+        []( Control * control, int id ) {
+          steerConfig.pwmFrequency = control->value.toDouble();
+          setResetButtonToRed();
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "4000", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+      }
 
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "PWM Frequency*", String( steerConfig.pwmFrequency, 2 ), ControlColor::Wetasphalt, tab,
-      []( Control * control, int id ) {
-        steerConfig.pwmFrequency = control->value.toDouble();
-        setResetButtonToRed();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "4000", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-    }
+      {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Min autosteer speed", String( steerConfig.minAutosteerSpeed ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.minAutosteerSpeed = control->value.toFloat();
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "2", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
+      }
 
-    {
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Min autosteer speed", String( steerConfig.minAutosteerSpeed ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.minAutosteerSpeed = control->value.toFloat();
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "2", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
-    }
+      if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ){
+        uint16_t num = ESPUI.addControl( ControlType::Number, "Dither", String( steerConfig.dither ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.dither = control->value.toInt();
+          ditherAmount = 0;
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+      }
 
-    if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ){
-      uint16_t num = ESPUI.addControl( ControlType::Number, "Dither", String( steerConfig.dither ), ControlColor::Peterriver, tab,
-      []( Control * control, int id ) {
-        steerConfig.dither = control->value.toInt();
-        ditherAmount = 0;
-      } );
-      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
-    }
-
-    manualValveSwitcher = ESPUI.addControl( Switcher, "Manual valve control", "", Peterriver, tab, manualValveCallback );
-    {
-      if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss ){
-          steerConfig.manualPWM = 128;
-        } else {
-          steerConfig.manualPWM = 0;
-        }
-      manualValvePWMWidget = ESPUI.addControl( Number, "Manual PWM", String( steerConfig.manualPWM ), Peterriver, tab, manualValvePWMCallback );
-      ESPUI.addControl( ControlType::Min, "Min", "-255", ControlColor::Peterriver, manualValvePWMWidget );
-      ESPUI.addControl( ControlType::Max, "Max", "255", ControlColor::Peterriver, manualValvePWMWidget );
-      ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, manualValvePWMWidget );
+      manualValveSwitcher = ESPUI.addControl( Switcher, "Manual valve control", "", Peterriver, tab, manualValveCallback );
+      {
+        if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss ){
+            steerConfig.manualPWM = 128;
+          } else {
+            steerConfig.manualPWM = 0;
+          }
+        manualValvePWMWidget = ESPUI.addControl( Number, "Manual PWM", String( steerConfig.manualPWM ), Peterriver, tab, manualValvePWMCallback );
+        ESPUI.addControl( ControlType::Min, "Min", "-255", ControlColor::Peterriver, manualValvePWMWidget );
+        ESPUI.addControl( ControlType::Max, "Max", "255", ControlColor::Peterriver, manualValvePWMWidget );
+        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, manualValvePWMWidget );
+      }
     }
   }
 

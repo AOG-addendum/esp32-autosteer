@@ -39,18 +39,6 @@ SteerSettings steerSettings;
 SteerSetpoints steerSetpoints;
 SteerMachineControl steerMachineControl;
 
-AsyncUDP udpSendFrom;
-AsyncUDP udpLocalPort;
-AsyncUDP udpRemotePort;
-
-double pidOutput = 0;
-double pidOutputTmp = 0;
-AutoPID pid(
-        &( steerSetpoints.actualSteerAngle ),
-        &( steerSetpoints.requestedSteerAngle ),
-        &( pidOutput ),
-        -255, 255,
-        steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
 
 JsonQueueSelector jsonQueueSelector;
 
@@ -58,11 +46,6 @@ constexpr time_t Timeout = 1000;
 time_t timeoutPoint;
 volatile bool disengageState;
 volatile bool disengagePrevState;
-volatile bool steerState = false;
-volatile bool steerChangeProcessed = true;
-volatile time_t steerChangeMillis = millis();
-volatile time_t disengageActivityMillis = millis();
-volatile uint16_t steeringPulseCount = 0;
 time_t switchChangeMillis = millis();
 time_t disengageActivityMillis = millis();
 time_t onTime;
@@ -70,12 +53,8 @@ time_t offTime;
 uint16_t steeringPulseCount = 0;
 uint16_t dutyCycle;
 
-bool safetyAlarmLatch = false;
 bool ditherDirection = false;
 bool dtcAutosteerPrevious = false;
-bool disabledBySpeedSafety = false;
-bool disabledBySteeringWheel = false;
-bool disengagedBySteeringWheel = false;
 
 void ditherWorkerHalfHZ( void* z ) {
 

@@ -21,13 +21,10 @@
 // SOFTWARE.
 
 #include <ESPUI.h>
-#include <ESP32CAN.h>
 #include <CAN_config.h>
 
 #include "main.hpp"
 #include "jsonFunctions.hpp"
-
-CAN_device_t CAN_cfg;
 
 constexpr uint8_t rxQueueSize = 10;
 
