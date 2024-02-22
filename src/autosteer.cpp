@@ -63,6 +63,12 @@ volatile bool steerChangeProcessed = true;
 volatile time_t steerChangeMillis = millis();
 volatile time_t disengageActivityMillis = millis();
 volatile uint16_t steeringPulseCount = 0;
+time_t switchChangeMillis = millis();
+time_t disengageActivityMillis = millis();
+time_t onTime;
+time_t offTime;
+uint16_t steeringPulseCount = 0;
+uint16_t dutyCycle;
 
 bool safetyAlarmLatch = false;
 bool ditherDirection = false;
@@ -376,28 +382,6 @@ void autosteerWorker100Hz( void* z ) {
           digitalWrite( steerConfig.gpioWorkLED, workswitchState);
         }
 
-          if( steerChangeProcessed == false && ( millis() - steerChangeMillis ) > 200 ) {
-            if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow) {
-              steerChangeProcessed = true;
-              steerState = ! steerState;
-              if( steerState == false ) {
-                safetyAlarmLatch = false;
-              }
-            }
-          }
-
-          if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
-            if( digitalRead( steerConfig.gpioDisengage ) != steerConfig.hydraulicSwitchActiveLow ){
-              steerState = false;
-            }
-          }
-          else if( millis() - disengageActivityMillis < steerConfig.disengageFrameMillis ) {
-            if( ( steeringPulseCount / 2 ) >= steerConfig.disengageFramePulses ) { // divide by two to compensate for LOW and HIGH
-              steerState = false;
-              steeringPulseCount = 0;
-            }
-          } else { steeringPulseCount = 0; }
-
           if(( steerState == false || steerSetpoints.enabled == false ) && steerConfig.manualSteerState == true ){
             steerConfig.manualSteerState = false;
             ESPUI.updateSwitcher( manualValveSwitcher, false );
@@ -420,35 +404,97 @@ void autosteerWorker100Hz( void* z ) {
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }
+void autosteerSwitchesWorker1000Hz( void* z ) {
+  constexpr TickType_t xFrequency = 1;
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  bool previousState;
+  bool switchState;
 
-void IRAM_ATTR steerswitchMomentaryIsr() {
-    // interrupt service routine for a momentary steer switch
-    // the rest of the debounce gets calculated in void autosteerWorker100Hz()
-    steerChangeMillis = millis();
-    steerChangeProcessed = false;
-}
+  const uint8_t dutyLength = 10;
+  uint16_t dutyReadings[ dutyLength ];
+  uint32_t dutyTotal = 0;
+  uint8_t dutyIndex = 0;
 
-void IRAM_ATTR steerswitchMaintainedIsr() {
-    // interrupt service routine for a maintained steer switch
-    // no debounce needed for maintained switches
-    if( digitalRead( ( uint8_t )steerConfig.gpioSteerswitch) == steerConfig.steerswitchActiveLow){
-        steerState = false;
-        safetyAlarmLatch = false;
-    } else {
-        steerState = true;
+  for( ;; ) {
+    if( steerConfig.workswitchType == SteerConfig::WorkswitchType::Gpio ) {
+      bool state = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch);
+      if( state != previousState ){
+        switchChangeMillis = millis();
+        previousState = state;
+      }
+      if( millis() - switchChangeMillis > 50 and switchState != state ){
+        switchState = state;
+        if( steerConfig.steerSwitchIsMomentary ){
+          steerState = ! steerState;
+          if( steerState == false ){
+            safetyAlarmLatch = false;
+          } else { 
+            disengagedBySteeringWheel = false; 
+          }
+        } else {
+          if( switchState == steerConfig.steerswitchActiveLow ){
+            steerState = false;
+            safetyAlarmLatch = false;
+          } else {
+            steerState = true;
+            disengagedBySteeringWheel = false;
+          }
+        }
+      }
     }
+
+    if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
+      if( digitalRead( steerConfig.gpioDisengage ) != steerConfig.hydraulicSwitchActiveLow ){
+        steerState = false;
+        disengagedBySteeringWheel = true;
+      }
+    }
+    else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ) {
+      if( disengagePrevState != disengageState ){
+        disengagePrevState = disengageState;
+        if( steeringPulseCount == 0 ){
+          disengageActivityMillis = millis();
+        }
+        steeringPulseCount += 1;
+      }
+      if( millis() - disengageActivityMillis < steerConfig.disengageFrameMillis ) {
+        if( ( steeringPulseCount / 2 ) >= steerConfig.disengageFramePulses ) { // divide by two to compensate for LOW and HIGH
+          steerState = false;
+          steeringPulseCount = 0;
+          disengagedBySteeringWheel = true;
+        }
+      } else { steeringPulseCount = 0; }
+    }
+    else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::JDVariableDuty ){
+      dutyCycle = abs( onTime - offTime );
+      dutyTotal -= dutyReadings[ dutyIndex ];
+      dutyReadings[ dutyIndex ] = dutyCycle;
+      dutyTotal += dutyReadings[ dutyIndex ];
+      dutyIndex += 1;
+      if( dutyIndex >= dutyLength ) {
+        dutyIndex = 0;
+      }
+      uint16_t dutyAverage = dutyTotal / dutyLength;
+      if( abs( dutyAverage - dutyCycle ) > steerConfig.JDVariableDutyChange ){
+        steerState = false;
+        disengagedBySteeringWheel = true;
+      }
+    }
+    vTaskDelayUntil( &xLastWakeTime, xFrequency );
+  }
 }
 
 void IRAM_ATTR disengageIsr() {
     // interrupt service routine for the steering wheel
-    // due to a problem in ESP32, we have to actually check for a change in the input state
     disengageState = digitalRead( ( uint8_t ) steerConfig.gpioDisengage );
     if( disengagePrevState != disengageState ){
       disengagePrevState = disengageState;
-      if( steeringPulseCount == 0 ){
-        disengageActivityMillis = millis();
+      if( disengageState == LOW ){
+        onTime = millis() - disengageActivityMillis;
+      } else {
+        offTime = millis() - disengageActivityMillis;
       }
-      steeringPulseCount += 1;
+      disengageActivityMillis = millis();
     }
 }
 
@@ -579,24 +625,14 @@ void initAutosteer() {
 
   pinMode( steerConfig.gpioWorkswitch, INPUT_PULLUP );
   pinMode( steerConfig.gpioWorkLED, OUTPUT );
-
-  if( steerConfig.workswitchType == SteerConfig::WorkswitchType::Gpio ) {
-    // use interrupt callbacks to simplify steer state tracking,
-    // whichever callback happens last (steering wheel or steer switch) gets priority
-    pinMode( steerConfig.gpioSteerswitch, INPUT_PULLUP );
-    if( steerConfig.steerSwitchIsMomentary ){
-      attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMomentaryIsr, CHANGE);
-    } else {
-      attachInterrupt( steerConfig.gpioSteerswitch, steerswitchMaintainedIsr, CHANGE);
-    }
-  }
-
+  pinMode( steerConfig.gpioSteerswitch, INPUT_PULLUP );
   pinMode( steerConfig.gpioDisengage, INPUT_PULLUP );
-  if ( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ){
-    attachInterrupt( steerConfig.gpioDisengage, disengageIsr, CHANGE);
-  }
+
+  attachInterrupt( steerConfig.gpioDisengage, disengageIsr, CHANGE);
 
   xTaskCreate( autosteerWorker100Hz, "autosteerWorker", 3096, NULL, 3, NULL );
+  xTaskCreate( autosteerSwitchesWorker1000Hz, "autosteerSwitchesWorker", 3096, NULL, 3, NULL );
+
   if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ) {
     xTaskCreate( ditherWorkerHalfHZ, "ditherWorkerHalfHZ", 1024, NULL, 1, NULL );
   }
