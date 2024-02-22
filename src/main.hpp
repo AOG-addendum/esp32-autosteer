@@ -120,8 +120,9 @@ struct SteerConfig {
   bool manualSteerState = false;
   int manualPWM = 0;
   uint8_t gpioPwm = 27;
-  uint8_t gpioDir = 26;
-  uint8_t gpioEn = 25;
+  uint8_t gpioRight = 26;
+  uint8_t gpioLeft = 25;
+  uint8_t gpioEn = 33;
 
   double steeringPidKp = 20;
   double steeringPidKi = 0.5;
