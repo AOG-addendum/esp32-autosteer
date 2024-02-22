@@ -89,38 +89,8 @@ void autosteerWorker100Hz( void* z ) {
 
   pid.setTimeStep( xFrequency );
 
-  QueueHandle_t queue = xQueueCreate( 16, sizeof( json* ) );
-  jsonQueueSelector.addQueue( steerConfig.qogChannelIdAutosteerEnable, queue );
-  jsonQueueSelector.addQueue( steerConfig.qogChannelIdSetpointSteerAngle, queue );
-
   for( ;; ) {
     timeoutPoint = millis() - Timeout;
-
-    if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-      while( uxQueueMessagesWaiting( queue ) ) {
-        json* j = nullptr;
-
-        if( xQueueReceive( queue, &j, 0 ) == pdTRUE ) {
-          uint16_t channelId = j->at( "channelId" );
-
-          if( channelId == steerConfig.qogChannelIdAutosteerEnable ) {
-            if( j->contains( "state" ) ) {
-              steerSetpoints.enabled = j->at( "state" );
-              steerSetpoints.lastPacketReceived = millis();
-            }
-          }
-
-          if( channelId == steerConfig.qogChannelIdSetpointSteerAngle ) {
-            if( j->contains( "number" ) ) {
-              steerSetpoints.requestedSteerAngle = j->at( "number" );
-              steerSetpoints.lastPacketReceived = millis();
-            }
-          }
-
-          delete j;
-        }
-      }
-    }
 
     if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
       disabledBySpeedSafety = true;
@@ -316,18 +286,16 @@ void autosteerWorker100Hz( void* z ) {
 
       uint8_t data[14] = {0};
 
-      if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-        data[0] = 0x80; // AOG specific
-        data[1] = 0x81; // AOG specific
-        data[2] = 0x7F; // autosteer module to AOG
-        data[3] = 0xFD; // autosteer module to AOG
-        data[4] = 8;    // length of data
+      data[0] = 0x80; // AOG specific
+      data[1] = 0x81; // AOG specific
+      data[2] = 0x7F; // autosteer module to AOG
+      data[3] = 0xFD; // autosteer module to AOG
+      data[4] = 8;    // length of data
 
-        {
-          int16_t steerAngle = steerSetpoints.actualSteerAngle * 100 ;
-          data[5] = ( uint16_t )steerAngle;
-          data[6] = ( uint16_t )steerAngle >> 8;
-        }
+      {
+        int16_t steerAngle = steerSetpoints.actualSteerAngle * 100 ;
+        data[5] = ( uint16_t )steerAngle;
+        data[6] = ( uint16_t )steerAngle >> 8;
       }
 
       // read inputs
@@ -392,13 +360,7 @@ void autosteerWorker100Hz( void* z ) {
             workswitchState = ! workswitchState;
           }
 
-          if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-            sendStateTransmission( steerConfig.qogChannelIdWorkswitch, workswitchState );
-          }
-
-          if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-            data[10] |= workswitchState ? 1 : 0;
-          }
+          data[10] |= workswitchState ? 1 : 0;
           digitalWrite( steerConfig.gpioWorkLED, workswitchState);
         }
 
@@ -429,13 +391,7 @@ void autosteerWorker100Hz( void* z ) {
             ESPUI.updateSwitcher( manualValveSwitcher, false );
           }
 
-          if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-            sendStateTransmission( steerConfig.qogChannelIdSteerswitch, steerState );
-          }
-
-          if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-            data[11] |= steerState ? 0 : 2;
-          }
+          data[11] |= steerState ? 0 : 2;
       }
         //data[12] = 0; // PWM ?
       //add the checksum
@@ -446,9 +402,7 @@ void autosteerWorker100Hz( void* z ) {
       }
       data[sizeof(data) - 1] = CRCtoAOG;
 
-      if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-        udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
-      }
+      udpSendFrom.broadcastTo( data, sizeof( data ), initialisation.portSendTo );
 
     }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
@@ -487,124 +441,70 @@ void IRAM_ATTR disengageIsr() {
 }
 
 void initAutosteer() {
-  if( steerConfig.mode == SteerConfig::Mode::QtOpenGuidance ) {
-    if( steerConfig.qogPortListenTo != 0 ) {
-      initialisation.portListenTo = steerConfig.qogPortListenTo;
-    }
 
-    if( steerConfig.qogPortSendTo != 0 ) {
-      initialisation.portSendTo = steerConfig.qogPortSendTo;
-    }
-
-    if( udpLocalPort.listen( initialisation.portListenTo ) ) {
-      udpLocalPort.onPacket( []( AsyncUDPPacket packet ) {
-        std::vector<uint8_t> v;
-        v.reserve( packet.length() );
-
-        for( uint16_t i = 0; i < packet.length(); ++i ) {
-          v.push_back( packet.data()[i] );
-        }
-
-        json* j = new json;
-
-        try {
-          *j = json::from_cbor( v );
-
-          if( j->is_object() ) {
-            if( j->contains( "channelId" ) ) {
-              // valid data -> reset timeout
-              steerSetpoints.lastPacketReceived = millis();
-
-              uint16_t channelId = j->at( "channelId" );
-
-              if( jsonQueueSelector.isValidChannelId( channelId ) ) {
-                xQueueSend( jsonQueueSelector.getQueue( channelId ), &j, 0 );
-                return;
-              }
-            }
-          }
-        } catch( json::exception& e ) {
-          // output exception information
-          Serial.print( "message: " );
-          Serial.println( e.what() );
-          Serial.print( "exception id: " );
-          Serial.print( e.id );
-          Serial.print( ", packet.length(): " );
-          Serial.println( packet.length() );
-          Serial.write( v.data(), v.size() );
-          Serial.println();
-        }
-
-        delete j;
-      } );
-    }
+  if( steerConfig.aogPortSendFrom != 0 ) {
+    initialisation.portSendFrom = steerConfig.aogPortSendFrom;
   }
 
-  if( steerConfig.mode == SteerConfig::Mode::AgOpenGps ) {
-    if( steerConfig.aogPortSendFrom != 0 ) {
-      initialisation.portSendFrom = steerConfig.aogPortSendFrom;
-    }
+  if( steerConfig.aogPortListenTo != 0 ) {
+    initialisation.portListenTo = steerConfig.aogPortListenTo;
+  }
 
-    if( steerConfig.aogPortListenTo != 0 ) {
-      initialisation.portListenTo = steerConfig.aogPortListenTo;
-    }
+  if( steerConfig.aogPortSendTo != 0 ) {
+    initialisation.portSendTo = steerConfig.aogPortSendTo;
+  }
 
-    if( steerConfig.aogPortSendTo != 0 ) {
-      initialisation.portSendTo = steerConfig.aogPortSendTo;
-    }
+  udpSendFrom.listen( initialisation.portSendFrom );
 
-    udpSendFrom.listen( initialisation.portSendFrom );
+  if( udpLocalPort.listen( initialisation.portListenTo ) ) {
+    udpLocalPort.onPacket( []( AsyncUDPPacket packet ) {
+      uint8_t* data = packet.data();
+      if( data[1] + ( data[0] << 8 ) != 0x8081 ){
+          return;
+      }
+      uint16_t pgn = data[3] + ( data[2] << 8 );
+      // see pgn.xlsx in https://github.com/farmerbriantee/AgOpenGPS/tree/master/AgOpenGPS_Dev
+      switch( pgn ) {
+        case 0x7FFE: {
+          steerSetpoints.speed = ( float )( (data[5] | data[6] << 8))*0.1 ;
+          if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
+            steerSetpoints.speed *= 0.6213711922;
+          }
+          steerSetpoints.enabled = data[7];
+          steerSetpoints.requestedSteerAngle = (( double ) ((( int16_t )data[8]) | (( int8_t )data[9] << 8 ))) * 0.01; //horrible code to make negative doubles work
 
-    if( udpLocalPort.listen( initialisation.portListenTo ) ) {
-      udpLocalPort.onPacket( []( AsyncUDPPacket packet ) {
-        uint8_t* data = packet.data();
-        if( data[1] + ( data[0] << 8 ) != 0x8081 ){
-            return;
+          steerSetpoints.lastPacketReceived = millis();
         }
-        uint16_t pgn = data[3] + ( data[2] << 8 );
-        // see pgn.xlsx in https://github.com/farmerbriantee/AgOpenGPS/tree/master/AgOpenGPS_Dev
-        switch( pgn ) {
-          case 0x7FFE: {
-            steerSetpoints.speed = ( float )( (data[5] | data[6] << 8))*0.1 ;
-            if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
-              steerSetpoints.speed *= 0.6213711922;
-            }
-            steerSetpoints.enabled = data[7];
-            steerSetpoints.requestedSteerAngle = (( double ) ((( int16_t )data[8]) | (( int8_t )data[9] << 8 ))) * 0.01; //horrible code to make negative doubles work
+        break;
 
-            steerSetpoints.lastPacketReceived = millis();
-          }
-          break;
+        case 0x7FFC: {
+          steerSettings.Kp = ( float )data[2] * 1.0; // read Kp from AgOpenGPS
+          steerSettings.Ki = ( float )data[3] * 0.001; // read Ki from AgOpenGPS
+          steerSettings.Kd = ( float )data[4] * 1.0; // read Kd from AgOpenGPS
+          steerSettings.Ko = ( float )data[5] * 0.1; // read Ko from AgOpenGPS
+          steerSettings.wheelAnglePositionZero = ( int8_t )data[6]; //read steering zero offset
+          steerSettings.minPWMValue = data[7]; //read the minimum amount of PWM for instant on
+          steerSettings.maxIntegralValue = data[8] * 0.1; //
+          steerSettings.wheelAngleCountsPerDegree = data[9]; //sent as 10 times the setting displayed in AOG
 
-          case 0x7FFC: {
-            steerSettings.Kp = ( float )data[2] * 1.0; // read Kp from AgOpenGPS
-            steerSettings.Ki = ( float )data[3] * 0.001; // read Ki from AgOpenGPS
-            steerSettings.Kd = ( float )data[4] * 1.0; // read Kd from AgOpenGPS
-            steerSettings.Ko = ( float )data[5] * 0.1; // read Ko from AgOpenGPS
-            steerSettings.wheelAnglePositionZero = ( int8_t )data[6]; //read steering zero offset
-            steerSettings.minPWMValue = data[7]; //read the minimum amount of PWM for instant on
-            steerSettings.maxIntegralValue = data[8] * 0.1; //
-            steerSettings.wheelAngleCountsPerDegree = data[9]; //sent as 10 times the setting displayed in AOG
-
-            steerSettings.lastPacketReceived = millis();
-          }
-          break;
-
-          case 0x7FF6: {
-            steerMachineControl.pedalControl = data[2];
-            steerMachineControl.speed = ( float )data[3] / 4;
-            steerMachineControl.relais = data[4];
-            steerMachineControl.youTurn = data[5];
-
-            steerMachineControl.lastPacketReceived = millis();
-          }
-          break;
-
-          default:
-            break;
+          steerSettings.lastPacketReceived = millis();
         }
-      } );
-    }
+        break;
+
+        case 0x7FF6: {
+          steerMachineControl.pedalControl = data[2];
+          steerMachineControl.speed = ( float )data[3] / 4;
+          steerMachineControl.relais = data[4];
+          steerMachineControl.youTurn = data[5];
+
+          steerMachineControl.lastPacketReceived = millis();
+        }
+        break;
+
+        default:
+          break;
+      }
+    } );
   }
 
   // init output

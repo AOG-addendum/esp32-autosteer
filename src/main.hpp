@@ -36,10 +36,6 @@
 
 #include "average.hpp"
 
-#include "jsonqueueselector.h"
-
-extern JsonQueueSelector jsonQueueSelector;
-
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern double steerSupplyVoltage;
 extern double steerMotorCurrent;
@@ -90,11 +86,6 @@ struct SteerConfig {
     MilesPerHour      = 0,
     KilometersPerHour = 1
   } speedUnits = SpeedUnits::MilesPerHour;
-
-  enum class Mode : uint8_t {
-    QtOpenGuidance = 0,
-    AgOpenGps = 1
-  } mode = Mode::AgOpenGps;
 
   enum class DisengageSwitchType : uint8_t {
     Encoder = 0,
@@ -218,24 +209,6 @@ struct SteerConfig {
   uint16_t aogPortSendFrom = 5577;
   uint16_t aogPortListenTo = 8888;
   uint16_t aogPortSendTo = 9999;
-
-  uint16_t qogPortListenTo = 1337;
-  uint16_t qogPortSendTo = 1338;
-
-  uint16_t qogChannelIdAutosteerEnable = 1000;    // in
-  uint16_t qogChannelIdWorkswitch = 2000;
-  uint16_t qogChannelIdSteerswitch = 2001;
-  uint16_t qogChannelIdWheelAngle = 3000;
-  uint16_t qogChannelIdSetpointSteerAngle = 4000; // in
-  uint16_t qogChannelIdOrientation = 5000;
-  uint16_t qogChannelIdGpsDataIn = 6000;          // in
-  uint16_t qogChannelIdGpsDataOut = 6001;
-  uint16_t qogChannelIdCanRearHitch = 7000;
-  uint16_t qogChannelIdCanFrontHitch = 7001;
-  uint16_t qogChannelIdCanRearPtoRpm = 7002;
-  uint16_t qogChannelIdCanFrontPtoRpm = 7003;
-  uint16_t qogChannelIdCanMotorRpm = 7004;
-  uint16_t qogChannelIdCanWheelbasedSpeed = 7005;
 
   bool retainWifiSettings = true;
 };

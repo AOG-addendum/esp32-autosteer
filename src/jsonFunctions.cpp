@@ -198,28 +198,12 @@ json parseSteerConfigToJson( const SteerConfig& config ) {
   j["safety"]["steeringShuntVoltsPerAmp"] = config.steeringShuntVoltsPerAmp;
   j["safety"]["maxSteerCurrent"] = config.maxSteerCurrent;
 
-  j["connection"]["mode"] = int( config.mode );
   j["connection"]["baudrate"] = config.baudrate;
   j["connection"]["enableOTA"] = config.enableOTA;
 
   j["connection"]["aog"]["sendFrom"] = config.aogPortSendFrom;
   j["connection"]["aog"]["listenTo"] = config.aogPortListenTo;
   j["connection"]["aog"]["sendTo"] = config.aogPortSendTo;
-
-  j["connection"]["qog"]["listenTo"] = config.qogPortListenTo;
-  j["connection"]["qog"]["sendTo"] = config.qogPortSendTo;
-  j["connection"]["qog"]["channelId"]["Workswitch"] = config.qogChannelIdWorkswitch;
-  j["connection"]["qog"]["channelId"]["Steerswitch"] = config.qogChannelIdSteerswitch;
-  j["connection"]["qog"]["channelId"]["WheelAngle"] = config.qogChannelIdWheelAngle;
-  j["connection"]["qog"]["channelId"]["SetpointSteerAngle"] = config.qogChannelIdSetpointSteerAngle;
-  j["connection"]["qog"]["channelId"]["Orientation"] = config.qogChannelIdOrientation;
-  j["connection"]["qog"]["channelId"]["GpsDataIn"] = config.qogChannelIdGpsDataIn;
-  j["connection"]["qog"]["channelId"]["GpsDataOut"] = config.qogChannelIdGpsDataOut;
-  j["connection"]["qog"]["channelId"]["CanRearHitch"] = config.qogChannelIdCanRearHitch;
-  j["connection"]["qog"]["channelId"]["CanFrontHitch"] = config.qogChannelIdCanFrontHitch;
-  j["connection"]["qog"]["channelId"]["CanRearPtoRpm"] = config.qogChannelIdCanRearPtoRpm;
-  j["connection"]["qog"]["channelId"]["CanFrontPtoRpm"] = config.qogChannelIdCanFrontPtoRpm;
-  j["connection"]["qog"]["channelId"]["CanMotorRpm"] = config.qogChannelIdCanMotorRpm;
 
   return j;
 }
@@ -297,26 +281,9 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       config.baudrate = j.value( "/connection/baudrate"_json_pointer, steerConfigDefaults.baudrate );
       config.enableOTA = j.value( "/connection/enableOTA"_json_pointer, steerConfigDefaults.enableOTA );
 
-      config.mode = j.value( "/connection/mode"_json_pointer, steerConfigDefaults.mode );
       config.aogPortSendFrom = j.value( "/connection/aog/sendFrom"_json_pointer, steerConfigDefaults.aogPortSendFrom );
       config.aogPortListenTo = j.value( "/connection/aog/listenTo"_json_pointer, steerConfigDefaults.aogPortListenTo );
       config.aogPortSendTo = j.value( "/connection/aog/sendTo"_json_pointer, steerConfigDefaults.aogPortSendTo );
-
-      config.qogPortListenTo = j.value( "/connection/qog/listenTo"_json_pointer, steerConfigDefaults.qogPortListenTo );
-      config.qogPortSendTo = j.value( "/connection/qog/sendTo"_json_pointer, steerConfigDefaults.qogPortSendTo );
-
-      config.qogChannelIdWorkswitch = j.value( "/connection/qog/channelId/Workswitch"_json_pointer, steerConfigDefaults.qogChannelIdWorkswitch );
-      config.qogChannelIdSteerswitch = j.value( "/connection/qog/channelId/Steerswitch"_json_pointer, steerConfigDefaults.qogChannelIdSteerswitch );
-      config.qogChannelIdWheelAngle = j.value( "/connection/qog/channelId/WheelAngle"_json_pointer, steerConfigDefaults.qogChannelIdWheelAngle );
-      config.qogChannelIdSetpointSteerAngle = j.value( "/connection/qog/channelId/SetpointSteerAngle"_json_pointer, steerConfigDefaults.qogChannelIdSetpointSteerAngle );
-      config.qogChannelIdOrientation = j.value( "/connection/qog/channelId/Orientation"_json_pointer, steerConfigDefaults.qogChannelIdOrientation );
-      config.qogChannelIdGpsDataIn = j.value( "/connection/qog/channelId/GpsDataIn"_json_pointer, steerConfigDefaults.qogChannelIdGpsDataIn );
-      config.qogChannelIdGpsDataOut = j.value( "/connection/qog/channelId/GpsDataOut"_json_pointer, steerConfigDefaults.qogChannelIdGpsDataOut );
-      config.qogChannelIdCanRearHitch = j.value( "/connection/qog/channelId/CanRearHitch"_json_pointer, steerConfigDefaults.qogChannelIdCanRearHitch );
-      config.qogChannelIdCanFrontHitch = j.value( "/connection/qog/channelId/CanFrontHitch"_json_pointer, steerConfigDefaults.qogChannelIdCanFrontHitch );
-      config.qogChannelIdCanRearPtoRpm = j.value( "/connection/qog/channelId/CanRearPtoRpm"_json_pointer, steerConfigDefaults.qogChannelIdCanRearPtoRpm );
-      config.qogChannelIdCanFrontPtoRpm = j.value( "/connection/qog/channelId/CanFrontPtoRpm"_json_pointer, steerConfigDefaults.qogChannelIdCanFrontPtoRpm );
-      config.qogChannelIdCanMotorRpm = j.value( "/connection/qog/channelId/CanMotorRpm"_json_pointer, steerConfigDefaults.qogChannelIdCanMotorRpm );
 
     } catch( json::exception& e ) {
       // output exception information
@@ -327,22 +294,4 @@ void parseJsonToSteerConfig( json& j, SteerConfig& config ) {
       Serial.flush();
     }
   }
-}
-
-void sendStateTransmission( uint16_t channelId, bool state ) {
-  json j;
-  j["channelId"] = channelId;
-  j["state"] = state;
-
-  std::vector<std::uint8_t> cbor = json::to_cbor( j );
-  udpSendFrom.broadcastTo( cbor.data(), cbor.size(), initialisation.portSendTo );
-}
-
-void sendNumberTransmission( uint16_t channelId, double number ) {
-  json j;
-  j["channelId"] = channelId;
-  j["number"] = number;
-
-  std::vector<std::uint8_t> cbor = json::to_cbor( j );
-  udpSendFrom.broadcastTo( cbor.data(), cbor.size(), initialisation.portSendTo );
 }
