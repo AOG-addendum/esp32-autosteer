@@ -150,10 +150,12 @@ void autosteerWorker100Hz( void* z ) {
           if( steerConfig.manualPWM >= 0 ) {
             ledcWrite( 1, steerConfig.manualPWM );
             ledcWrite( 2, 0 );
+            digitalWrite( steerConfig.gpioEn, HIGH );
           }
           if( steerConfig.manualPWM < 0 ) {
             ledcWrite( 1, 0 );
             ledcWrite( 2, -steerConfig.manualPWM );
+            digitalWrite( steerConfig.gpioEn, HIGH );
           }
         }
         break;
@@ -161,12 +163,15 @@ void autosteerWorker100Hz( void* z ) {
         case SteerConfig::OutputType::SteeringMotorCytron: {
           if( steerConfig.manualPWM >= 0 ) {
             ledcWrite( 1, 255 );
+            digitalWrite( steerConfig.gpioEn, HIGH );
           } else {
             ledcWrite( 0, 255 );
+            digitalWrite( steerConfig.gpioEn, HIGH );
             steerConfig.manualPWM = -steerConfig.manualPWM;
           }
           ledcWrite( 0, steerConfig.manualPWM );
           ledcWrite( 2, 255 );
+          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
@@ -174,6 +179,7 @@ void autosteerWorker100Hz( void* z ) {
           ledcWrite( 0, steerConfig.manualPWM );
           ledcWrite( 1, 0 );
           ledcWrite( 2, 255 );
+          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
@@ -193,6 +199,7 @@ void autosteerWorker100Hz( void* z ) {
           ledcWrite( 0, 128 );
           ledcWrite( 1, 0 );
           ledcWrite( 2, 0 );
+          digitalWrite( steerConfig.gpioEn, LOW );
         }
         break;
 
@@ -200,6 +207,7 @@ void autosteerWorker100Hz( void* z ) {
           ledcWrite( 0, 0 );
           ledcWrite( 1, 0 );
           ledcWrite( 2, 0 );
+          digitalWrite( steerConfig.gpioEn, LOW );
         }
         break;
       }
@@ -244,10 +252,12 @@ void autosteerWorker100Hz( void* z ) {
           if( pidOutputTmp >= 0 ) {
             ledcWrite( 1, pidOutputTmp );
             ledcWrite( 2, 0 );
+            digitalWrite( steerConfig.gpioEn, LOW );
           }
           if( pidOutputTmp < 0 ) {
             ledcWrite( 1, 0 );
             ledcWrite( 2, -pidOutputTmp );
+            digitalWrite( steerConfig.gpioEn, LOW );
           }
         }
         break;
@@ -262,6 +272,7 @@ void autosteerWorker100Hz( void* z ) {
 
           ledcWrite( 0, pidOutputTmp );
           ledcWrite( 2, 255 );
+          digitalWrite( steerConfig.gpioEn, LOW );
         }
         break;
 
@@ -270,6 +281,7 @@ void autosteerWorker100Hz( void* z ) {
           uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm;
           pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMaxPwm, lowRange, steerConfig.steeringPidMaxPwm );
           ledcWrite( 0, pidOutputTmp );
+          digitalWrite( steerConfig.gpioEn, LOW );
         }
         break;
 
@@ -555,15 +567,18 @@ void initAutosteer() {
     ledcAttachPin( steerConfig.gpioPwm, 0 );
     ledcWrite( 0, 0 );
 
-    pinMode( steerConfig.gpioDir, OUTPUT );
+    pinMode( steerConfig.gpioRight, OUTPUT );
     ledcSetup( 1, steerConfig.pwmFrequency, 8 );
-    ledcAttachPin( steerConfig.gpioDir, 1 );
+    ledcAttachPin( steerConfig.gpioRight, 1 );
     ledcWrite( 1, 0 );
 
-    pinMode( steerConfig.gpioEn, OUTPUT );
+    pinMode( steerConfig.gpioLeft, OUTPUT );
     ledcSetup( 2, steerConfig.pwmFrequency, 8 );
-    ledcAttachPin( steerConfig.gpioEn, 2 );
+    ledcAttachPin( steerConfig.gpioLeft, 2 );
     ledcWrite( 2, 0 );
+
+    pinMode( steerConfig.gpioEn, OUTPUT );
+    digitalWrite( steerConfig.gpioEn, LOW );
 
     pinMode( steerConfig.gpioSteerLED, OUTPUT );
     digitalWrite( steerConfig.gpioSteerLED, LOW );
