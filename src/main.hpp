@@ -194,8 +194,8 @@ struct SteerConfig {
   uint32_t i2cBusSpeed = 400000;
 
   bool canBusEnabled = false;
-  uint8_t canBusRx = 33;
-  uint8_t canBusTx = 32;
+  uint8_t canBusRx = 18;
+  uint8_t canBusTx = 19;
   enum class CanBusSpeed : uint16_t {
     Speed250kbs = 250,
     Speed500kbs = 500
