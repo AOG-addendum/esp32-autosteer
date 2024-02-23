@@ -150,23 +150,20 @@ void autosteerWorker100Hz( void* z ) {
           if( steerConfig.manualPWM >= 0 ) {
             ledcWrite( 1, steerConfig.manualPWM );
             ledcWrite( 2, 0 );
-            digitalWrite( steerConfig.gpioEn, HIGH );
           }
           if( steerConfig.manualPWM < 0 ) {
             ledcWrite( 1, 0 );
             ledcWrite( 2, -steerConfig.manualPWM );
-            digitalWrite( steerConfig.gpioEn, HIGH );
           }
+          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
         case SteerConfig::OutputType::SteeringMotorCytron: {
           if( steerConfig.manualPWM >= 0 ) {
             ledcWrite( 1, 255 );
-            digitalWrite( steerConfig.gpioEn, HIGH );
           } else {
             ledcWrite( 0, 255 );
-            digitalWrite( steerConfig.gpioEn, HIGH );
             steerConfig.manualPWM = -steerConfig.manualPWM;
           }
           ledcWrite( 0, steerConfig.manualPWM );
@@ -252,13 +249,12 @@ void autosteerWorker100Hz( void* z ) {
           if( pidOutputTmp >= 0 ) {
             ledcWrite( 1, pidOutputTmp );
             ledcWrite( 2, 0 );
-            digitalWrite( steerConfig.gpioEn, LOW );
           }
           if( pidOutputTmp < 0 ) {
             ledcWrite( 1, 0 );
             ledcWrite( 2, -pidOutputTmp );
-            digitalWrite( steerConfig.gpioEn, LOW );
           }
+          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
@@ -272,7 +268,7 @@ void autosteerWorker100Hz( void* z ) {
 
           ledcWrite( 0, pidOutputTmp );
           ledcWrite( 2, 255 );
-          digitalWrite( steerConfig.gpioEn, LOW );
+          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
@@ -281,7 +277,7 @@ void autosteerWorker100Hz( void* z ) {
           uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm;
           pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMaxPwm, lowRange, steerConfig.steeringPidMaxPwm );
           ledcWrite( 0, pidOutputTmp );
-          digitalWrite( steerConfig.gpioEn, LOW );
+          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
