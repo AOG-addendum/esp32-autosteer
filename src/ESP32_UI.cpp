@@ -278,45 +278,50 @@ void initESPUI ( void ) {
       } );
       ESPUI.addControl( ControlType::Option, "Encoder on steering shaft", "0", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Pressure switch in hydraulics", "1", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "Deere variable duty sensor", "2", ControlColor::Alizarin, sel );
     }
 
-    if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
-      {
+    switch( steerConfig.disengageSwitchType ){
+      case SteerConfig::DisengageSwitchType::Hydraulic: {
         ESPUI.addControl( ControlType::Switcher, "Hydraulic Switch Active Low", steerConfig.hydraulicSwitchActiveLow ? "1" : "0", ControlColor::Wetasphalt, tab,
         []( Control * control, int id ) {
           steerConfig.hydraulicSwitchActiveLow = control->value.toInt() == 1;
         } );
       }
-    } else {
-      {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.disengageFramePulses ), ControlColor::Peterriver, tab,
-        []( Control * control, int id ) {
-          steerConfig.disengageFramePulses = control->value.toInt();
-        } );
-        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
-      }
-
-      {
-        uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.disengageFrameMillis ), ControlColor::Peterriver, tab,
-        []( Control * control, int id ) {
-          steerConfig.disengageFrameMillis = control->value.toInt();
-        } );
-        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
+      break;
+      case SteerConfig::DisengageSwitchType::Encoder: {
         {
-          uint16_t num = ESPUI.addControl( ControlType::Number, "JD PWM sensor duty cycle change", String( steerConfig.JDVariableDutyChange ), ControlColor::Peterriver, tab,
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Pulses per Frame", String( steerConfig.disengageFramePulses ), ControlColor::Peterriver, tab,
           []( Control * control, int id ) {
-            steerConfig.JDVariableDutyChange = control->value.toInt();
+            steerConfig.disengageFramePulses = control->value.toInt();
           } );
           ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
-          ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
-          ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "1000", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
+        }
+
+        {
+          uint16_t num = ESPUI.addControl( ControlType::Number, "Steering Wheel Millis per Frame", String( steerConfig.disengageFrameMillis ), ControlColor::Peterriver, tab,
+          []( Control * control, int id ) {
+            steerConfig.disengageFrameMillis = control->value.toInt();
+          } );
+          ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Max, "Max", "10000", ControlColor::Peterriver, num );
+          ESPUI.addControl( ControlType::Step, "Step", "1000", ControlColor::Peterriver, num );
         }
       }
-    }
+      break;
+      case SteerConfig::DisengageSwitchType::JDVariableDuty: {
+        uint16_t num = ESPUI.addControl( ControlType::Number, "JD PWM sensor duty cycle change", String( steerConfig.JDVariableDutyChange ), ControlColor::Peterriver, tab,
+        []( Control * control, int id ) {
+          steerConfig.JDVariableDutyChange = control->value.toInt();
+        } );
+        ESPUI.addControl( ControlType::Min, "Min", "1", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "100", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Step, "Step", "1", ControlColor::Peterriver, num );
+      }
+      break;
+     }
   }
 
   // Wheel Angle Sensor Tab
