@@ -477,14 +477,16 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
 
 void IRAM_ATTR disengageIsr() {
     // interrupt service routine for the steering wheel
+    static time_t disengageActivityMicros = micros();
     disengageState = digitalRead( ( uint8_t ) steerConfig.gpioDisengage );
     if( disengagePrevJdState != disengageState ){
       disengagePrevJdState = disengageState;
       if( disengageState == LOW ){
-        onTime = millis() - disengageActivityMillis;
+        onTime = micros() - disengageActivityMicros;
       } else {
-        offTime = millis() - disengageActivityMillis;
+        offTime = micros() - disengageActivityMicros;
       }
+      disengageActivityMicros = micros();
       disengageActivityMillis = millis();
     }
 }
@@ -617,7 +619,7 @@ void initAutosteer() {
   pinMode( steerConfig.gpioWorkswitch, INPUT_PULLUP );
   pinMode( steerConfig.gpioWorkLED, OUTPUT );
   pinMode( steerConfig.gpioSteerswitch, INPUT_PULLUP );
-  pinMode( steerConfig.gpioDisengage, INPUT_PULLUP );
+  pinMode( steerConfig.gpioDisengage, INPUT );
 
   attachInterrupt( steerConfig.gpioDisengage, disengageIsr, CHANGE);
 
