@@ -231,12 +231,12 @@ void autosteerWorker100Hz( void* z ) {
       pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
 
       if( pidOutputTmp < 0 ) {
-        pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, 0, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
+        pidOutputTmp = map( pidOutputTmp, -255, 0, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
         pidOutputTmp = constrain( pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
       }
 
       if( pidOutputTmp > 0 ) {
-        pidOutputTmp = map( pidOutputTmp, 0, steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
+        pidOutputTmp = map( pidOutputTmp, 0, 255, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
         pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
       }
 
