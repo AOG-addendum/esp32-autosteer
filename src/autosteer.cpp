@@ -39,6 +39,7 @@ SteerSettings steerSettings;
 SteerSetpoints steerSetpoints;
 SteerMachineControl steerMachineControl;
 
+
 AsyncUDP udpSendFrom;
 AsyncUDP udpLocalPort;
 AsyncUDP udpRemotePort;
@@ -51,6 +52,7 @@ AutoPID pid(
         &( pidOutput ),
         -255, 255,
         steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
+
 
 constexpr time_t Timeout = 1000;
 time_t timeoutPoint;
@@ -174,7 +176,7 @@ void autosteerWorker100Hz( void* z ) {
 
         case SteerConfig::OutputType::HydraulicDanfoss: {
           ledcWrite( 0, steerConfig.manualPWM );
-          ledcWrite( 1, 0 );
+          ledcWrite( 1, 255 );
           ledcWrite( 2, 255 );
           digitalWrite( steerConfig.gpioEn, HIGH );
         }
@@ -227,7 +229,7 @@ void autosteerWorker100Hz( void* z ) {
       // here comes the magic: executing the PID loop
       // the values are given by pointers, so the AutoPID gets them automaticaly
       pid.run();
-
+ 
       pidOutputTmp = steerConfig.invertOutput ? pidOutput : -pidOutput;
 
       if( pidOutputTmp < 0 ) {
@@ -268,16 +270,15 @@ void autosteerWorker100Hz( void* z ) {
 
           ledcWrite( 0, pidOutputTmp );
           ledcWrite( 2, 255 );
-          digitalWrite( steerConfig.gpioEn, HIGH );
         }
         break;
 
         case SteerConfig::OutputType::HydraulicDanfoss: {
-          ledcWrite( 2, 255 );
           uint8_t lowRange = 255 - steerConfig.steeringPidMaxPwm;
           pidOutputTmp = map( pidOutputTmp, -steerConfig.steeringPidMaxPwm, steerConfig.steeringPidMaxPwm, lowRange, steerConfig.steeringPidMaxPwm );
           ledcWrite( 0, pidOutputTmp );
-          digitalWrite( steerConfig.gpioEn, HIGH );
+          ledcWrite( 1, 255 );
+          ledcWrite( 2, 255 );
         }
         break;
 
@@ -285,6 +286,7 @@ void autosteerWorker100Hz( void* z ) {
           break;
 
       }
+      digitalWrite( steerConfig.gpioEn, HIGH );
       digitalWrite( steerConfig.gpioSteerLED, HIGH );
     }
 
