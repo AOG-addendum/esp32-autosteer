@@ -371,7 +371,7 @@ void autosteerWorker100Hz( void* z ) {
             workswitchState = ! workswitchState;
           }
 
-          data[10] |= workswitchState ? 1 : 0;
+          data[11] |= workswitchState ? 1 : 0;
           digitalWrite( steerConfig.gpioWorkLED, workswitchState);
         }
 
