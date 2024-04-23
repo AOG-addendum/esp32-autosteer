@@ -90,13 +90,13 @@ void canWorker10Hz( void* z ) {
 
           // Primary or Rear Power Take off Output Shaft
           case j1939PgnRPTO: {
-            steerCanData.rearPtoRpm = canFrame.data.u8[1] << 8 | canFrame.data.u8[0];
+            steerCanData.rearPtoRpm = ( canFrame.data.u8[1] << 8 | canFrame.data.u8[0] ) / 8;
           }
           break;
 
           // Secondary or Front Power Take off Output Shaft
           case j1939PgnFPTO: {
-            steerCanData.frontPtoRpm = canFrame.data.u8[1] << 8 | canFrame.data.u8[0];
+            steerCanData.frontPtoRpm = ( canFrame.data.u8[1] << 8 | canFrame.data.u8[0] ) / 8;
 
           }
           break;
