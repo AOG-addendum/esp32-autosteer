@@ -89,6 +89,8 @@ void initESPUI ( void ) {
         labelSteerEngagedFaultsHandle->value = str;
         labelSteerEngagedFaultsHandle->color = ControlColor::Emerald;
         ESPUI.updateControl( labelSteerEngagedFaultsHandle );
+        
+        safetyAlarmLatch = false;
       }
     } );
   }
