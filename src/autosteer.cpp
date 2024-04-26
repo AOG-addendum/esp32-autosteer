@@ -409,7 +409,6 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
   uint8_t dutyIndex = 0;
 
   for( ;; ) {
-    if( steerConfig.workswitchType == SteerConfig::WorkswitchType::Gpio ) {
       bool state = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch);
       if( state != previousState ){
         switchChangeMillis = millis();
@@ -418,11 +417,13 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
       if( millis() - switchChangeMillis > 50 and switchState != state ){
         switchState = state;
         if( steerConfig.steerSwitchIsMomentary ){
-          steerState = ! steerState;
+        if( switchState == steerConfig.steerswitchActiveLow ){
+          steerState = !steerState;
           if( steerState == false ){
             safetyAlarmLatch = false;
           } else { 
             disengagedBySteeringWheel = false; 
+          }
           }
         } else {
           if( switchState == steerConfig.steerswitchActiveLow ){
@@ -431,7 +432,6 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
           } else {
             steerState = true;
             disengagedBySteeringWheel = false;
-          }
         }
       }
     }
