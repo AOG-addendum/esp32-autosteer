@@ -116,7 +116,7 @@ void diagnosticWorker1Hz( void* z ) {
 
         case SteerConfig::DisengageSwitchType::JDVariableDuty: {
           str += "\nDeere variable duty encoder: ";
-          str += ( uint16_t )( dutyCycle );
+          str += ( uint16_t )( abs( dutyAverage - dutyCycle ) );
         }
       }
       ESPUI.updateLabel( labelSwitchStates, str );

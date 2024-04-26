@@ -65,6 +65,7 @@ volatile uint16_t steeringPulseCount = 0;
 volatile time_t onTime;
 volatile time_t offTime;
 volatile uint16_t dutyCycle;
+uint16_t dutyAverage;
 
 time_t switchChangeMillis = millis();
 bool safetyAlarmLatch = false;
@@ -409,14 +410,14 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
   uint8_t dutyIndex = 0;
 
   for( ;; ) {
-      bool state = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch);
-      if( state != previousState ){
-        switchChangeMillis = millis();
-        previousState = state;
-      }
-      if( millis() - switchChangeMillis > 50 and switchState != state ){
-        switchState = state;
-        if( steerConfig.steerSwitchIsMomentary ){
+    bool state = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch);
+    if( state != previousState ){
+      switchChangeMillis = millis();
+      previousState = state;
+    }
+    if( millis() - switchChangeMillis > 50 and switchState != state ){
+      switchState = state;
+      if( steerConfig.steerSwitchIsMomentary ){
         if( switchState == steerConfig.steerswitchActiveLow ){
           steerState = !steerState;
           if( steerState == false ){
@@ -424,14 +425,14 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
           } else { 
             disengagedBySteeringWheel = false; 
           }
-          }
+        }
+      } else {
+        if( switchState == steerConfig.steerswitchActiveLow ){
+          steerState = false;
+          safetyAlarmLatch = false;
         } else {
-          if( switchState == steerConfig.steerswitchActiveLow ){
-            steerState = false;
-            safetyAlarmLatch = false;
-          } else {
-            steerState = true;
-            disengagedBySteeringWheel = false;
+          steerState = true;
+          disengagedBySteeringWheel = false;
         }
       }
     }
@@ -467,7 +468,7 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
       if( dutyIndex >= dutyLength ) {
         dutyIndex = 0;
       }
-      uint16_t dutyAverage = dutyTotal / dutyLength;
+      dutyAverage = dutyTotal / dutyLength;
       if( abs( dutyAverage - dutyCycle ) > steerConfig.JDVariableDutyChange ){
         steerState = false;
         disengagedBySteeringWheel = true;
