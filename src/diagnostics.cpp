@@ -97,7 +97,11 @@ void diagnosticWorker1Hz( void* z ) {
     {
       String str;
       str.reserve( 30 );
-      str = "Autosteer switch: ";
+      if( steerConfig.steerSwitchIsMomentary == true ){
+        str = "Momentary steer switch: ";
+      } else {
+        str = "Maintained steer switch: ";
+      }
       str += ( bool )( digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ) ? "Off" : "On" ;
       str += "\nWork switch: ";
       str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
