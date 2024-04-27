@@ -171,8 +171,10 @@ void diagnosticWorker1Hz( void* z ) {
           str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
           str += ", enabled: ";
           str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
-          str += ", output: ";
+          str += ",\n output: ";
           str += ( float )pidOutputTmp ;
+          str += ", dither: ";
+          str += ( float )ditherAmount ;
           labelStatusOutputHandle->color = ControlColor::Emerald;
           ESPUI.updateLabel( labelStatusOutput, str );
         }

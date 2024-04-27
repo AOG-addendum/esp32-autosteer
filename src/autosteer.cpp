@@ -75,14 +75,20 @@ bool disabledBySpeedSafety = false;
 bool disabledBySteeringWheel = false;
 bool disengagedBySteeringWheel = false;
 
-void ditherWorkerHalfHZ( void* z ) {
+void ditherWorker10HZ( void* z ) {
 
   for( ;; ) {
-    ditherAmount += ditherDirection ? -1 : 1 ;
-    if( abs( ditherAmount ) >= steerConfig.dither ){
-      ditherDirection = !ditherDirection;
+    if( ditherDirection == true ){
+      ditherAmount += 1;
+    } else {
+      ditherAmount -= 1;
     }
-    vTaskDelay( pdMS_TO_TICKS( 500 ) );
+    if( ditherAmount >= steerConfig.dither ){
+      ditherDirection = false;
+    } else if ( ditherAmount <= 0 ){
+      ditherDirection = true;
+    }
+    vTaskDelay( pdMS_TO_TICKS( 100 ) );
   }
   vTaskDelete( NULL );
 }
@@ -236,14 +242,15 @@ void autosteerWorker100Hz( void* z ) {
       if( pidOutputTmp < 0 ) {
         pidOutputTmp = map( pidOutputTmp, -255, 0, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
         pidOutputTmp = constrain( pidOutputTmp, -steerConfig.steeringPidMaxPwm, -steerConfig.steeringPidMinPwm );
+        pidOutputTmp += ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't decrease PWM output below 255
       }
 
       if( pidOutputTmp > 0 ) {
         pidOutputTmp = map( pidOutputTmp, 0, 255, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
         pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
+        pidOutputTmp -= ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't increase PWM output above 255
       }
 
-      pidOutputTmp -= ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't increase PWM output above 255
 
       switch( initialisation.outputType ) {
         case SteerConfig::OutputType::SteeringMotorIBT2:
@@ -630,6 +637,6 @@ void initAutosteer() {
   xTaskCreate( autosteerSwitchesWorker1000Hz, "autosteerSwitchesWorker", 3096, NULL, 3, NULL );
 
   if( steerConfig.outputType == SteerConfig::OutputType::HydraulicPwm2Coil ) {
-    xTaskCreate( ditherWorkerHalfHZ, "ditherWorkerHalfHZ", 1024, NULL, 1, NULL );
+    xTaskCreate( ditherWorker10HZ, "ditherWorker10HZ", 1024, NULL, 1, NULL );
   }
 }
