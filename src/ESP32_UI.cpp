@@ -662,9 +662,8 @@ void initESPUI ( void ) {
 
     ESPUI.addControl( ControlType::Label, "Download the config:", "<a href='config.json'>Configuration</a>", ControlColor::Carrot, tab );
 
-    ESPUI.addControl( ControlType::Label, "Upload the config:", "<form method='POST' action='/upload-config' enctype='multipart/form-data'><input name='f' type='file'><input type='submit'></form>", ControlColor::Carrot, tab );
+    ESPUI.addControl( ControlType::Label, "Upload the config:", "<form method='POST' action='/upload-config' enctype='multipart/form-data'><input name='f' type='file'><input type='submit'>ESP32 will restart after submitting</form>", ControlColor::Carrot, tab );
 
-    // onchange='this.form.submit()'
     {
       ESPUI.addControl( ControlType::Switcher, "Retain WIFI settings", steerConfig.retainWifiSettings ? "1" : "0", ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
@@ -724,10 +723,8 @@ void initESPUI ( void ) {
 
       if( final ) {
         request->_tempFile.close();
-        setResetButtonToRed();
-        String str( "/#tab" );
-        str += tabConfigurations;
-        request->redirect( str );
+        delay(10);
+        ESP.restart();
       }
     }
   } );
