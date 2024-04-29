@@ -78,11 +78,12 @@ extern Diagnostics diagnostics;
 
 struct SteerConfig {
 
-  enum class AnalogIn : uint8_t {
+  enum class AnalogIn : uint16_t {
     None                    = 0,
     ADS1115A0Single         = 100,
     ADS1115A1Single         = 101,
-    ADS1115A0A1Differential = 200
+    ADS1115A0A1Differential = 200,
+    JDVariableDuty  = 300
   };
 
   enum class SpeedUnits : int8_t {
@@ -151,6 +152,7 @@ struct SteerConfig {
   uint8_t gpioSteerswitch = 15;
   uint8_t gpioSteerLED = 12;
   uint8_t gpioDisengage = 23;
+  uint8_t gpioWASPulse = 39;
   uint16_t disengageFramePulses = 3;
   uint16_t disengageFrameMillis = 1000;
   uint16_t JDVariableDutyChange = 5;

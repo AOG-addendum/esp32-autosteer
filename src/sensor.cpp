@@ -35,6 +35,8 @@
 Adafruit_ADS1115 ads = Adafruit_ADS1115( 0x48 );
 
 volatile uint16_t samplesPerSecond;
+volatile time_t WasOnTime;
+volatile time_t WasOffTime;
 double steerSupplyVoltage;
 double steerMotorCurrent;
 
@@ -69,14 +71,16 @@ void sensorWorker100HzPoller( void* z ) {
 
   for( ;; ) {
 
+    float wheelAngleTmp = 0;
     if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
       steerMotorCurrent = ads.readADC_SingleEnded( 2 );
       steerSupplyVoltage = ads.readADC_SingleEnded( 3 );
       xSemaphoreGive( i2cMutex );
     }
-
-    if( steerConfig.wheelAngleInput != SteerConfig::AnalogIn::None ) {
-      float wheelAngleTmp = 0;
+    if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::JDVariableDuty ) {
+      wheelAngleTmp = WasOnTime - WasOffTime;
+    }
+    else if( steerConfig.wheelAngleInput != SteerConfig::AnalogIn::None ) {
 
       switch( ( uint8_t )steerConfig.wheelAngleInput ) {
         case( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single ...( uint8_t )SteerConfig::AnalogIn::ADS1115A1Single: {
@@ -99,68 +103,96 @@ void sensorWorker100HzPoller( void* z ) {
         default:
           break;
       }
+    } 
 
-      {
-        steerSetpoints.wheelAngleCounts = wheelAngleTmp;
-        wheelAngleTmp -= steerConfig.wheelAnglePositionZero;
-        wheelAngleTmp /= steerConfig.wheelAngleCountsPerDegree;
+    {
+      steerSetpoints.wheelAngleCounts = wheelAngleTmp;
+      wheelAngleTmp -= steerConfig.wheelAnglePositionZero;
+      wheelAngleTmp /= steerConfig.wheelAngleCountsPerDegree;
 
-        steerSetpoints.wheelAngleRaw = wheelAngleTmp;
+      steerSetpoints.wheelAngleRaw = wheelAngleTmp;
 
-        if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
-          if( steerConfig.wheelAngleFirstArmLenght != 0 && steerConfig.wheelAngleSecondArmLenght != 0 &&
-              steerConfig.wheelAngleTrackArmLenght != 0 && steerConfig.wheelAngleTieRodStroke != 0 ) {
+      if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
+        if( steerConfig.wheelAngleFirstArmLenght != 0 && steerConfig.wheelAngleSecondArmLenght != 0 &&
+            steerConfig.wheelAngleTrackArmLenght != 0 && steerConfig.wheelAngleTieRodStroke != 0 ) {
 
-            auto getDisplacementFromAngle = []( float angle ) {
-              // a: 2. arm, b: 1. arm, c: abstand drehpunkt wineklsensor und anschlagpunt 2. arm an der spurstange
-              // gegenwinkel: winkel zwischen 1. arm und spurstange
-              double alpha = PI - radians( angle );
+          auto getDisplacementFromAngle = []( float angle ) {
+            // a: 2. arm, b: 1. arm, c: abstand drehpunkt wineklsensor und anschlagpunt 2. arm an der spurstange
+            // gegenwinkel: winkel zwischen 1. arm und spurstange
+            double alpha = PI - radians( angle );
 
-              // winkel zwischen spurstange und 2. arm
-              double gamma = PI - alpha - ( asin( steerConfig.wheelAngleFirstArmLenght * sin( alpha ) / steerConfig.wheelAngleSecondArmLenght ) );
+            // winkel zwischen spurstange und 2. arm
+            double gamma = PI - alpha - ( asin( steerConfig.wheelAngleFirstArmLenght * sin( alpha ) / steerConfig.wheelAngleSecondArmLenght ) );
 
-              // auslenkung
-              return steerConfig.wheelAngleSecondArmLenght * sin( gamma ) / sin( alpha );
-            };
+            // auslenkung
+            return steerConfig.wheelAngleSecondArmLenght * sin( gamma ) / sin( alpha );
+          };
 
-            steerSetpoints.wheelAngleCurrentDisplacement = getDisplacementFromAngle( wheelAngleTmp );
+          steerSetpoints.wheelAngleCurrentDisplacement = getDisplacementFromAngle( wheelAngleTmp );
 
-            double relativeDisplacementToStraightAhead =
-                    // real displacement
-                    steerSetpoints.wheelAngleCurrentDisplacement -
-                    // calculate middle of displacement -
-                    ( getDisplacementFromAngle( steerConfig.wheelAngleMinimumAngle ) + ( steerConfig.wheelAngleTieRodStroke / 2 ) );
+          double relativeDisplacementToStraightAhead =
+                  // real displacement
+                  steerSetpoints.wheelAngleCurrentDisplacement -
+                  // calculate middle of displacement -
+                  ( getDisplacementFromAngle( steerConfig.wheelAngleMinimumAngle ) + ( steerConfig.wheelAngleTieRodStroke / 2 ) );
 
-            wheelAngleTmp = degrees( asin( relativeDisplacementToStraightAhead / steerConfig.wheelAngleTrackArmLenght ) );
-          }
+          wheelAngleTmp = degrees( asin( relativeDisplacementToStraightAhead / steerConfig.wheelAngleTrackArmLenght ) );
         }
-
-        if( steerConfig.invertWheelAngleSensor ) {
-          wheelAngleTmp *= ( float ) -1;
-        }
-
-        wheelAngleTmp -= steerConfig.wheelAngleOffset;
-
-        if (( wheelAngleTmp > 0 && steerConfig.ackermannAboveZero == true ) || 
-            ( wheelAngleTmp < 0 && steerConfig.ackermannAboveZero == false )) {
-          wheelAngleTmp = ( wheelAngleTmp * steerConfig.ackermann ) / 100;
-        }
-
-        wheelAngleTmp = wheelAngleSensorFilter.step( wheelAngleTmp );
-        steerSetpoints.actualSteerAngle = wheelAngleTmp;
-
       }
+
+      if( steerConfig.invertWheelAngleSensor ) {
+        wheelAngleTmp *= ( float ) -1;
+      }
+
+      wheelAngleTmp -= steerConfig.wheelAngleOffset;
+
+      if (( wheelAngleTmp > 0 && steerConfig.ackermannAboveZero == true ) || 
+          ( wheelAngleTmp < 0 && steerConfig.ackermannAboveZero == false )) {
+        wheelAngleTmp = ( wheelAngleTmp * steerConfig.ackermann ) / 100;
+      }
+
+      wheelAngleTmp = wheelAngleSensorFilter.step( wheelAngleTmp );
+      steerSetpoints.actualSteerAngle = wheelAngleTmp;
+
     }
+    
 
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }
 
+void IRAM_ATTR DeereVariableDutyWasIsr() {
+    // interrupt service routine for the steering wheel
+    static time_t sensorActivityMicros = micros();
+    static bool previousState;
+    bool state = digitalRead( ( uint8_t ) steerConfig.gpioWASPulse );
+    if( previousState != state ){
+      previousState = state;
+      if( state == LOW ){
+        WasOnTime = micros() - sensorActivityMicros;
+      } else {
+        WasOffTime = micros() - sensorActivityMicros;
+      }
+      sensorActivityMicros = micros();
+    }
+}
+
 void initSensors() {
 
+  Control* handle = ESPUI.getControl( labelStatusAdc );
+  String str;
+  str.reserve( 30 );
   // initialise ads1115 everytime, even if not available (no answer in the init -> just sending)
-  {
-    ads.setGain( (adsGain_t)steerConfig.adsGain );
+  ads.setGain( (adsGain_t)steerConfig.adsGain );
+  if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::JDVariableDuty ){
+    pinMode( steerConfig.gpioWASPulse, INPUT );
+    attachInterrupt( steerConfig.gpioWASPulse, DeereVariableDutyWasIsr, CHANGE );
+
+    str = "Deere variable duty WAS initialized";
+    ESPUI.updateLabel( labelStatusAdc, str );
+
+  } else {
+    
     // ads.setGain(GAIN_TWOTHIRDS);   // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)  
     // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
     // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
@@ -171,9 +203,6 @@ void initSensors() {
     ads.begin();
     ads.setSPS( ADS1115_DR_860SPS );
 
-    Control* handle = ESPUI.getControl( labelStatusAdc );
-    String str;
-    str.reserve( 30 );
     str = "ADS1115 initialized\n";
 
     handle->color = ControlColor::Emerald;
@@ -212,9 +241,9 @@ void initSensors() {
       str += "voltage range not defined";
       handle->color = ControlColor::Alizarin;
     }
-    initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
     ESPUI.updateLabel( labelStatusAdc, str );
   }
+  initialisation.wheelAngleInput = steerConfig.wheelAngleInput;
 
   xTaskCreate( sensorWorker100HzPoller, "sensorWorker100HzPoller", 4096, NULL, 6, NULL );
 }
