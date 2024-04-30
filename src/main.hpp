@@ -38,7 +38,7 @@
 
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern double steerSupplyVoltage;
-extern double steerMotorCurrent;
+extern uint16_t steerMotorCurrent;
 extern bool safetyAlarmLatch;
 extern bool disabledBySpeedSafety;
 extern bool disengagedBySteeringWheel;
@@ -93,7 +93,8 @@ struct SteerConfig {
   enum class DisengageSwitchType : uint8_t {
     Encoder = 0,
     Hydraulic = 1,
-    JDVariableDuty = 2
+    JDVariableDuty = 2,
+    MotorCurrent = 3
   } disengageSwitchType = DisengageSwitchType::Encoder;
 
   char ssid[24] = "AOG hub";

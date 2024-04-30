@@ -474,6 +474,17 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
         disengagedBySteeringWheel = true;
       }
     }
+    else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::MotorCurrent ){
+      steerMotorCurrent = max( analogRead( 34 ), analogRead( 35 ) );
+      if( steerMotorCurrent > steerConfig.maxSteerCurrent ){
+        if( millis() - disengageActivityMillis > 50 ){
+          steerState = false;
+          disengagedBySteeringWheel = true;
+        }
+      } else {
+        disengageActivityMillis = millis();
+      }
+    }
     vTaskDelayUntil( &xLastWakeTime, xFrequency );
   }
 }

@@ -59,8 +59,9 @@ void diagnosticWorker1Hz( void* z ) {
       String str;
       str.reserve( 30 );
       str = "Current: ";
-      str += ( double ) steerMotorCurrent ;
-      str += "\nOverlimit: N/A";
+      str += ( uint16_t ) steerMotorCurrent;
+      str += "\nOverlimit: ";
+      str += ( steerMotorCurrent > steerConfig.maxSteerCurrent ) ? "Yes" : "No";
       ESPUI.updateLabel( labelSteerMotorCurrent, str );
     }
     {

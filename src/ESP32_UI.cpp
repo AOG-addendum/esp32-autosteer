@@ -281,6 +281,7 @@ void initESPUI ( void ) {
       ESPUI.addControl( ControlType::Option, "Encoder on steering shaft", "0", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Pressure switch in hydraulics", "1", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Deere variable duty sensor", "2", ControlColor::Alizarin, sel );
+      ESPUI.addControl( ControlType::Option, "Motor current", "3", ControlColor::Alizarin, sel );
     }
 
     switch( steerConfig.disengageSwitchType ){
@@ -645,11 +646,11 @@ void initESPUI ( void ) {
     {
       uint16_t num = ESPUI.addControl( ControlType::Number, "Max Steer Motor Current", String( steerConfig.maxSteerCurrent ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
-        steerConfig.maxSteerCurrent = control->value.toFloat();
+        steerConfig.maxSteerCurrent = control->value.toInt();
       } );
-      ESPUI.addControl( ControlType::Min, "Min", "0.1", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Max, "Max", "5.0", ControlColor::Peterriver, num );
-      ESPUI.addControl( ControlType::Step, "Step", "0.1", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Max, "Max", "1023", ControlColor::Peterriver, num );
+      ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
     }
   }
 
