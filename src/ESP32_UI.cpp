@@ -34,11 +34,11 @@ void setResetButtonToRed() {
   ESPUI.updateControl( buttonReset );
 }
 
-void addAnalogInputADS1115( uint16_t parent ) {
+void addWasInputSelection( uint16_t parent ) {
   ESPUI.addControl( ControlType::Option, "ADS1115 A0 Single", String( ( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ADS1115 A1 Single", String( ( uint8_t )SteerConfig::AnalogIn::ADS1115A1Single ), ControlColor::Alizarin, parent );
   ESPUI.addControl( ControlType::Option, "ADS1115 A0/A1 Differential", String( ( uint8_t )SteerConfig::AnalogIn::ADS1115A0A1Differential ), ControlColor::Alizarin, parent );
-  ESPUI.addControl( ControlType::Option, "Deere Variable Duty Cycle", String( ( uint8_t )SteerConfig::AnalogIn::JDVariableDuty ), ControlColor::Alizarin, parent );}
+  ESPUI.addControl( ControlType::Option, "Deere Variable Duty Cycle", String( ( uint16_t )SteerConfig::AnalogIn::JDVariableDuty ), ControlColor::Alizarin, parent );}
 
 void initESPUI ( void ) {
 
@@ -285,7 +285,7 @@ void initESPUI ( void ) {
         setResetButtonToRed();
       } );
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
-      addAnalogInputADS1115( sel );
+      addWasInputSelection( sel );
     }
 
     {
@@ -639,7 +639,7 @@ void initESPUI ( void ) {
           steerConfig.maxSteerCurrent = control->value.toInt();
         } );
         ESPUI.addControl( ControlType::Min, "Min", "0", ControlColor::Peterriver, num );
-        ESPUI.addControl( ControlType::Max, "Max", "1023", ControlColor::Peterriver, num );
+        ESPUI.addControl( ControlType::Max, "Max", "4096", ControlColor::Peterriver, num );
         ESPUI.addControl( ControlType::Step, "Step", "10", ControlColor::Peterriver, num );
       }
       break;

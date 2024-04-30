@@ -188,6 +188,7 @@ void initSensors() {
     attachInterrupt( steerConfig.gpioWASPulse, DeereVariableDutyWasIsr, CHANGE );
 
     str = "Deere variable duty WAS initialized";
+    handle->color = ControlColor::Emerald;
     ESPUI.updateLabel( labelStatusAdc, str );
 
   } else {

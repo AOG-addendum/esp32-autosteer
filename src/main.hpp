@@ -83,7 +83,7 @@ struct SteerConfig {
     ADS1115A0Single         = 100,
     ADS1115A1Single         = 101,
     ADS1115A0A1Differential = 200,
-    JDVariableDuty  = 300
+    JDVariableDuty          = 300
   };
 
   enum class SpeedUnits : int8_t {
@@ -158,7 +158,7 @@ struct SteerConfig {
   uint16_t disengageFrameMillis = 1000;
   uint16_t JDVariableDutyChange = 5;
   double steeringShuntVoltsPerAmp = 1.0;
-  double maxSteerCurrent = 5.00;
+  uint16_t maxSteerCurrent = 512;
   bool workswitchActiveLow = true;
   bool steerswitchActiveLow = true;
   bool steerSwitchIsMomentary = false;
