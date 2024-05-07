@@ -540,7 +540,7 @@ void initAutosteer() {
         case 0x7FFE: {
           steerSetpoints.speed = ( float )( (data[5] | data[6] << 8))*0.1 ;
           if( ( SteerConfig::SpeedUnits )steerConfig.speedUnits == SteerConfig::SpeedUnits::MilesPerHour ) {
-            steerSetpoints.speed *= 0.6213711922;
+            steerSetpoints.speed *= 0.62;
           }
           steerSetpoints.enabled = data[7];
           steerSetpoints.requestedSteerAngle = (( double ) ((( int16_t )data[8]) | (( int8_t )data[9] << 8 ))) * 0.01; //horrible code to make negative doubles work
