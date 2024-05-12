@@ -26,6 +26,7 @@
 #include "jsonFunctions.hpp"
 #include "main.hpp"
 
+#include <ESPmDNS.h>
 #include <WiFi.h>
 
 #include <DNSServer.h>
@@ -134,6 +135,10 @@ void setup( void ) {
   initAutosteer();
 
   initDiagnostics();
+
+  if( !MDNS.begin( "steering" )){
+    Serial.println( "Error starting mDNS" );
+  }
 }
 
 void loop( void ) {
