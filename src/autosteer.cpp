@@ -194,12 +194,13 @@ void autosteerWorker100Hz( void* z ) {
     }
     // check for timeout, data from AgOpenGPS, safety disable, and mininum autosteer speed
     else if( steerSetpoints.lastPacketReceived < timeoutPoint ||
-        steerSetpoints.enabled == false ||
-        disabledBySpeedSafety == true ||
-        steerSetpoints.speed < steerConfig.minAutosteerSpeed ) {
+             steerSetpoints.enabled == false ||
+             disabledBySpeedSafety == true ||
+             steerSetpoints.speed < steerConfig.minAutosteerSpeed ) {
       
       switch( initialisation.outputType ) {
         case SteerConfig::OutputType::HydraulicDanfoss: {
+          pidOutputTmp = 128;
           ledcWrite( 0, 128 );
           ledcWrite( 1, 0 );
           ledcWrite( 2, 0 );
@@ -208,6 +209,7 @@ void autosteerWorker100Hz( void* z ) {
         break;
 
         default: {
+          pidOutputTmp = 0;
           ledcWrite( 0, 0 );
           ledcWrite( 1, 0 );
           ledcWrite( 2, 0 );
