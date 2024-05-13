@@ -6,7 +6,6 @@
 #include "main.hpp"
 #include "jsonFunctions.hpp"
 
-
 int8_t ditherAmount = 0;
 uint16_t labelLoad;
 uint16_t labelWheelAngle;

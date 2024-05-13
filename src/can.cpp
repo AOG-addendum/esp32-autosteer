@@ -31,7 +31,6 @@ CAN_device_t CAN_cfg;
 
 constexpr uint8_t rxQueueSize = 10;
 
-
 constexpr uint8_t  IsobusPgPos   = 8;
 constexpr uint32_t IsobusPgnMask = 0x03FFFF;
 
@@ -133,7 +132,6 @@ void canWorker10Hz( void* z ) {
     }
   }
 }
-
 
 void initCan() {
   if( steerConfig.canBusEnabled ) {

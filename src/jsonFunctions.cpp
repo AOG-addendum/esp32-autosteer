@@ -25,7 +25,6 @@
 #include <FS.h>
 #include <SPIFFS.h>
 
-
 #include "main.hpp"
 #include "jsonFunctions.hpp"
 

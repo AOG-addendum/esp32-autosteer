@@ -63,7 +63,6 @@ class  FilterBuLp2_3 {
     }
 } wheelAngleSensorFilter;
 
-
 void sensorWorker100HzPoller( void* z ) {
   vTaskDelay( 2000 );
   constexpr TickType_t xFrequency = 10;

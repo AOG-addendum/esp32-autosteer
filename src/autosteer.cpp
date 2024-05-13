@@ -39,7 +39,6 @@ SteerSettings steerSettings;
 SteerSetpoints steerSetpoints;
 SteerMachineControl steerMachineControl;
 
-
 AsyncUDP udpSendFrom;
 AsyncUDP udpLocalPort;
 AsyncUDP udpRemotePort;
@@ -52,7 +51,6 @@ AutoPID pid(
         &( pidOutput ),
         -255, 255,
         steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
-
 
 constexpr time_t Timeout = 1000;
 time_t timeoutPoint;
@@ -250,7 +248,6 @@ void autosteerWorker100Hz( void* z ) {
         pidOutputTmp = constrain( pidOutputTmp, steerConfig.steeringPidMinPwm, steerConfig.steeringPidMaxPwm );
         pidOutputTmp -= ditherAmount; // only valid for Hydraulic Pwm 2 Coil, don't increase PWM output above 255
       }
-
 
       switch( initialisation.outputType ) {
         case SteerConfig::OutputType::SteeringMotorIBT2:
