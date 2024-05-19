@@ -108,8 +108,11 @@ void diagnosticWorker1Hz( void* z ) {
       str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
       switch( steerConfig.disengageSwitchType ) {
         case SteerConfig::DisengageSwitchType::Encoder: {
-          str += "\nDisengage on steering wheel: ";
+          str += "\nEncoder on steering wheel: ";
           str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "Off" : "On" ;
+          str += " / ";
+          str += steeringPulseCount;
+          str += " counts";
         }
         break;
 
