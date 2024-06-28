@@ -44,6 +44,7 @@ extern bool disabledBySpeedSafety;
 extern bool disengagedBySteeringWheel;
 extern volatile uint16_t dutyCycle;
 extern uint16_t dutyAverage;
+extern volatile uint16_t steeringPulseCount;
 
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
