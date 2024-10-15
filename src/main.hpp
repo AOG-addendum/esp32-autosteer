@@ -39,8 +39,8 @@
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
 extern double steerSupplyVoltage;
 extern uint16_t steerMotorCurrent;
-extern bool safetyAlarmLatch;
-extern bool disabledBySpeedSafety;
+extern bool autosteerDisabledByMaxEngageSpeed; // do not engage autosteer above an adjustable speed
+extern bool AOGEnableAutosteerTimeout; // give AOG 1 second to return 'enabled' command, otherwise disable again
 extern bool disengagedBySteeringWheel;
 extern volatile uint16_t dutyCycle;
 extern uint16_t dutyAverage;

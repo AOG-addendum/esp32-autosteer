@@ -54,6 +54,7 @@ AutoPID pid(
 
 constexpr time_t Timeout = 1000;
 time_t timeoutPoint;
+time_t lastSwitchChangeMillis;
 volatile bool disengageState;
 volatile bool disengagePrevState;
 volatile bool disengagePrevJdState;
@@ -66,11 +67,10 @@ volatile uint16_t dutyCycle;
 uint16_t dutyAverage;
 
 time_t switchChangeMillis = millis();
-bool safetyAlarmLatch = false;
 bool ditherDirection = false;
 bool dtcAutosteerPrevious = false;
-bool disabledBySpeedSafety = false;
-bool disabledBySteeringWheel = false;
+bool autosteerDisabledByMaxEngageSpeed = false;
+bool AOGEnableAutosteerTimeout = false;
 bool disengagedBySteeringWheel = false;
 
 void ditherWorker10HZ( void* z ) {
@@ -100,14 +100,6 @@ void autosteerWorker100Hz( void* z ) {
   for( ;; ) {
     timeoutPoint = millis() - Timeout;
 
-    if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
-      disabledBySpeedSafety = true;
-      steerState = false;
-      safetyAlarmLatch = true;
-    } else if ( safetyAlarmLatch == false ) {
-      disabledBySpeedSafety = false; // only proceed from safety disable, AFTER autosteer switch is turned off
-    }
-
     if( steerSetpoints.enabled == true ){
       if(  dtcAutosteerPrevious == false && steerSupplyVoltage < 14500 ){  // 10.8 volts
           diagnostics.steerEnabledWithNoPower += 1;
@@ -124,12 +116,6 @@ void autosteerWorker100Hz( void* z ) {
       }
     }
     dtcAutosteerPrevious = steerSetpoints.enabled;
-
-    if( steerSetpoints.enabled == true && disabledBySpeedSafety == true ) {
-      digitalWrite( steerConfig.gpioAlarm, HIGH );
-    } else if ( steerSetpoints.enabled == false && disabledBySpeedSafety == false ) {
-      digitalWrite( steerConfig.gpioAlarm, LOW ); // turn off alarm after safety AND autosteer are off
-    }
 
     if( steerConfig.manualSteerState == true ){
       if( steerConfig.outputType == SteerConfig::OutputType::HydraulicDanfoss ){
@@ -195,7 +181,6 @@ void autosteerWorker100Hz( void* z ) {
     // check for timeout, data from AgOpenGPS, safety disable, and mininum autosteer speed
     else if( steerSetpoints.lastPacketReceived < timeoutPoint ||
              steerSetpoints.enabled == false ||
-             disabledBySpeedSafety == true ||
              steerSetpoints.speed < steerConfig.minAutosteerSpeed ) {
       
       switch( initialisation.outputType ) {
@@ -414,6 +399,7 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
   uint16_t dutyReadings[ dutyLength ];
   uint32_t dutyTotal = 0;
   uint8_t dutyIndex = 0;
+  switchState = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch ); // initialize switch state on startup
 
   for( ;; ) {
     bool state = digitalRead( ( uint8_t )steerConfig.gpioSteerswitch);
@@ -423,24 +409,38 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
     }
     if( millis() - switchChangeMillis > 50 and switchState != state ){
       switchState = state;
+      lastSwitchChangeMillis = millis();
       if( steerConfig.steerSwitchIsMomentary ){
         if( switchState == steerConfig.steerswitchActiveLow ){
-          steerState = !steerState;
-          if( steerState == false ){
-            safetyAlarmLatch = false;
-          } else { 
-            disengagedBySteeringWheel = false; 
+          if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
+            steerState = false;
+            autosteerDisabledByMaxEngageSpeed = true;
+          } else {
+            steerState = !steerState;
+            if( steerState == true ){
+              disengagedBySteeringWheel = false;
+              AOGEnableAutosteerTimeout = false;
+              autosteerDisabledByMaxEngageSpeed = false;
+            }
           }
         }
       } else {
         if( switchState == steerConfig.steerswitchActiveLow ){
           steerState = false;
-          safetyAlarmLatch = false;
+        } else if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
+          steerState = false;
         } else {
           steerState = true;
           disengagedBySteeringWheel = false;
+          AOGEnableAutosteerTimeout = false;
         }
       }
+    }
+    if( millis() - lastSwitchChangeMillis > 1000 && steerSetpoints.enabled == false ){
+      if( disengagedBySteeringWheel == false && steerState == true ){ // only show if user did not disengage
+        AOGEnableAutosteerTimeout = true; // AOG did not return enabled command, show in ESP_UI
+      }
+      steerState = false; // disable autosteer due to timeout
     }
 
     if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
