@@ -22,13 +22,19 @@ void diagnosticWorker1Hz( void* z ) {
       } else {
         str += " KPH";
       }
+      str += "\nEnable autosteer timed out: ";
+      str += ( bool )AOGEnableAutosteerTimeout ? "Yes" : "No" ;
       str += "\nDisabled by max speed: ";
-      str += ( bool )disabledBySpeedSafety ? "Yes" : "No" ;
+      str += ( bool )autosteerDisabledByMaxEngageSpeed ? "Yes" : "No" ;
       str += "\nDisabled by min speed: ";
       str += ( bool )steerSetpoints.speed < steerConfig.minAutosteerSpeed ? "Yes" : "No" ;
       str += "\nDisabled by steering wheel: ";
       str += ( bool )disengagedBySteeringWheel ? "Yes" : "No" ;
-      labelSafetyDisableAutosteerHandle->color = ( bool )disabledBySpeedSafety ? ControlColor::Alizarin : ControlColor::Emerald;
+      if( AOGEnableAutosteerTimeout || autosteerDisabledByMaxEngageSpeed || disengagedBySteeringWheel ){
+        labelSafetyDisableAutosteerHandle->color = ControlColor::Alizarin;
+      } else {
+        labelSafetyDisableAutosteerHandle->color = ControlColor::Emerald;
+      }
       ESPUI.updateLabel( labelSafetyDisableAutosteer, str );
     }
     {
