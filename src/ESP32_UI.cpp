@@ -593,7 +593,7 @@ void initESPUI ( void ) {
 
     switch( steerConfig.disengageSwitchType ){
       case SteerConfig::DisengageSwitchType::Hydraulic: {
-        ESPUI.addControl( ControlType::Switcher, "Hydraulic Switch Active Low", steerConfig.hydraulicSwitchActiveLow ? "1" : "0", ControlColor::Wetasphalt, tab,
+        ESPUI.addControl( ControlType::Switcher, "Hydraulic Switch Active Low", steerConfig.hydraulicSwitchActiveLow ? "1" : "0", ControlColor::Peterriver, tab,
         []( Control * control, int id ) {
           steerConfig.hydraulicSwitchActiveLow = control->value.toInt() == 1;
         } );
