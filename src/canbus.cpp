@@ -47,11 +47,14 @@ constexpr uint16_t j1939PgnFPTO = 65092;
 
 void canWorker10Hz( void* z ) {
   constexpr TickType_t xFrequency = 100;
+  TickType_t xLastWakeTime = xTaskGetTickCount();
 
   CAN_frame_t canFrame;
+  time_t lastCanbusMsgMillis;
 
-  while( 1 ) {
+  for( ;; ) {
     if( xQueueReceive( CAN_cfg.rx_queue, &canFrame, xFrequency ) == pdTRUE ) {
+      lastCanbusMsgMillis = millis();
       if( canFrame.FIR.B.FF == CAN_frame_ext ) {
 
         uint16_t pgn = ( canFrame.MsgID >> IsobusPgPos ) & IsobusPgnMask;
@@ -101,10 +104,12 @@ void canWorker10Hz( void* z ) {
           break;
         }
       }
+    } else { // no Canbus info, let CPU do other stuff
+        vTaskDelayUntil( &xLastWakeTime, xFrequency );
     }
 
     {
-      static uint8_t loopTimeToWaitTo = 0;
+      static time_t loopTimeToWaitTo = 0;
 
       if( loopTimeToWaitTo < millis() ) {
 
@@ -124,10 +129,20 @@ void canWorker10Hz( void* z ) {
         str += "</td></tr><tr><td style='text-align:left; padding: 0px 5px;'>Rear PTO RPM:</td><td style='text-align:left; padding: 0px 5px;'>";
         str += String( steerCanData.rearPtoRpm );
         str += "</td></tr></table>";
+        str += "Received ";
+        time_t elapse = millis() - lastCanbusMsgMillis;
+        if( elapse < 1000 ){
+          str += String( elapse );
+          str += " millis";
+        } else {
+          str += String( elapse / 1000 );
+          str += " seconds";
+        }
+        str += " ago";
 
         ESPUI.updateLabel( labelStatusCan, str );
 
-        loopTimeToWaitTo = millis() + xFrequency;
+        loopTimeToWaitTo = millis() + 1000;
       }
     }
   }
