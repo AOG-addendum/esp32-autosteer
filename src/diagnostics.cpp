@@ -110,8 +110,13 @@ void diagnosticWorker1Hz( void* z ) {
         str = "Maintained steer switch: ";
       }
       str += ( bool )( digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ) ? "Off" : "On" ;
-      str += "\nWork switch: ";
-      str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
+      if( steerConfig.workswitchType > SteerConfig::WorkswitchType::Gpio ){ // Canbus function
+        str += "\nCanbus work function: ";
+        str += ( bool ) workswitchState ? "Off" : "On" ;
+      } else {
+        str += "\nWork switch: ";
+        str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
+      }
       switch( steerConfig.disengageSwitchType ) {
         case SteerConfig::DisengageSwitchType::Encoder: {
           str += "\nEncoder on steering wheel: ";

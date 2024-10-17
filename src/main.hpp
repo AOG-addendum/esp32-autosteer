@@ -42,6 +42,7 @@ extern uint16_t steerMotorCurrent;
 extern bool autosteerDisabledByMaxEngageSpeed; // do not engage autosteer above an adjustable speed
 extern bool AOGEnableAutosteerTimeout; // give AOG 1 second to return 'enabled' command, otherwise disable again
 extern bool disengagedBySteeringWheel;
+extern bool workswitchState;
 extern volatile uint16_t dutyCycle;
 extern uint16_t dutyAverage;
 extern volatile uint16_t steeringPulseCount;

@@ -72,6 +72,7 @@ bool dtcAutosteerPrevious = false;
 bool autosteerDisabledByMaxEngageSpeed = false;
 bool AOGEnableAutosteerTimeout = false;
 bool disengagedBySteeringWheel = false;
+bool workswitchState = false;
 
 void ditherWorker10HZ( void* z ) {
 
@@ -349,8 +350,6 @@ void autosteerWorker100Hz( void* z ) {
               break;
           }
 
-          static bool workswitchState = false;
-
           if( value >= threshold ) {
             workswitchState = true;
           }
@@ -364,7 +363,7 @@ void autosteerWorker100Hz( void* z ) {
           }
 
           data[11] |= workswitchState ? 1 : 0;
-          digitalWrite( steerConfig.gpioWorkLED, workswitchState);
+          digitalWrite( steerConfig.gpioWorkLED, !workswitchState);
         }
 
           if(( steerState == false || steerSetpoints.enabled == false ) && steerConfig.manualSteerState == true ){
