@@ -84,9 +84,10 @@ void initWiFi( void ){
   uint8_t timeout = 5;
   // Wait for connection, 2.5s timeout
   do {
-  delay( 500 );
-  Serial.print( "." );
-  timeout--;
+    delay( 500 );
+    Serial.print( "." );
+    timeout--;
+    digitalWrite( steerConfig.apModePin, ! digitalRead( steerConfig.apModePin ));
   } while( timeout && WiFi.status() != WL_CONNECTED );
   // not connected -> create hotspot
   if( WiFi.status() != WL_CONNECTED ) {
