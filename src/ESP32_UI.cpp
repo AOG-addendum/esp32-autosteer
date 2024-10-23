@@ -56,6 +56,9 @@ void initESPUI ( void ) {
     if( id == B_UP ) {
       saveConfig();
       SPIFFS.end();
+      if( steerConfig.canBusEnabled ){
+        ESP32Can.CANStop();
+      }
       ESP.restart();
     }
   } );
@@ -684,6 +687,9 @@ void initESPUI ( void ) {
 
       if( final ) {
         request->_tempFile.close();
+        if( steerConfig.canBusEnabled ){
+          ESP32Can.CANStop();
+        }
         delay(10);
         ESP.restart();
       }
