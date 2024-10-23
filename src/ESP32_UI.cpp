@@ -197,10 +197,9 @@ void initESPUI ( void ) {
   {
     uint16_t tab = ESPUI.addControl( ControlType::Tab, "Work- and Steerswitch", "Work- and Steerswitch" );
 
-    uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Type*", String( ( int )steerConfig.workswitchType ), ControlColor::Wetasphalt, tab,
+    uint16_t sel = ESPUI.addControl( ControlType::Select, "Workswitch Type", String( ( int )steerConfig.workswitchType ), ControlColor::Peterriver, tab,
       []( Control * control, int id ) {
         steerConfig.workswitchType = ( SteerConfig::WorkswitchType )control->value.toInt();
-        setResetButtonToRed();
       } );
       ESPUI.addControl( ControlType::Option, "None", "0", ControlColor::Alizarin, sel );
       ESPUI.addControl( ControlType::Option, "Gpio", "1", ControlColor::Alizarin, sel );
