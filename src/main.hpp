@@ -80,7 +80,7 @@ struct Machine {
   bool workswitchState = false; // current state of workswitch
   uint8_t canbusSteeringState = 0; // machine canbus steering state (receive only)
   uint8_t valveOutput; // output of the pid controller, after valve specific processing
-  uint16_t WasCounts; // Wheel Angle Sensor counts
+  uint16_t canbusWasCounts; // Wheel Angle Sensor counts from canbus
   uint16_t handwheelPulseCount; // handwheel encoder counts
   uint16_t DeereDutyCycle; // duty cycle of Deere variable duty PWM disengage sensor
   uint16_t DeereDutyAverage; // average duty cycle of Deere variable duty PWM disengage sensor
