@@ -114,19 +114,19 @@ void diagnosticWorker1Hz( void* z ) {
         str = "Momentary steer switch: ";
       } else {
         str = "Maintained steer switch: ";
+        str += ( bool )( digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ) ? "On" : "Off" ;
       }
-      str += ( bool )( digitalRead( steerConfig.gpioSteerswitch ) == steerConfig.steerswitchActiveLow ) ? "Off" : "On" ;
       if( steerConfig.workswitchType > SteerConfig::WorkswitchType::Gpio ){ // Canbus function
         str += "\nCanbus work function: ";
-        str += ( bool ) workswitchState ? "Off" : "On" ;
+        str += ( bool ) machine.workswitchState ? "On" : "Off" ;
       } else {
         str += "\nWork switch: ";
-        str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "Off" : "On" ;
+        str += ( bool )( digitalRead( steerConfig.gpioWorkswitch ) == steerConfig.workswitchActiveLow ) ? "On" : "Off" ;
       }
       switch( steerConfig.disengageSwitchType ) {
         case SteerConfig::DisengageSwitchType::Encoder: {
           str += "\nEncoder on steering wheel: ";
-          str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "Off" : "On" ;
+          str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "On" : "Off" ;
           str += " / ";
           str += machine.handwheelPulseCount;
           str += " counts";
@@ -135,7 +135,7 @@ void diagnosticWorker1Hz( void* z ) {
 
         case SteerConfig::DisengageSwitchType::Hydraulic: {
           str += "\nHydraulic disengage switch: ";
-          str += ( bool )( digitalRead( steerConfig.gpioDisengage ) == steerConfig.hydraulicSwitchActiveLow ) ? "Off" : "On" ;
+          str += ( bool )( digitalRead( steerConfig.gpioDisengage ) == steerConfig.hydraulicSwitchActiveLow ) ? "On" : "Off" ;
         }
         break;
 
