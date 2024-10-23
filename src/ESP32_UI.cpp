@@ -76,8 +76,8 @@ void initESPUI ( void ) {
     labelSwitchStates = ESPUI.addControl( ControlType::Label, "Switch states:", "Not loaded", ControlColor::Emerald, tab );
     ESPUI.addControl( ControlType::Button, "Diagnostics:", "Reset all to zero", ControlColor::Emerald, tab, []( Control * control, int id ) {
       if( id == B_UP ) {
-        diagnostics.steerSupplyVoltageMax = steerSupplyVoltage;
-        diagnostics.steerSupplyVoltageMin = steerSupplyVoltage;
+        diagnostics.steerSupplyVoltageMax = machine.steerSupplyVoltage;
+        diagnostics.steerSupplyVoltageMin = machine.steerSupplyVoltage;
         diagnostics.steerEnabledWithNoPower = 0;
         diagnostics.fuse1Shorted = 0;
         diagnostics.fuse2Shorted = 0;

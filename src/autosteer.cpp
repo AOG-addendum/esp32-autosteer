@@ -53,14 +53,11 @@ AutoPID pid(
         steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
 
 constexpr time_t Timeout = 1000;
-time_t timeoutPoint;
 time_t lastSwitchChangeMillis;
 volatile bool disengageState;
 volatile bool disengagePrevState;
 volatile bool disengagePrevJdState;
-volatile bool steerState = false;
 volatile time_t disengageActivityMillis = millis();
-volatile uint16_t steeringPulseCount = 0;
 volatile time_t onTime;
 volatile time_t offTime;
 volatile uint16_t dutyCycle;
@@ -69,10 +66,6 @@ uint16_t dutyAverage;
 time_t switchChangeMillis = millis();
 bool ditherDirection = false;
 bool dtcAutosteerPrevious = false;
-bool autosteerDisabledByMaxEngageSpeed = false;
-bool AOGEnableAutosteerTimeout = false;
-bool disengagedBySteeringWheel = false;
-bool workswitchState = false;
 
 void ditherWorker10HZ( void* z ) {
 
@@ -99,10 +92,10 @@ void autosteerWorker100Hz( void* z ) {
   pid.setTimeStep( xFrequency );
 
   for( ;; ) {
-    timeoutPoint = millis() - Timeout;
+    safety.timeoutPoint = millis() - Timeout;
 
     if( steerSetpoints.enabled == true ){
-      if(  dtcAutosteerPrevious == false && steerSupplyVoltage < 14500 ){  // 10.8 volts
+      if(  dtcAutosteerPrevious == false && machine.steerSupplyVoltage < 14500 ){  // 10.8 volts
           diagnostics.steerEnabledWithNoPower += 1;
 
           Control* labelSteerEngagedFaultsHandle = ESPUI.getControl( labelSteerEngagedFaults );
@@ -180,7 +173,7 @@ void autosteerWorker100Hz( void* z ) {
       }
     }
     // check for timeout, data from AgOpenGPS, safety disable, and mininum autosteer speed
-    else if( steerSetpoints.lastPacketReceived < timeoutPoint ||
+    else if( steerSetpoints.lastPacketReceived < safety.timeoutPoint ||
              steerSetpoints.enabled == false ||
              steerSetpoints.speed < steerConfig.minAutosteerSpeed ) {
       
@@ -207,8 +200,8 @@ void autosteerWorker100Hz( void* z ) {
       digitalWrite( steerConfig.gpioSteerLED, LOW );
     } else {
 
-      diagnostics.steerSupplyVoltageMax = max( steerSupplyVoltage, diagnostics.steerSupplyVoltageMax );
-      diagnostics.steerSupplyVoltageMin = min( steerSupplyVoltage, diagnostics.steerSupplyVoltageMin );
+      diagnostics.steerSupplyVoltageMax = max( machine.steerSupplyVoltage, diagnostics.steerSupplyVoltageMax );
+      diagnostics.steerSupplyVoltageMin = min( machine.steerSupplyVoltage, diagnostics.steerSupplyVoltageMin );
 
       pid.setGains( steerConfig.steeringPidKp, steerConfig.steeringPidKi, steerConfig.steeringPidKd );
 
@@ -281,6 +274,7 @@ void autosteerWorker100Hz( void* z ) {
       }
       digitalWrite( steerConfig.gpioEn, HIGH );
       digitalWrite( steerConfig.gpioSteerLED, HIGH );
+      machine.valveOutput = pidOutputTmp;
     }
 
     static uint8_t loopCounter = 0;
@@ -351,27 +345,27 @@ void autosteerWorker100Hz( void* z ) {
           }
 
           if( value >= threshold ) {
-            workswitchState = true;
+            machine.workswitchState = true;
           }
 
           if( value < ( threshold - hysteresis ) ) {
-            workswitchState = false;
+            machine.workswitchState = false;
           }
 
           if( steerConfig.workswitchActiveLow ) {
-            workswitchState = ! workswitchState;
+            machine.workswitchState = ! machine.workswitchState;
           }
 
-          data[11] |= workswitchState ? 1 : 0;
-          digitalWrite( steerConfig.gpioWorkLED, !workswitchState);
+          data[11] |= machine.workswitchState ? 1 : 0;
+          digitalWrite( steerConfig.gpioWorkLED, !machine.workswitchState);
         }
 
-          if(( steerState == false || steerSetpoints.enabled == false ) && steerConfig.manualSteerState == true ){
+          if(( machine.steeringEnabled == false || steerSetpoints.enabled == false ) && steerConfig.manualSteerState == true ){
             steerConfig.manualSteerState = false;
             ESPUI.updateSwitcher( manualValveSwitcher, false );
           }
 
-          data[11] |= steerState ? 0 : 2;
+          data[11] |= machine.steeringEnabled ? 0 : 2;
       }
         //data[12] = 0; // PWM ?
       //add the checksum
@@ -412,60 +406,60 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
       if( steerConfig.steerSwitchIsMomentary ){
         if( switchState == steerConfig.steerswitchActiveLow ){
           if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
-            steerState = false;
-            autosteerDisabledByMaxEngageSpeed = true;
+            machine.steeringEnabled = false;
+            safety.autosteerDisabledByMaxEngageSpeed = true;
           } else {
-            steerState = !steerState;
-            if( steerState == true ){
-              disengagedBySteeringWheel = false;
-              AOGEnableAutosteerTimeout = false;
-              autosteerDisabledByMaxEngageSpeed = false;
+            machine.steeringEnabled = !machine.steeringEnabled;
+            if( machine.steeringEnabled == true ){
+              machine.disengagedBySteeringWheel = false;
+              safety.AOGEnableAutosteerTimeout = false;
+              safety.autosteerDisabledByMaxEngageSpeed = false;
             }
           }
         }
       } else {
         if( switchState == steerConfig.steerswitchActiveLow ){
-          steerState = false;
+          machine.steeringEnabled = false;
         } else if( steerSetpoints.speed > steerConfig.maxAutosteerSpeed ) {
-          steerState = false;
+          machine.steeringEnabled = false;
         } else {
-          steerState = true;
-          disengagedBySteeringWheel = false;
-          AOGEnableAutosteerTimeout = false;
+          machine.steeringEnabled = true;
+          machine.disengagedBySteeringWheel = false;
+          safety.AOGEnableAutosteerTimeout = false;
         }
       }
     }
     if( millis() - lastSwitchChangeMillis > 1000 && steerSetpoints.enabled == false ){
-      if( disengagedBySteeringWheel == false && steerState == true ){ // only show if user did not disengage
-        AOGEnableAutosteerTimeout = true; // AOG did not return enabled command, show in ESP_UI
+      if( machine.disengagedBySteeringWheel == false && machine.steeringEnabled == true ){ // only show if user did not disengage
+        safety.AOGEnableAutosteerTimeout = true; // AOG did not return enabled command, show in ESP_UI
       }
-      steerState = false; // disable autosteer due to timeout
+      machine.steeringEnabled = false; // disable autosteer due to timeout
     }
 
     if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Hydraulic ){
       if( digitalRead( steerConfig.gpioDisengage ) != steerConfig.hydraulicSwitchActiveLow ){
-        steerState = false;
-        disengagedBySteeringWheel = true;
+        machine.steeringEnabled = false;
+        machine.disengagedBySteeringWheel = true;
       }
     }
     else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::Encoder ) {
       if( disengagePrevState != disengageState ){
         disengagePrevState = disengageState;
-        if( steeringPulseCount == 0 ){
+        if( machine.handwheelPulseCount == 0 ){
           disengageActivityMillis = millis();
         }
-        steeringPulseCount += 1;
+        machine.handwheelPulseCount += 1;
       }
       if( millis() - disengageActivityMillis < steerConfig.disengageFrameMillis ) {
-        if( ( steeringPulseCount / 2 ) >= steerConfig.disengageFramePulses ) { // divide by two to compensate for LOW and HIGH
-          steerState = false;
-          steeringPulseCount = 0;
-          disengagedBySteeringWheel = true;
+        if( ( machine.handwheelPulseCount / 2 ) >= steerConfig.disengageFramePulses ) { // divide by two to compensate for LOW and HIGH
+          machine.steeringEnabled = false;
+          machine.handwheelPulseCount = 0;
+          machine.disengagedBySteeringWheel = true;
         }
-      } else { steeringPulseCount = 0; }
+      } else { machine.handwheelPulseCount = 0; }
     }
     else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::JDVariableDuty ){
-      dutyCycle = abs( onTime - offTime );
+      uint16_t dutyCycle = abs( onTime - offTime );
       dutyTotal -= dutyReadings[ dutyIndex ];
       dutyReadings[ dutyIndex ] = dutyCycle;
       dutyTotal += dutyReadings[ dutyIndex ];
@@ -475,16 +469,18 @@ void autosteerSwitchesWorker1000Hz( void* z ) {
       }
       dutyAverage = dutyTotal / dutyLength;
       if( abs( dutyAverage - dutyCycle ) > steerConfig.JDVariableDutyChange ){
-        steerState = false;
-        disengagedBySteeringWheel = true;
+        machine.steeringEnabled = false;
+        machine.disengagedBySteeringWheel = true;
       }
+      machine.DeereDutyCycle = dutyCycle;
+      machine.DeereDutyAverage = dutyAverage;
     }
     else if( steerConfig.disengageSwitchType == SteerConfig::DisengageSwitchType::MotorCurrent ){
-      steerMotorCurrent = max( analogRead( 34 ), analogRead( 35 ) );
-      if( steerMotorCurrent > steerConfig.maxSteerCurrent ){
+      machine.steerMotorCurrent = max( analogRead( 34 ), analogRead( 35 ) );
+      if( machine.steerMotorCurrent > steerConfig.maxSteerCurrent ){
         if( millis() - disengageActivityMillis > 50 ){
-          steerState = false;
-          disengagedBySteeringWheel = true;
+          machine.steeringEnabled = false;
+          machine.disengagedBySteeringWheel = true;
         }
       } else {
         disengageActivityMillis = millis();

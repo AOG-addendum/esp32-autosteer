@@ -34,11 +34,8 @@
 
 Adafruit_ADS1115 ads = Adafruit_ADS1115( 0x48 );
 
-volatile uint16_t samplesPerSecond;
-volatile time_t WasOnTime;
-volatile time_t WasOffTime;
-double steerSupplyVoltage;
-uint16_t steerMotorCurrent;
+volatile time_t DeereWasOnTime;
+volatile time_t DeereWasOffTime;
 
 // http://www.schwietering.com/jayduino/filtuino/index.php?characteristic=bu&passmode=lp&order=2&usesr=usesr&sr=100&frequencyLow=5&noteLow=&noteHigh=&pw=pw&calctype=float&run=Send
 //Low pass butterworth filter order=2 alpha1=0.05
@@ -70,38 +67,38 @@ void sensorWorker100HzPoller( void* z ) {
 
   for( ;; ) {
 
-    float wheelAngleTmp = 0;
+    float wheelAngleTmp = 31250;
     if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
-      steerSupplyVoltage = ads.readADC_SingleEnded( 3 );
+      machine.steerSupplyVoltage = ads.readADC_SingleEnded( 3 );
       xSemaphoreGive( i2cMutex );
     }
-    if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::JDVariableDuty ) {
-      wheelAngleTmp = WasOnTime - WasOffTime;
-    }
-    else if( steerConfig.wheelAngleInput != SteerConfig::AnalogIn::None ) {
-
-      switch( ( uint8_t )steerConfig.wheelAngleInput ) {
-        case( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single ...( uint8_t )SteerConfig::AnalogIn::ADS1115A1Single: {
-          if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
-            wheelAngleTmp = ads.readADC_SingleEnded(
-                                    ( uint8_t )steerConfig.wheelAngleInput - ( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single );
-            xSemaphoreGive( i2cMutex );
-          }
-        }
-        break;
-
-        case( uint8_t )SteerConfig::AnalogIn::ADS1115A0A1Differential: {
-          if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
-            wheelAngleTmp = ads.readADC_Differential_0_1();
-            xSemaphoreGive( i2cMutex );
-          }
-        }
-        break;
-
-        default:
-          break;
+    switch( steerConfig.wheelAngleInput ) {
+      case SteerConfig::AnalogIn::JDVariableDuty: {
+        wheelAngleTmp = DeereWasOnTime - DeereWasOffTime;
       }
-    } 
+      break;
+
+      case SteerConfig::AnalogIn::ADS1115A0Single:
+      case SteerConfig::AnalogIn::ADS1115A1Single: {
+        if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
+          wheelAngleTmp = ads.readADC_SingleEnded(
+                                  ( uint8_t )steerConfig.wheelAngleInput - ( uint8_t )SteerConfig::AnalogIn::ADS1115A0Single );
+          xSemaphoreGive( i2cMutex );
+        }
+      }
+      break;
+
+      case SteerConfig::AnalogIn::ADS1115A0A1Differential: {
+        if( xSemaphoreTake( i2cMutex, 1000 ) == pdTRUE ) {
+          wheelAngleTmp = ads.readADC_Differential_0_1();
+          xSemaphoreGive( i2cMutex );
+        }
+      }
+      break;
+
+      default:
+        break;
+      }
 
     {
       steerSetpoints.wheelAngleCounts = wheelAngleTmp;
@@ -167,9 +164,9 @@ void IRAM_ATTR DeereVariableDutyWasIsr() {
     if( previousState != state ){
       previousState = state;
       if( state == LOW ){
-        WasOnTime = micros() - sensorActivityMicros;
+        DeereWasOnTime = micros() - sensorActivityMicros;
       } else {
-        WasOffTime = micros() - sensorActivityMicros;
+        DeereWasOffTime = micros() - sensorActivityMicros;
       }
       sensorActivityMicros = micros();
     }

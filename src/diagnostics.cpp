@@ -23,14 +23,16 @@ void diagnosticWorker1Hz( void* z ) {
         str += " KPH";
       }
       str += "\nEnable autosteer timed out: ";
-      str += ( bool )AOGEnableAutosteerTimeout ? "Yes" : "No" ;
+      str += ( bool )safety.AOGEnableAutosteerTimeout ? "Yes" : "No" ;
       str += "\nDisabled by max speed: ";
-      str += ( bool )autosteerDisabledByMaxEngageSpeed ? "Yes" : "No" ;
+      str += ( bool )safety.autosteerDisabledByMaxEngageSpeed ? "Yes" : "No" ;
       str += "\nDisabled by min speed: ";
       str += ( bool )steerSetpoints.speed < steerConfig.minAutosteerSpeed ? "Yes" : "No" ;
       str += "\nDisabled by steering wheel: ";
-      str += ( bool )disengagedBySteeringWheel ? "Yes" : "No" ;
-      if( AOGEnableAutosteerTimeout || autosteerDisabledByMaxEngageSpeed || disengagedBySteeringWheel ){
+      str += ( bool )machine.disengagedBySteeringWheel ? "Yes" : "No" ;
+      if( safety.AOGEnableAutosteerTimeout || 
+          safety.autosteerDisabledByMaxEngageSpeed || 
+          machine.disengagedBySteeringWheel ){
         labelSafetyDisableAutosteerHandle->color = ControlColor::Alizarin;
       } else {
         labelSafetyDisableAutosteerHandle->color = ControlColor::Emerald;
@@ -40,17 +42,17 @@ void diagnosticWorker1Hz( void* z ) {
     {
       String str;
       str.reserve( 30 );
-      str = ( uint16_t ) steerSupplyVoltage ;
+      str = ( uint16_t ) machine.steerSupplyVoltage ;
       str += " counts; ";
       if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_TWOTHIRDS ){
-        str += ( double ) ( ( double ) ( steerSupplyVoltage * 3.03 ) * 0.0001875 ); // .1875 mv per bit; 10k/3.3k = 3.03
+        str += ( double ) ( ( double ) ( machine.steerSupplyVoltage * 3.03 ) * 0.0001875 ); // .1875 mv per bit; 10k/3.3k = 3.03
         str += " volts\n";
         str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMin * 3.03 ) * 0.0001875 );
         str += " volts min while steering\n";
         str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMax * 3.03 ) * 0.0001875 );
         str += " volts max while steering";
       } else if( steerConfig.adsGain == SteerConfig::ADSGain::GAIN_ONE ){
-        str += ( double ) ( ( double ) ( steerSupplyVoltage * 4.545 ) * 0.000125 ); // .125 mv per bit; 10k/2.2k = 4.545
+        str += ( double ) ( ( double ) ( machine.steerSupplyVoltage * 4.545 ) * 0.000125 ); // .125 mv per bit; 10k/2.2k = 4.545
         str += " volts\n";
         str += ( double ) ( ( double ) ( diagnostics.steerSupplyVoltageMin * 4.545 ) * 0.000125 );
         str += " volts min while steering\n";
@@ -65,15 +67,19 @@ void diagnosticWorker1Hz( void* z ) {
       String str;
       str.reserve( 30 );
       str = "Current: ";
-      str += ( uint16_t ) steerMotorCurrent;
+      str += ( uint16_t ) machine.steerMotorCurrent;
       str += "\nOverlimit: ";
-      str += ( steerMotorCurrent > steerConfig.maxSteerCurrent ) ? "Yes" : "No";
+      str += ( machine.steerMotorCurrent > steerConfig.maxSteerCurrent ) ? "Yes" : "No";
       ESPUI.updateLabel( labelSteerMotorCurrent, str );
     }
     {
       String str;
       str.reserve( 30 );
-      if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
+      if( steerConfig.wheelAngleInput == SteerConfig::AnalogIn::CanbusValtraMasseyChallenger ){
+        str = "Canbus WAS: ";
+        str += ( float )steerSetpoints.actualSteerAngle;
+        str += "°";
+      } else if( steerConfig.wheelAngleSensorType == SteerConfig::WheelAngleSensorType::TieRodDisplacement ) {
         str += ( float )steerSetpoints.actualSteerAngle;
         str += "°, Raw ";
         str += ( float )steerSetpoints.wheelAngleRaw;
@@ -122,7 +128,7 @@ void diagnosticWorker1Hz( void* z ) {
           str += "\nEncoder on steering wheel: ";
           str += ( bool )digitalRead( steerConfig.gpioDisengage ) ? "Off" : "On" ;
           str += " / ";
-          str += steeringPulseCount;
+          str += machine.handwheelPulseCount;
           str += " counts";
         }
         break;
@@ -135,7 +141,7 @@ void diagnosticWorker1Hz( void* z ) {
 
         case SteerConfig::DisengageSwitchType::JDVariableDuty: {
           str += "\nDeere variable duty encoder: ";
-          str += ( uint16_t )( abs( dutyAverage - dutyCycle ) );
+          str += ( uint16_t )( abs( machine.DeereDutyAverage - machine.DeereDutyCycle ) );
         }
       }
       ESPUI.updateLabel( labelSwitchStates, str );
@@ -149,11 +155,11 @@ void diagnosticWorker1Hz( void* z ) {
           str = "IBT2 Motor, SetPoint: ";
           str += ( float )steerSetpoints.requestedSteerAngle;
           str += "°,\ntimeout: ";
-          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ( bool )( steerSetpoints.lastPacketReceived < safety.timeoutPoint ) ? "Yes" : "No" ;
           str += ", enabled: ";
           str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
           str += ", output: ";
-          str += ( float )pidOutputTmp ;
+          str += ( uint8_t )machine.valveOutput ;
           labelStatusOutputHandle->color = ControlColor::Emerald;
           ESPUI.updateLabel( labelStatusOutput, str );
         }
@@ -166,11 +172,11 @@ void diagnosticWorker1Hz( void* z ) {
           str = "Cytron Motor, SetPoint: ";
           str += ( float )steerSetpoints.requestedSteerAngle;
           str += "°\ntimeout: ";
-          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ( bool )( steerSetpoints.lastPacketReceived < safety.timeoutPoint ) ? "Yes" : "No" ;
           str += ", enabled: ";
           str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
           str += ", output: ";
-          str += ( float )pidOutputTmp;
+          str += ( uint8_t )machine.valveOutput;
           labelStatusOutputHandle->color = ControlColor::Emerald;
           ESPUI.updateLabel( labelStatusOutput, str );
         }
@@ -183,11 +189,11 @@ void diagnosticWorker1Hz( void* z ) {
           str = "IBT2 Hydraulic PWM 2 Coil, SetPoint: ";
           str += ( float )steerSetpoints.requestedSteerAngle;
           str += "°,\ntimeout: ";
-          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ( bool )( steerSetpoints.lastPacketReceived < safety.timeoutPoint ) ? "Yes" : "No" ;
           str += ", enabled: ";
           str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
           str += ",\n output: ";
-          str += ( float )pidOutputTmp ;
+          str += ( uint8_t )machine.valveOutput ;
           str += ", dither: ";
           str += ( float )ditherAmount ;
           labelStatusOutputHandle->color = ControlColor::Emerald;
@@ -202,11 +208,11 @@ void diagnosticWorker1Hz( void* z ) {
           str = "IBT2 Hydraulic Danfoss, SetPoint: ";
           str += ( float )steerSetpoints.requestedSteerAngle;
           str += "°,\ntimeout: ";
-          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ( bool )( steerSetpoints.lastPacketReceived < safety.timeoutPoint ) ? "Yes" : "No" ;
           str += ", enabled: ";
           str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
           str += ", output: ";
-          str += ( float )pidOutputTmp ;
+          str += ( uint8_t )machine.valveOutput ;
           labelStatusOutputHandle->color = ControlColor::Emerald;
           ESPUI.updateLabel( labelStatusOutput, str );
         }
@@ -219,11 +225,11 @@ void diagnosticWorker1Hz( void* z ) {
           str = "IBT2 Hydraulic Bang Bang, SetPoint: ";
           str += ( float )steerSetpoints.requestedSteerAngle;
           str += "°,\ntimeout: ";
-          str += ( bool )( steerSetpoints.lastPacketReceived < timeoutPoint ) ? "Yes" : "No" ;
+          str += ( bool )( steerSetpoints.lastPacketReceived < safety.timeoutPoint ) ? "Yes" : "No" ;
           str += ", enabled: ";
           str += ( bool )steerSetpoints.enabled ? "Yes" : "No" ;
           str += ", output: ";
-          str += ( float )pidOutputTmp ;
+          str += ( uint8_t )machine.valveOutput ;
           labelStatusOutputHandle->color = ControlColor::Emerald;
           ESPUI.updateLabel( labelStatusOutput, str );
         }

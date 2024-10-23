@@ -37,15 +37,6 @@
 #include "average.hpp"
 
 extern int8_t ditherAmount; // variable gets reset upon user changing dither
-extern double steerSupplyVoltage;
-extern uint16_t steerMotorCurrent;
-extern bool autosteerDisabledByMaxEngageSpeed; // do not engage autosteer above an adjustable speed
-extern bool AOGEnableAutosteerTimeout; // give AOG 1 second to return 'enabled' command, otherwise disable again
-extern bool disengagedBySteeringWheel;
-extern bool workswitchState;
-extern volatile uint16_t dutyCycle;
-extern uint16_t dutyAverage;
-extern volatile uint16_t steeringPulseCount;
 
 extern uint16_t labelLoad;
 extern uint16_t labelWheelAngle;
@@ -63,9 +54,6 @@ extern uint16_t manualValvePWMWidget;
 
 extern SemaphoreHandle_t i2cMutex;
 
-extern time_t timeoutPoint;
-extern double pidOutputTmp;
-
 struct Diagnostics {
   double steerSupplyVoltageMin;
   double steerSupplyVoltageMax;
@@ -77,6 +65,31 @@ extern Diagnostics diagnostics;
 ///////////////////////////////////////////////////////////////////////////
 // Configuration
 ///////////////////////////////////////////////////////////////////////////
+
+struct Safety {
+  bool AOGEnableAutosteerTimeout; // give AOG 1 second to return 'enabled' command, otherwise disable again
+  bool autosteerDisabledByMaxEngageSpeed; // do not engage autosteer above an adjustable speed
+  time_t timeoutPoint; // do not autosteer if no message from AOG
+};
+extern Safety safety;
+
+struct Machine {
+  bool disengagedBySteeringWheel = false; // disengaged by steering wheel > for diagnostic page
+  bool canbusSteeringActive = false; // traditional or Canbus steering
+  bool steeringEnabled = false; // ESP32 internal steering state > sent to AOG
+  bool workswitchState = false; // current state of workswitch
+  uint8_t canbusSteeringState = 0; // machine canbus steering state (receive only)
+  uint8_t valveOutput; // output of the pid controller, after valve specific processing
+  uint16_t WasCounts; // Wheel Angle Sensor counts
+  uint16_t handwheelPulseCount; // handwheel encoder counts
+  uint16_t DeereDutyCycle; // duty cycle of Deere variable duty PWM disengage sensor
+  uint16_t DeereDutyAverage; // average duty cycle of Deere variable duty PWM disengage sensor
+  uint16_t steerMotorCurrent; // steering motor current
+  double steerSupplyVoltage; // voltage from machine, also feeds the steering valve
+  float wheelAngle; // wheel angle in degrees
+  time_t lastCanbusSteeringMillis; // last time a CANBUS message was received
+};
+extern Machine machine;
 
 struct SteerConfig {
 
