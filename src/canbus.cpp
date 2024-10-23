@@ -64,29 +64,24 @@ void canWorker10Hz( void* z ) {
           // Electronic Engine Controller 1
           case j1939PgnEEC1: {
             steerCanData.motorRpm = ( canFrame.data.u8[4] << 8 | canFrame.data.u8[3] ) / 8;
-
           }
           break;
 
           // Wheel-based Speed and Distance
           case j1939PgnWBSD: {
             steerCanData.speed = ( canFrame.data.u8[1] << 8 | canFrame.data.u8[0] ) / 1000 * 3.6;
-
           }
           break;
 
           // Primary or Rear Hitch Status
           case j1939PgnPHS: {
             steerCanData.rearHitchPosition = canFrame.data.u8[0];
-
           }
-
           break;
 
           // Secondary or Front Hitch Status
           case j1939PgnFHS: {
             steerCanData.frontHitchPosition = canFrame.data.u8[0];
-
           }
           break;
 
